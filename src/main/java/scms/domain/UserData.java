@@ -5,6 +5,14 @@ import org.springframework.stereotype.Component;
 @Component
 //定义一个实体类
 public class UserData {
+    public int getRight() {
+        return right;
+    }
+
+    public void setRight(int right) {
+        this.right = right;
+    }
+
     public String getPassword() {
         return password;
     }
@@ -23,4 +31,6 @@ public class UserData {
 
     public String username;
     public String password;
+//    权限
+    public int right;
 }

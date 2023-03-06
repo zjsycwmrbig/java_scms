@@ -17,7 +17,7 @@ public class UserController {
     UserService userService;
 //    这里最好返回数字,这样前端更好维护,并且通信成本更低
     @RequestMapping("/login")
-    public String CheckLogin(@RequestBody UserData user){
+    public String CheckLogin(@RequestBody UserData user) throws IOException {
         System.out.println(user.username);
         switch (userService.CheckLogin(user)){
             case 1 : return "登录成功";

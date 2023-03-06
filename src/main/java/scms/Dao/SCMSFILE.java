@@ -1,7 +1,4 @@
 package scms.Dao;
-
-import org.springframework.stereotype.Component;
-
 import java.io.File;
 import java.io.IOException;
 //重写FILE类更实用
