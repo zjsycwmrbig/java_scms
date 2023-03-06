@@ -13,7 +13,7 @@ public class UserService {
     UserDao userDao;
     public int CheckLogin(UserData user){
         if(userDao.CheckData(user.username)){
-            if(userDao.GetbyName(user.getUsername()).equals(user.getPassword())){
+            if(userDao.GetPassword(user.getUsername()).equals(user.getPassword())){
                 return 1;
             }else{
                 return 0;
@@ -23,9 +23,7 @@ public class UserService {
             return -1;
         }
     }
-    public boolean CreatUser(UserData user) throws IOException {
-        if(userDao.CreatUser(user)){
-            return true;
-        }else return false;
+    public int CreatUser(UserData user) throws IOException {
+        return userDao.CreatUser(user);
     }
 }

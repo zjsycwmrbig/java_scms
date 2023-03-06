@@ -1,10 +1,7 @@
 package scms.Dao;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import scms.domain.UserData;
-
-import java.io.File;
 import java.io.IOException;
 
 @Component
@@ -18,18 +15,24 @@ public class UserDao {
         else return true;
     }
 //      把密码取出来
-    public String GetbyName(String name){
+    public String GetPassword(String name){
 //        fir 判断是否存在该用户
         return "password";
     }
 
-    public boolean CreatUser(UserData user) throws IOException {
+    public int CreatUser(UserData user) throws IOException {
 //        创建
-        if(scms==null)scms = new SCMSFILE(user.getUsername());
-        System.out.println("DEBUG");
-        System.out.println(this.scms.f.getAbsoluteFile());
-        this.scms.f.mkdir();
-        if(this.scms.mkdir())return true;
-        else return false;
+        scms = new SCMSFILE(user.getUsername());
+        if(scms.exists()){
+//            用户已存在
+            return -1;
+        }else {
+            if (scms.creat()) {
+//          创建一套用户文件      scms.WritePassword(user.getpassword);
+//                添加userdata数据
+                return 1;
+            }
+            else return 0;
+        }
     }
 }

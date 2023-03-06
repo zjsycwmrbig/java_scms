@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import scms.Dao.UserDao;
 import scms.Service.UserService;
 import scms.domain.UserData;
 
@@ -13,6 +12,7 @@ import java.io.IOException;
 @RestController
 @RequestMapping("/user")
 public class UserController {
+//    登录请求
     @Autowired
     UserService userService;
 //    这里最好返回数字,这样前端更好维护,并且通信成本更低
@@ -26,11 +26,15 @@ public class UserController {
         }
         return "错误";
     }
+//    注册请求
+    /*
+    * return 0 注册失败
+    * return 1 注册成功
+    * return -1 注册用户已存在
+    *
+    * */
     @RequestMapping("/register")
-    public boolean CreatUser(@RequestBody UserData user) throws IOException {
-        if(userService.CreatUser(user)){
-            return true;
-        }
-        return false;
+    public int CreatUser(@RequestBody UserData user) throws IOException {
+        return userService.CreatUser(user);
     }
 }
