@@ -11,9 +11,11 @@ import java.io.IOException;
 public class UserService {
     @Autowired
     UserDao userDao;
+//    验证登录
     public int CheckLogin(UserData user) throws IOException {
         return userDao.CheckLogin(user);
     }
+//    创建用户
     public int CreatUser(UserData user) throws IOException {
         return userDao.CreatUser(user);
     }
