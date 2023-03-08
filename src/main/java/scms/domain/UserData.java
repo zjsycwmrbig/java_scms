@@ -43,5 +43,4 @@ public class UserData {
     public void setRight(int right) {
         this.right = right;
     }
-//    加一个班级
 }
