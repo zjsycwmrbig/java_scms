@@ -13,16 +13,21 @@ public class SCMSFILE {
 //    相对路径
     private String OS = "D:\\SCMSFILE\\";
     public File father;
-
+//静态文件夹
     public File assertdata;
+//    课程文件
     public File classdata;
+//    用户数据 - 名称,密码,注册时间
     public File userdata;
+//    文件哈希
+    public File hashdata;
 //    构造函数
     public SCMSFILE(String pathname) {
         this.father = new File(OS + pathname);
         this.assertdata = new File(OS+pathname+"/assert");
         this.classdata = new File(OS+pathname+"/classdata.scms");
         this.userdata = new File(OS + pathname+"/userdata.scms");
+        this.hashdata = new File(OS + pathname+"/hashdata.scms");
     }
 
 
