@@ -6,7 +6,7 @@ import java.io.IOException;
 //重写FILE类更实用
 /*
 * @author zjs
-* @function 简化文件操作
+* @function 简化文件操作，不同文件指针指向不同的信息文件，要用信息文件的时候直接使用对应的文件指针
 * @method new SCMSFILE(filepath) -- filepath是用户目录
 *         未完待续
 * */

@@ -16,7 +16,7 @@ public class UserDao extends Dao{
         else{
             JSON = new ObjectMapper();
             UserData ser = JSON.readValue(scms.userdata,UserData.class);
-            if(ser.password.equals(user.password)){
+            if(ser.getPassword().equals(user.getPassword())){
                 return 1;
             }else{
                 return 0;

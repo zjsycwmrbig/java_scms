@@ -5,12 +5,19 @@ import org.springframework.stereotype.Component;
 @Component
 //定义一个实体类
 public class UserData {
-    public int getRight() {
-        return right;
+
+    private String username;
+    private String password;
+    private String className;
+//    权限,管理员
+    private int right;
+
+    public String getUsername() {
+        return username;
     }
 
-    public void setRight(int right) {
-        this.right = right;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getPassword() {
@@ -21,18 +28,20 @@ public class UserData {
         this.password = password;
     }
 
-    public String getUsername() {
-        return username;
+    public String getClassName() {
+        return className;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setClassName(String className) {
+        this.className = className;
     }
 
-    public String username;
-    public String password;
-//    权限,管理员
-    public int right;
+    public int getRight() {
+        return right;
+    }
 
+    public void setRight(int right) {
+        this.right = right;
+    }
 //    加一个班级
 }
