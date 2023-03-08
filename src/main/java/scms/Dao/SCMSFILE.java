@@ -1,14 +1,17 @@
 package scms.Dao;
 import java.io.File;
 import java.io.IOException;
+
+
 //重写FILE类更实用
 /*
 * @author zjs
 * @function 简化文件操作
 * @method new SCMSFILE(filepath) -- filepath是用户目录
 *         未完待续
-*
 * */
+
+
 public class SCMSFILE {
 //    相对路径
     private String OS = "D:\\SCMSFILE\\";
@@ -23,6 +26,7 @@ public class SCMSFILE {
     public File hashdata;
 //    构造函数
     public SCMSFILE(String pathname) {
+
         this.father = new File(OS + pathname);
         this.assertdata = new File(OS+pathname+"/assert");
         this.classdata = new File(OS+pathname+"/classdata.scms");

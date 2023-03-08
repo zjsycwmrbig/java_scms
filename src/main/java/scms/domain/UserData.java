@@ -31,6 +31,8 @@ public class UserData {
 
     public String username;
     public String password;
-//    权限
+//    权限,管理员
     public int right;
+
+//    加一个班级
 }

@@ -16,9 +16,9 @@ public class ClassData {
 //    地点id
     public int location;
 //  0代表单次结束,1代表一天为周期
-    int circle;
+    public int circle;
 //    开始时间的int表示,存储的数据是当下的年份
     public int begin;
 //    长度
-    public int lengh;
+    public int length;
 }
