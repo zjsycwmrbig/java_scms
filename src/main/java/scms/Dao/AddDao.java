@@ -11,8 +11,13 @@ import scms.domain.ClassData;
 //往
     @Repository
 public class AddDao extends Dao{
+<<<<<<< HEAD
     public boolean put(ClassData item,String user){
         scms = new SCMSFILE(user);
+=======
+    public boolean put(ClassData item,String className,String userName){
+        scms = new SCMSFILE(className,userName);
+>>>>>>> cc78721bc38c5e7cf83ccf486537dd69c210661c
         return true;
     }
 }
