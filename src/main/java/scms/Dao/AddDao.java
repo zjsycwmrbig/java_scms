@@ -13,5 +13,6 @@ import scms.domain.ClassData;
 public class AddDao extends Dao{
     public boolean put(ClassData item,String user){
         scms = new SCMSFILE(user);
+        return true;
     }
 }
