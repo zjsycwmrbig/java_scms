@@ -20,6 +20,9 @@ public class ClassData {
     public int circle;
 //    开始时间的int表示,存储的数据是当下的年份
     public int begin;
+    public int end;
 //    活动/课程时间长度
-    public int timeLength;
+    public int length;
+
+
 }

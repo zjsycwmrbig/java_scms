@@ -33,6 +33,7 @@ public class AddController {
     @RequestMapping("/schedule")
     public boolean AddSchedule(@RequestBody ClassData item, HttpServletRequest request){
 //        获得session对象
+
         HttpSession session = request.getSession();
 
         if(addService.CheckLogic(item,session)) return true;
