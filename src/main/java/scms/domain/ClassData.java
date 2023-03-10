@@ -12,7 +12,8 @@ public class ClassData {
 //    类型 集体活动 个人活动 课程
     public int type;
 //    映射到hash表上的title
-    public int title;
+//    更改:因为class分开存储,title重复减少,直接存储在这里面
+    public String title;
 //    地点id
     public int location;
 //  0代表单次结束,1代表一天为周期

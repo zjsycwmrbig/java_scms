@@ -19,19 +19,14 @@ public class UserController {
     UserService userService;
 //    这里最好返回数字,这样前端更好维护,并且通信成本更低
     @RequestMapping("/login")
-<<<<<<< HEAD
     public String CheckLogin(@RequestBody UserData user, HttpServletRequest request) throws IOException {
-        System.out.println(user.username);
-=======
-    public String CheckLogin(@RequestBody UserData user) throws IOException {
-        System.out.println(user.getUsername());
->>>>>>> cc78721bc38c5e7cf83ccf486537dd69c210661c
+        System.out.println(user.getUsername() + " " + user.getClassName());
         switch (userService.CheckLogin(user)){
             case 1 : {
 //              拿到session,创建一个session,创建一个session就需要一个request
                 HttpSession session = request.getSession();
                 session.setMaxInactiveInterval(30*60);
-                session.setAttribute("username",user.username);
+                session.setAttribute("username",user.getUsername());
                 return (String) session.getAttribute("username");
             }
             case -1 : return "用户不存在,请先注册!";
