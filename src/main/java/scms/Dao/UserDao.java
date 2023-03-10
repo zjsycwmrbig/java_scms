@@ -15,7 +15,7 @@ public class UserDao extends Dao{
         if(!scms.exists())return -1;
         else{
             JSON = new ObjectMapper();
-            UserData ser = JSON.readValue(scms.userData,UserData.class);
+            UserData ser = JSON.readValue(scms.userData,UserData.class); //读取用户信息文件
             if(ser.getPassword().equals(user.getPassword())){
                 return 1;
             }else{

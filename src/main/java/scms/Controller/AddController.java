@@ -9,8 +9,6 @@ import org.springframework.web.bind.annotation.RestController;
 import scms.Service.AddService;
 import scms.domain.ClassData;
 
-import java.net.http.HttpRequest;
-
 /***
  * @author Administrator
  * @date 2023/3/8 15:10

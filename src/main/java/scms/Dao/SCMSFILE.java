@@ -21,7 +21,7 @@ public class SCMSFILE {
     public File studentDirectory;
     //静态文件？？？？干嘛的
     public File assertData;
-    // 课程文件，直接在班级文件夹下
+    // 课程文件，直接在班级文件夹下,所以班级文件夹存在的话课程文件一定存在
     public File courseData;
     //用户数据 - 名称,密码,注册时间 ,在学号文件夹下
     public File userData;
@@ -33,24 +33,34 @@ public class SCMSFILE {
     public SCMSFILE(String className,String userName) {
         this.classDirectory = new File(OS + className);
         this.courseData = new File(OS+className+"/courseData.scms");
-        this.studentDirectory = new File(OS + className + userName);
-        this.assertData = new File(OS+className + userName + "/assert");
-        this.userData = new File(OS + className + userName + "/userData.scms");
-        this.activityData = new File(OS + className + userName + "/activityData.scms");
-        this.hashData = new File(OS + className+ userName +"/hashdata.scms");
+        this.studentDirectory = new File(OS + className +"/"+ userName);
+        this.assertData = new File(OS+className +"/"+ userName + "/assert");
+        this.userData = new File(OS + className +"/"+ userName + "/userData.scms");
+        this.activityData = new File(OS + className +"/"+ userName + "/activityData.scms");
+        this.hashData = new File(OS + className+"/"+ userName +"/hashdata.scms");
     }
 
 
     public boolean exists(){
-        return this.classDirectory.exists();
+        return this.studentDirectory.exists();
     }
     public  boolean creat() throws IOException {
-        if(this.classDirectory.mkdirs()&&this.userData.createNewFile()&&this.courseData.createNewFile()&&this.assertData.mkdirs()){
-            return true;
-        }else{
-            return false;
+        if(this.classDirectory.exists()){
+            if(this.studentDirectory.mkdirs()&&this.userData.createNewFile()&&this.courseData.createNewFile()&&this.assertData.mkdirs())
+                return true;
+            else
+                return false;
         }
-    }
+        else {
+            if(this.classDirectory.mkdirs()&&this.studentDirectory.mkdirs()&&this.userData.createNewFile()&&this.courseData.createNewFile()&&this.activityData.createNewFile()&&this.assertData.mkdirs()){
+                return true;
+            }
+            else{
+            return false;
+            }
+        }
+
+    } //创建所有目录和文件
     public boolean mkdirs(){
         if(this.classDirectory.mkdirs())return true;
         else return false;
