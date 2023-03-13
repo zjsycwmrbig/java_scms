@@ -19,10 +19,8 @@ public class ClassData {
 //  0代表单次结束,1代表一天为周期
     public int circle;
 //    开始时间的int表示,存储的数据是当下的年份
-    public int begin;
-    public int end;
+    public long begin;
+    public long end;
 //    活动/课程时间长度
-    public int length;
-
-
+    public long length;
 }

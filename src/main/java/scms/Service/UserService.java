@@ -13,6 +13,7 @@ public class UserService {
     UserDao userDao;
 //    验证登录
     public int CheckLogin(UserData user) throws IOException {
+
         return userDao.CheckLogin(user);
     }
 //    创建用户

@@ -1,6 +1,8 @@
 package scms.Dao;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.stereotype.Repository;
 import scms.domain.ClassData;
 import scms.domain.UserData;
 import java.io.IOException;
@@ -12,23 +14,27 @@ import java.util.Map;
  * @date 2023/3/9 9:45
  * @function
  */
-
+@Repository
 public class InitDao extends Dao{
 //    一个session一个用户标识
-    public boolean init(HttpSession session, UserData user) throws IOException {
+    public boolean init(HttpServletRequest request, UserData user) throws IOException {
 //        通过session得到uername和classname session设置时长为永久,显然不合适
 
         scms = new SCMSFILE(user.getClassName(),user.getUsername());
+        HttpSession session = request.getSession();
+//        创建session
+        session.setMaxInactiveInterval(30*60);
+        session.setAttribute("username",user.getUsername());
 //        保存到session
         ArrayList<ClassData> ClassList = mergeClass(scms);
         session.setAttribute("ClassList",ClassList);
-        session.setAttribute("HashList",creatHash((ClassData[]) ClassList.toArray()));
+        session.setAttribute("HashList",creatHash(ClassList));
         return true;
     }
 
     public ArrayList<ClassData> mergeClass(SCMSFILE scms) throws IOException {
 //        JSON = new ObjectMapper();
-        ArrayList<ClassData> ClassList = null;
+        ArrayList<ClassData> ClassList = new ArrayList<>();
         ClassData[] courseitem = JSON.readValue(scms.courseData, ClassData[].class);
         ClassData[] activityitem = JSON.readValue(scms.activityData, ClassData[].class);
         int length = courseitem.length + activityitem.length;
@@ -50,19 +56,19 @@ public class InitDao extends Dao{
     }
 
 // 创建map对应快速查找名称
-    public Map<String, ArrayList<Integer>> creatHash(ClassData[] classList){
+    public Map<String, ArrayList<Integer>> creatHash(ArrayList<ClassData> classList){
         Map<String,ArrayList<Integer>> HashMap = null;
-        for (int i = 0;i < classList.length;i++){
-            if(HashMap.containsKey(classList[i].title)){
-                ArrayList<Integer> temp = HashMap.get(classList[i].title);
+        for (int i = 0;i < classList.size();i++){
+            if(HashMap.containsKey(classList.get(i).title)){
+                ArrayList<Integer> temp = HashMap.get(classList.get(i).title);
                 temp.add(i);
-                HashMap.put(classList[i].title,temp);
+                HashMap.put(classList.get(i).title,temp);
 //                关闭temp
                 temp.clone();
             }else{
                 ArrayList<Integer> temp = null;
                 temp.add(i);
-                HashMap.put(classList[i].title,temp);
+                HashMap.put(classList.get(i).title,temp);
             }
         }
         return HashMap;

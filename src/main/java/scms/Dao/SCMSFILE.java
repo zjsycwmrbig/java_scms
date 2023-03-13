@@ -1,6 +1,10 @@
 package scms.Dao;
+import scms.domain.ClassData;
+
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 
 
 //重写FILE类更实用
@@ -40,23 +44,25 @@ public class SCMSFILE {
         this.hashData = new File(OS + className+"/"+ userName +"/hashdata.scms");
     }
 
-
     public boolean exists(){
         return this.studentDirectory.exists();
     }
-    public  boolean creat() throws IOException {
+//    返回int值表示有没有班级被创建,0代表创建了班级,1代表没有创建班级,-1代表创建失败
+    public  int creat() throws IOException {
         if(this.classDirectory.exists()){
+//            班级目录存在
+
             if(this.studentDirectory.mkdirs()&&this.userData.createNewFile()&&this.courseData.createNewFile()&&this.assertData.mkdirs())
-                return true;
+                return 1;
             else
-                return false;
+                return -1;
         }
         else {
             if(this.classDirectory.mkdirs()&&this.studentDirectory.mkdirs()&&this.userData.createNewFile()&&this.courseData.createNewFile()&&this.activityData.createNewFile()&&this.assertData.mkdirs()){
-                return true;
+                return 0;
             }
             else{
-            return false;
+                return -1;
             }
         }
 

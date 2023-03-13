@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import scms.Service.AddService;
+import scms.domain.ClashErrorData;
 import scms.domain.ClassData;
 
 /***
@@ -24,20 +25,16 @@ public class AddController {
 
 //增加课程数据,请求通过post/put传输一个对象
     @RequestMapping("/class")
-    public boolean CheckLogin(@RequestBody ClassData item,HttpServletRequest request) {
+    public ClashErrorData CheckLogin(@RequestBody ClassData item, HttpServletRequest request) {
         HttpSession session = request.getSession();
-        if(addService.CheckLogic(item,session)) return true;
-        else return false;
+        return (addService.CheckLogic(item,session));
     }
 //  添加日程,添加到个人的文件里面
     @RequestMapping("/schedule")
-    public boolean AddSchedule(@RequestBody ClassData item, HttpServletRequest request){
+    public ClashErrorData AddSchedule(@RequestBody ClassData item, HttpServletRequest request){
 //        获得session对象
-
         HttpSession session = request.getSession();
-
-        if(addService.CheckLogic(item,session)) return true;
-        else return false;
+        return (addService.CheckLogic(item,session));
     }
 }
 
