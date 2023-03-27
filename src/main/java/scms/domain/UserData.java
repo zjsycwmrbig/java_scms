@@ -2,9 +2,11 @@ package scms.domain;
 
 import org.springframework.stereotype.Component;
 
+import java.io.Serializable;
+
 @Component
 //定义一个实体类
-public class UserData {
+public class UserData implements Serializable {
 
     private String username;
     private String password;

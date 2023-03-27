@@ -4,12 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Component;
-import scms.domain.ClassData;
 import scms.domain.UserData;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
+import java.io.*;
 
 
 @Component
@@ -24,18 +21,27 @@ public class UserDao extends Dao{
 
 //    修改checklogin逻辑
     public int CheckLogin(UserData user,HttpServletRequest request) throws IOException {
-        scms = new SCMSFILE(user.getClassName(), user.getUsername());
-        if(!scms.exists()) return -1;
+        scms = new SCMSFILE(user.getClassName(), user.getUsername());//找到文件
+
+        if(!scms.exists()) return -1;//用户不存在
         else{
             JSON = new ObjectMapper();
-            UserData ser = JSON.readValue(scms.userData,UserData.class); //读取用户信息文件
-            if(ser.getPassword().equals(user.getPassword())){
+//            UserData ser = JSON.readValue(scms.userData,UserData.class); //读取用户信息文件
+            try {
+                // 创建一个ObjectInputStream对象
+                ObjectInputStream ois = new ObjectInputStream(new FileInputStream(scms.userData));
+                UserData ser = (UserData) ois.readObject();
+                ois.close();
+                if(ser.getPassword().equals(user.getPassword())){
 //                验证成功
 //                发送签证
-                InitScms(request,scms);
-                return 1;
-            }else{
-                return 0;
+                    InitScms(request,scms);
+                    return 1;
+                }else{
+                    return 0;
+                }
+            } catch (Exception e) {
+                return -2;
             }
         }
     }
@@ -47,12 +53,22 @@ public class UserDao extends Dao{
 //            用户已存在
             return -1;
         }else {
-//            创建各个文件
-//            JSON = new ObjectMapper();
-            if(scms.creat() == 1) return 1;
-            else {
+//            注册用户
+            if(scms.creat() != 1) {
                 scms.studentDirectory.delete();
                 return 0;
+            }
+//            增加用户信息到文件
+            try {
+                ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(scms.userData));
+                oos.writeObject(user);
+                // 关闭流
+                oos.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+//                出错 注册失败
+
+                return 3;
             }
 
 //            ArrayList<ClassData> ClassList = new ArrayList<>();
@@ -76,7 +92,7 @@ public class UserDao extends Dao{
 ////                失败记得删除掉这个目录
 //                scms.studentDirectory.delete();
 //            }
-
+            return 1;
         }
     }
 }
