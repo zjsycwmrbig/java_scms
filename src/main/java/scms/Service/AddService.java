@@ -15,7 +15,7 @@ import java.util.ArrayList;
 
 //判断这个数据可不可以加，包含排序,查找冲突等算法
 @Service
-public class AddService {
+public class AddService extends scms.Service.Service {
 //    可以使用Canlendar来判断
     private int Day = 86400000;
 //    判断两个时间节点,是最小单元判断是否有冲突 a在前 b在后
@@ -59,7 +59,7 @@ public class AddService {
                     int index = 0;
 //                    这里一个坑
                     if(length!=0 && ClassTemp.begin >= ClassList.get(0).begin){
-                        //二分找到在该节点begin之前的节点
+                        //二分找到在该节点begin之前的节点,这里的二分可以自己抽离出来
                         int left = 0;
                         int right = length - 1;//最右边的编号
                         int mid;

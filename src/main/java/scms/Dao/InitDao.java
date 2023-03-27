@@ -22,7 +22,7 @@ public class InitDao extends Dao{
 
         scms = new SCMSFILE(user.getClassName(),user.getUsername());
         HttpSession session = request.getSession();
-//        创建session
+//        创建session  设置session的存在时效
         session.setMaxInactiveInterval(30*60);
         session.setAttribute("username",user.getUsername());
 //        保存到session

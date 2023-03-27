@@ -23,4 +23,6 @@ public class ClassData {
     public long end;
 //    活动/课程时间长度
     public long length;
+//    周一是0,周日是6
+    public int weekday;
 }

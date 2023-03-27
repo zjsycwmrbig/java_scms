@@ -1,5 +1,6 @@
 package scms.Service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import scms.domain.UserData;
@@ -12,9 +13,9 @@ public class UserService {
     @Autowired
     UserDao userDao;
 //    验证登录
-    public int CheckLogin(UserData user) throws IOException {
+    public int CheckLogin(UserData user, HttpServletRequest request) throws IOException {
 
-        return userDao.CheckLogin(user);
+        return userDao.CheckLogin(user,request);
     }
 //    创建用户
     public int CreatUser(UserData user) throws IOException {

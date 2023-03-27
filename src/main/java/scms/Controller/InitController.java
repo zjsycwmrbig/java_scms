@@ -16,7 +16,8 @@ public class InitController {
     public int init(HttpServletRequest request){
 //        设置session
         HttpSession session = request.getSession();
-        session.setMaxInactiveInterval(30*60);
+        session.setMaxInactiveInterval(12*60*60);  //设置持续session时长
+        session.setAttribute("username","name");
         return 1;
     }
 }

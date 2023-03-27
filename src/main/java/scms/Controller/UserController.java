@@ -18,17 +18,14 @@ public class UserController {
 //    登录请求
     @Autowired
     UserService userService;
-    @Autowired
-    InitDao initDao;
 //    这里最好返回数字,这样前端更好维护,并且通信成本更低
     @RequestMapping("/login")
     public String CheckLogin(@RequestBody UserData user, HttpServletRequest request) throws IOException {
         System.out.println(user.getUsername() + " " + user.getClassName());
-        switch (userService.CheckLogin(user)){
+        switch (userService.CheckLogin(user,request)){
             case 1 : {
 //              拿到session,创建一个session,创建一个session就需要一个request
 //              创建一个有关user的session
-                initDao.init(request,user);
                 return "登录成功";
             }
             case -1 : return "用户不存在,请先注册!";
@@ -37,12 +34,6 @@ public class UserController {
         return "错误";
     }
 //    注册请求
-    /*
-    * return 0 注册失败
-    * return 1 注册成功
-    * return -1 注册用户已存在
-    *
-    * */
     @RequestMapping("/register")
     public int CreatUser(@RequestBody UserData user) throws IOException {
         return userService.CreatUser(user);
