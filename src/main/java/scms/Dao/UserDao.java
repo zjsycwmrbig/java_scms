@@ -21,6 +21,8 @@ public class UserDao extends Dao{
         session.setAttribute("SCMSFILE",scms);
     }
 //    验证登录
+
+//    修改checklogin逻辑
     public int CheckLogin(UserData user,HttpServletRequest request) throws IOException {
         scms = new SCMSFILE(user.getClassName(), user.getUsername());
         if(!scms.exists()) return -1;
@@ -39,39 +41,42 @@ public class UserDao extends Dao{
     }
 //    创建用户
     public int CreatUser(UserData user) throws IOException {
-//        创建
+//      创建一个scms文件
         scms = new SCMSFILE(user.getClassName(),user.getUsername());
         if(scms.exists()){
 //            用户已存在
             return -1;
         }else {
-            JSON = new ObjectMapper();
-            int flag = scms.creat();
-            ArrayList<ClassData> ClassList = new ArrayList<>();
-            if(flag == 0){
-//                先初始化class文件
-                FileOutputStream file = new FileOutputStream(scms.courseData);
-                JSON.writeValue(file,ClassList);
-                file.close();
-            }
-
-            if (flag != -1) {
-//          创建一套用户文件      scms.WritePassword(user.getpassword);
-//                添加userdata数据
-
-                FileOutputStream file = new FileOutputStream(scms.userData);
-                JSON.writeValue(file,user);
-                file.close();
-//              初始化文件
-                FileOutputStream schefile = new FileOutputStream(scms.activityData);
-                JSON.writeValue(schefile,ClassList);
-                schefile.close();
-                return 1;
-            }else{
-//                失败记得删除掉这个目录
+//            创建各个文件
+//            JSON = new ObjectMapper();
+            if(scms.creat() == 1) return 1;
+            else {
                 scms.studentDirectory.delete();
+                return 0;
             }
-            return 0;
+
+//            ArrayList<ClassData> ClassList = new ArrayList<>();
+////                先初始化class文件
+//            if(flag == 0){
+//                FileOutputStream file = new FileOutputStream(scms.courseData);
+//                JSON.writeValue(file,ClassList);
+//                file.close();
+//            }
+//
+//            if (flag != -1) {
+//                FileOutputStream file = new FileOutputStream(scms.userData);
+//                JSON.writeValue(file,user);
+//                file.close();
+////              初始化文件
+//                FileOutputStream schefile = new FileOutputStream(scms.activityData);
+//                JSON.writeValue(schefile,ClassList);
+//                schefile.close();
+//                return 1;
+//            }else{
+////                失败记得删除掉这个目录
+//                scms.studentDirectory.delete();
+//            }
+
         }
     }
 }

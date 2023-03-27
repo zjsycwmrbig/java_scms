@@ -48,6 +48,7 @@ public class ScmsInterceptor implements HandlerInterceptor {
         }else{
             System.out.println(BridgeData.getRequestInfo());
         }
+//        序列化存储文件
 
         BridgeData.clear();
     }

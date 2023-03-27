@@ -44,24 +44,48 @@ public class SCMSFILE {
         return this.studentDirectory.exists();
     }
 //    返回int值表示有没有班级被创建,0代表创建了班级,1代表没有创建班级,-1代表创建失败
-    public  int creat() throws IOException {
 
-        if(this.classDirectory.exists()){
-//            班级目录存在
-            if(this.studentDirectory.mkdirs()&&this.userData.createNewFile()&&this.courseData.createNewFile()&&this.assertData.mkdirs())
-                return 1;
-            else
-                return -1;
-        }
-        else {
-            if(this.classDirectory.mkdirs()&&this.studentDirectory.mkdirs()&&this.userData.createNewFile()&&this.courseData.createNewFile()&&this.activityData.createNewFile()&&this.assertData.mkdirs()){
+//    搁置采用序列化更加方便
+    public  int creat() throws IOException {
+        if(!(this.classDirectory.exists())) {
+//            班级文件不存在
+            if (this.classDirectory.mkdirs()){
+//            创建班级文件,
+                if(!(this.courseData.createNewFile())) return 0;
+
+            }else{
                 return 0;
             }
-            else{
-                return -1;
-            }
         }
+        if(!(this.studentDirectory.mkdirs()&&this.userData.createNewFile()&&this.assertData.mkdirs()&&this.hashData.createNewFile())) return 0;//创建失败
 
+//        if(this.classDirectory.exists()){
+//            if(this.studentDirectory.mkdirs()&&this.userData.createNewFile()&&this.courseData.createNewFile()&&this.assertData.mkdirs()){
+//                return 1;
+//            }else {
+//                return 0;
+//            }
+//        }else{
+//            if(this.classDirectory.mkdirs()&&this.studentDirectory.mkdirs()&&this.userData.createNewFile()&&this.courseData.createNewFile()&&this.activityData.createNewFile()&&this.assertData.mkdirs()){
+//                return 1;
+//            }
+//        }
+//        if(this.classDirectory.exists()){
+////            班级目录存在
+//            if(this.studentDirectory.mkdirs()&&this.userData.createNewFile()&&this.courseData.createNewFile()&&this.assertData.mkdirs())
+//                return 1;
+//            else
+//                return -1;
+//        }
+//        else {
+//            if(this.classDirectory.mkdirs()&&this.studentDirectory.mkdirs()&&this.userData.createNewFile()&&this.courseData.createNewFile()&&this.activityData.createNewFile()&&this.assertData.mkdirs()){
+//                return 0;
+//            }
+//            else{
+//                return -1;
+//            }
+//        }
+        return 1;
     } //创建所有目录和文件
     public boolean mkdirs(){
         if(this.classDirectory.mkdirs())return true;
