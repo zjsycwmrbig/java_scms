@@ -3,9 +3,7 @@ package scms.Dao;
 import scms.Interceptor.BridgeData;
 import scms.domain.ClassData;
 
-import java.io.FileInputStream;
-import java.io.ObjectInputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,5 +39,23 @@ public class QueryMap implements Serializable {
         if(list == null) list = new ArrayList<>();
         list.add(ID);
         hashData.put(key,list);
+    }
+//  保存序列化的内容
+    public boolean sava(){
+        try {
+            FileOutputStream fileOut = new FileOutputStream(BridgeData.getRequestInfo().hashData);
+            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+            out.writeObject(hashData);
+            out.close();
+            fileOut.close();
+            return true;
+        } catch (IOException i) {
+            return false;
+        }
+    }
+    public void print(){
+        hashData.forEach((key,value)->{
+            System.out.println(key+'-'+value);
+        });
     }
 }

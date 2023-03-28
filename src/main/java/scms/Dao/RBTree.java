@@ -1,8 +1,11 @@
 package scms.Dao;
 
-import scms.domain.ClassData;
+import scms.Interceptor.BridgeData;
 import scms.domain.RBTNode;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 
@@ -447,5 +450,17 @@ public class RBTree implements Serializable {
             stack.add(node);
         }
         Between(node.right, start, end);
+    }
+    public boolean sava(){
+        try {
+            FileOutputStream fileOut = new FileOutputStream(BridgeData.getRequestInfo().rbtreeData);
+            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+            out.writeObject(this);
+            out.close();
+            fileOut.close();
+            return true;
+        } catch (IOException i) {
+            return false;
+        }
     }
 }

@@ -2,6 +2,7 @@ package scms.Service;
 
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Service;
+import scms.Dao.DataDao;
 import scms.domain.ClashErrorData;
 import scms.domain.ClassData;
 
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 @Service
 public class AddService extends scms.Service.Service {
 //    可以使用Canlendar来判断
+    DataDao dataDao;
     private int Day = 86400000;
 //    判断两个时间节点,是最小单元判断是否有冲突 a在前 b在后
 
@@ -116,5 +118,15 @@ public class AddService extends scms.Service.Service {
             System.out.println(ClassList.get(i));
         }
         return true;
+    }
+//  新添加的节点
+    public  boolean AddItem(ClassData item){
+        dataDao = new DataDao();
+        dataDao.Init();
+        boolean flag = dataDao.AddItem(item);
+        dataDao.print();
+        dataDao.Save();
+//        这里没有记忆
+        return flag;
     }
 }

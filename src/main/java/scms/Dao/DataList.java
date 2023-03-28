@@ -3,9 +3,7 @@ package scms.Dao;
 import scms.Interceptor.BridgeData;
 import scms.domain.ClassData;
 
-import java.io.FileInputStream;
-import java.io.ObjectInputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.util.ArrayList;
 
 /***
@@ -113,6 +111,30 @@ public class DataList extends Dao implements Serializable {
             this.activityData.set(index,temp);
         }
         return true;
+    }
+
+    public boolean sava(){
+        try {
+            FileOutputStream fileOut = new FileOutputStream(BridgeData.getRequestInfo().activityData);
+            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+            out.writeObject(activityData);
+            out.close();
+            fileOut.close();
+            return true;
+        } catch (IOException i) {
+            return false;
+        }
+    }
+//  打印数据列表
+    public void print(){
+        System.out.println("CourseData");
+        for(int i = 0;i < courseData.size();i++){
+            System.out.println(courseData.get(i).title);
+        }
+        System.out.println("ActivityData");
+        for(int i = 0;i < activityData.size();i++){
+            System.out.println(activityData.get(i).title);
+        }
     }
 
 }

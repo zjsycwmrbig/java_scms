@@ -61,34 +61,8 @@ public class SCMSFILE {
             }
         }
 //        增加红黑树的文件
-        if(!(this.studentDirectory.mkdirs()&&this.userData.createNewFile()&&this.assertData.mkdirs()&&this.hashData.createNewFile()&&this.rbtreeData.createNewFile())) return 0;//创建失败
+        if(!(this.studentDirectory.mkdirs()&&this.userData.createNewFile()&&this.assertData.mkdirs()&&this.hashData.createNewFile()&&this.rbtreeData.createNewFile()&&this.activityData.createNewFile())) return 0;//创建失败
 
-//        if(this.classDirectory.exists()){
-//            if(this.studentDirectory.mkdirs()&&this.userData.createNewFile()&&this.courseData.createNewFile()&&this.assertData.mkdirs()){
-//                return 1;
-//            }else {
-//                return 0;
-//            }
-//        }else{
-//            if(this.classDirectory.mkdirs()&&this.studentDirectory.mkdirs()&&this.userData.createNewFile()&&this.courseData.createNewFile()&&this.activityData.createNewFile()&&this.assertData.mkdirs()){
-//                return 1;
-//            }
-//        }
-//        if(this.classDirectory.exists()){
-////            班级目录存在
-//            if(this.studentDirectory.mkdirs()&&this.userData.createNewFile()&&this.courseData.createNewFile()&&this.assertData.mkdirs())
-//                return 1;
-//            else
-//                return -1;
-//        }
-//        else {
-//            if(this.classDirectory.mkdirs()&&this.studentDirectory.mkdirs()&&this.userData.createNewFile()&&this.courseData.createNewFile()&&this.activityData.createNewFile()&&this.assertData.mkdirs()){
-//                return 0;
-//            }
-//            else{
-//                return -1;
-//            }
-//        }
         return 1;
     } //创建所有目录和文件
     public boolean mkdirs(){

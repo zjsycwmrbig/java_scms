@@ -43,12 +43,6 @@ public class ScmsInterceptor implements HandlerInterceptor {
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
         // 在请求处理完成之后进行处理，包括异常处理
-        if(BridgeData.getRequestInfo() == null){
-            System.out.println("未登录或者注册请求");
-        }else{
-            System.out.println(BridgeData.getRequestInfo());
-        }
-//        序列化存储文件
 
         BridgeData.clear();
     }

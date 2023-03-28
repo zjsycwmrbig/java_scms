@@ -2,10 +2,13 @@ package scms.Dao;
 
 import scms.Interceptor.BridgeData;
 import scms.domain.ClassData;
+import scms.domain.ItemData;
+import scms.domain.RBTNode;
 
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
+import java.util.List;
 
 /***
  * @author Administrator
@@ -50,13 +53,40 @@ public class DataDao {
         int id = dataList.GetNewID(item.type);
         for (long i = item.begin;i  <= item.end - item.length;i += item.circle * 86400000L){
             rbtree.insert(id,i);
+            if(item.circle == 0) break; //单次跳出
         }
         String key = item.title + "-" + item.location; //关键词 - 这里的location是数字,之后肯定得换成字符串,或者通过别的方式搜索
         queryMap.Add(key,id);
         return true;
     }
 
-//    查 -
+    public List<ItemData> QueryBetween(long begin, long end){
+        List<ItemData> list = new ArrayList<>();
+        rbtree.Between(begin,end);
+        for(int i = 0;i < rbtree.stack.size();i++){
+            RBTNode item = rbtree.stack.get(i);
+            ClassData data = dataList.GetData(item.id);
+            list.add(new ItemData(item.id,data.title,data.type,data.location,item.begin,data.length));
+//        装填完毕
+        }
+        return list;
+    }
 
 
+//    打印数据结构
+    public void print(){
+        System.out.println("----------------------------二叉树----------------------------");
+        rbtree.print();
+        System.out.println("----------------------------数据列表----------------------------");
+        dataList.print();
+        System.out.println("----------------------------映射结构----------------------------");
+        queryMap.print();
+    }
+    //保存序列化数据
+    public boolean Save(){
+        rbtree.sava();
+        queryMap.sava();
+        dataList.sava();
+        return true;
+    }
 }

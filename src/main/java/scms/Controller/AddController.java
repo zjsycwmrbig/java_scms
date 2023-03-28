@@ -36,5 +36,10 @@ public class AddController {
         HttpSession session = request.getSession();
         return (addService.CheckLogic(item,session));
     }
+    @RequestMapping("/item")
+    public  boolean AddItem(@RequestBody ClassData item){
+        return addService.AddItem(item);
+    }
+
 }
 
