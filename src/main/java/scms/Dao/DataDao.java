@@ -51,9 +51,12 @@ public class DataDao {
         for (long i = item.begin;i  <= item.end - item.length;i += item.circle * 86400000L){
             rbtree.insert(id,i);
         }
-
-
+        String key = item.title + "-" + item.location; //关键词 - 这里的location是数字,之后肯定得换成字符串,或者通过别的方式搜索
+        queryMap.Add(key,id);
         return true;
     }
+
+//    查 -
+
 
 }

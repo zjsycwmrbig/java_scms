@@ -35,4 +35,11 @@ public class QueryMap implements Serializable {
             hashData = new HashMap<>(); //新建地图
         }
     }
+//    map添加从关键字到序号的对应,并且这个关键字得长很多,比如 xxx-xxx-xxx-xxx,之后我们搜索的就是这里面的关键词
+    public void Add(String key,int ID){
+        List<Integer> list = hashData.get(key);
+        if(list == null) list = new ArrayList<>();
+        list.add(ID);
+        hashData.put(key,list);
+    }
 }
