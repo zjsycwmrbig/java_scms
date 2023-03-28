@@ -29,6 +29,8 @@ public class SCMSFILE {
     public File activityData;
     //文件哈希？？？？干嘛的
     public File hashData;
+    //红黑树文件
+    public File rbtreeData;
     //构造函数
     public SCMSFILE(String className,String userName) {
         this.classDirectory = new File(OS + className);
@@ -38,6 +40,7 @@ public class SCMSFILE {
         this.userData = new File(OS + className +"/"+ userName + "/userData.scms");
         this.activityData = new File(OS + className +"/"+ userName + "/activityData.scms");
         this.hashData = new File(OS + className+"/"+ userName +"/hashdata.scms");
+        this.rbtreeData = new File(OS + className+"/"+ userName +"/rbtreedata.scms");
     }
 
     public boolean exists(){
@@ -57,7 +60,8 @@ public class SCMSFILE {
                 return 0;
             }
         }
-        if(!(this.studentDirectory.mkdirs()&&this.userData.createNewFile()&&this.assertData.mkdirs()&&this.hashData.createNewFile())) return 0;//创建失败
+//        增加红黑树的文件
+        if(!(this.studentDirectory.mkdirs()&&this.userData.createNewFile()&&this.assertData.mkdirs()&&this.hashData.createNewFile()&&this.rbtreeData.createNewFile())) return 0;//创建失败
 
 //        if(this.classDirectory.exists()){
 //            if(this.studentDirectory.mkdirs()&&this.userData.createNewFile()&&this.courseData.createNewFile()&&this.assertData.mkdirs()){

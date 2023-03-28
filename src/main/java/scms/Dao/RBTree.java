@@ -1,7 +1,9 @@
 package scms.Dao;
 
+import scms.domain.ClassData;
 import scms.domain.RBTNode;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /***
@@ -9,17 +11,19 @@ import java.util.ArrayList;
  * @date 2023/3/27 16:22
  * @function
  */
-public class RBTree {
+
+public class RBTree implements Serializable {
     private static final boolean RED   = false;
     private static final boolean BLACK = true;
     private RBTNode Root;    // 根结点
     public ArrayList<RBTNode> stack; //暂存栈
     //  构造函数
     public RBTree() {
-        stack = new ArrayList<>();
-        Root =null;
+        stack = new ArrayList<>();//初始化暂存栈
+        Root =null;//初始化根目录
     }
     //  插入操作
+
     public void insert(int id,long begin) {
         RBTNode node=new RBTNode(id,begin,BLACK,null,null,null);
 

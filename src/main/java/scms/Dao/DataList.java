@@ -5,6 +5,7 @@ import scms.domain.ClassData;
 
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /***
@@ -14,12 +15,51 @@ import java.util.ArrayList;
  */
 
 //    分开维护
-public class DataList extends Dao {
-    DataList(){
-//        对这个DataList进行初始化,填充classData和personData,注意已经登录成功,所以文件必定存在
+public class DataList extends Dao implements Serializable {
 
+//    数据列表
+    private ArrayList<ClassData> courseData;
+    private ArrayList<ClassData> activityData;
+//    数据对应哈希算法，需要一个唯一id对应,设置ID,获取ID
+//    通过index得到ID
+    private int GetID(int index,int type){
+//     如果是class的是负数
+        if(type == 0){
+            return -(index);
+        }else{
+            return index;
+        }
+    }
+//    通过ID得到index
+    private int GetIndex(int ID){
+        if(ID < 0){
+            return -ID-1;
+        }else{
+            return ID-1;
+        }
+    }
+//      根据ID返回需要的数据
+    public ClassData GetData(int ID){
+//        需要返回class数据
+        if (ID < 0){
+            return this.courseData.get(GetIndex(ID));
+        }else{
+            return this.activityData.get(GetIndex(ID));
+        }
+    }
+//    生成增加数据时的ID，增加数据的时候需要的ID
+    public int GetNewID(int type){
+//        获得新的ID
+        if(type == 0) return this.GetID(this.courseData.size(),type);
+        else if (type < 0) return 0;
+        else return this.GetID(this.activityData.size(),type);
+    }
+//  初始化序列
+    public void Init(){
+        //        对这个DataList进行初始化,填充classData和personData,注意已经登录成功,所以文件必定存在
 //        反序列化classData
         try {
+//            这里序列化和反序列化
             // 创建一个ObjectInputStream对象
             ObjectInputStream ois = new ObjectInputStream(new FileInputStream(BridgeData.getRequestInfo().courseData));
             // 从文件中读取Person对象
@@ -43,26 +83,36 @@ public class DataList extends Dao {
             activityData = new ArrayList<>();
         }
     }
-//    数据列表
-    public ArrayList<ClassData> courseData;
-    public ArrayList<ClassData> activityData;
-//    数据对应哈希算法，需要一个唯一id对应,设置ID,获取ID
-    private int SetID(int index,int type){
-//     如果是class的是负数
-        if(type == 0){
-            return -(index+1);
+//  增加课程数据
+//    public boolean AddCourse(ClassData item){
+//        return this.courseData.add(item);
+//    }
+//
+//    public boolean AddActivity(ClassData item){
+//        return this.activityData.add(item);
+//    }
+
+//    这里的type可以视作课程的优先级最高
+    public boolean AddItem(ClassData item){
+        if(item.type == 0){
+            return this.courseData.add(item);
         }else{
-            return index+1;
+            return this.activityData.add(item);
         }
     }
-//      根据ID返回需要的数据
-    public ClassData GetData(int index){
-//        需要返回class数据
-        if(index < 0){
-            return courseData.get(-index-1);
+//  remove删除数据,直接把数据设置成无效,后期通过清理缓存实现删除 -- generate生成
+    public boolean RemoveData(int ID){
+        int index = GetIndex(ID);
+        if (ID < 0){
+            ClassData temp = this.courseData.get(index);
+            temp.visible = false;// 标记一下
+            this.courseData.set(index,temp);
         }else{
-            return activityData.get(index-1);
+            ClassData temp = this.activityData.get(index);
+            temp.visible = false;// 标记一下
+            this.activityData.set(index,temp);
         }
+        return true;
     }
 
 }
