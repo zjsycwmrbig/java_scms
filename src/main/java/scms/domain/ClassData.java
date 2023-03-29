@@ -1,10 +1,17 @@
 package scms.domain;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Component;
+
+import java.io.Serializable;
+
 /***
  * @author zjs
  * @date 2023/3/6 11:55
  * @function 课程内容item
  */
-public class ClassData {
+@Component
+public class ClassData implements Serializable {
     //    判断数据是否有效
     public boolean visible;
 //    条目唯一标识id,目前很鸡肋

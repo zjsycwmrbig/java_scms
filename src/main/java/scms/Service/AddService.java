@@ -123,6 +123,8 @@ public class AddService extends scms.Service.Service {
     public  boolean AddItem(ClassData item){
         dataDao = new DataDao();
         dataDao.Init();
+        dataDao.print();
+        System.out.println("--------------更改-------------");
         boolean flag = dataDao.AddItem(item);
         dataDao.print();
         dataDao.Save();

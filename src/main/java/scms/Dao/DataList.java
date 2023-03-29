@@ -1,5 +1,6 @@
 package scms.Dao;
 
+import org.springframework.stereotype.Component;
 import scms.Interceptor.BridgeData;
 import scms.domain.ClassData;
 
@@ -11,7 +12,7 @@ import java.util.ArrayList;
  * @date 2023/3/27 19:58
  * @function 封装一个类,对数据类进行处理,增删改查
  */
-
+@Component
 //    分开维护
 public class DataList extends Dao implements Serializable {
 
@@ -82,13 +83,6 @@ public class DataList extends Dao implements Serializable {
         }
     }
 //  增加课程数据
-//    public boolean AddCourse(ClassData item){
-//        return this.courseData.add(item);
-//    }
-//
-//    public boolean AddActivity(ClassData item){
-//        return this.activityData.add(item);
-//    }
 
 //    这里的type可以视作课程的优先级最高
     public boolean AddItem(ClassData item){
@@ -115,11 +109,17 @@ public class DataList extends Dao implements Serializable {
 
     public boolean sava(){
         try {
-            FileOutputStream fileOut = new FileOutputStream(BridgeData.getRequestInfo().activityData);
-            ObjectOutputStream out = new ObjectOutputStream(fileOut);
-            out.writeObject(activityData);
-            out.close();
-            fileOut.close();
+            FileOutputStream activity = new FileOutputStream(BridgeData.getRequestInfo().activityData);
+            ObjectOutputStream activityout = new ObjectOutputStream(activity);
+            activityout.writeObject(this.activityData);
+            activityout.close();
+            activity.close();
+
+            FileOutputStream course = new FileOutputStream(BridgeData.getRequestInfo().courseData);
+            ObjectOutputStream courseout = new ObjectOutputStream(course);
+            courseout.writeObject(this.courseData);
+            courseout.close();
+            course.close();
             return true;
         } catch (IOException i) {
             return false;
@@ -127,11 +127,11 @@ public class DataList extends Dao implements Serializable {
     }
 //  打印数据列表
     public void print(){
-        System.out.println("CourseData");
+        System.out.println("CourseData->");
         for(int i = 0;i < courseData.size();i++){
             System.out.println(courseData.get(i).title);
         }
-        System.out.println("ActivityData");
+        System.out.println("ActivityData->");
         for(int i = 0;i < activityData.size();i++){
             System.out.println(activityData.get(i).title);
         }

@@ -1,5 +1,6 @@
 package scms.Dao;
 
+import org.springframework.stereotype.Component;
 import scms.Interceptor.BridgeData;
 import scms.domain.ClassData;
 
@@ -14,9 +15,16 @@ import java.util.Map;
  * @date 2023/3/27 20:11
  * @function 序列化需要的map映射类,主要用于查询以及多文件查询
  */
+@Component
 public class QueryMap implements Serializable {
 //    map对应,查询key值,获得匹配值,对应多个
     public Map<String, List<Integer>> hashData;
+
+//  理论上有两个hash,一个对应个人文件,一个对应集体文件
+//  两个rbtree,
+
+
+
 //    单关键词查询
 
 //    多关键词查询
