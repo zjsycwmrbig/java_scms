@@ -1,39 +1,28 @@
-package scms.Service;
+package scms.Dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import scms.Dao.RBTree;
 import scms.Interceptor.BridgeData;
-import scms.domain.RBTNode;
+import scms.domain.ServerJson.RBTNode;
 
 import java.io.*;
 import java.util.ArrayList;
 
 @Component
-public class DataRBTree {
-    private static final boolean RED   = false;
+public class DataRBTree implements Serializable{
     private static final boolean BLACK = true;
     @Autowired
-    RBTree rbtree;
+    RBTree<Long,Long> rbtree;//指定节点类型,id是begin的值
+
+    public DataRBTree() {
+        rbtree = new RBTree<>();
+        stack = new ArrayList<>();
+    }
 
     public ArrayList<RBTNode> stack; //暂存栈
-//    这个地方不弄初始化也是为了以后集体活动增加
-    public boolean Init(){
-        stack = new ArrayList<>();
-        try {
-            ObjectInputStream ois = new ObjectInputStream(new FileInputStream(BridgeData.getRequestInfo().rbtreeData));
-            rbtree = (RBTree) ois.readObject();
-            ois.close();
-            return  true;
-        } catch (Exception e) {
-            rbtree = new RBTree();
-            return false;
-        }
-    }
 //    增
-    public void AddItem(int id,long begin) {
-        RBTNode node=new RBTNode(id,begin,BLACK,null,null,null);
-
+    public void AddItem(long id) {
+        RBTNode node=new RBTNode(id,id,BLACK,null,null,null);
     // 如果新建结点失败，则返回。
         if (node != null) rbtree.insert(node);
     }
@@ -44,6 +33,7 @@ public class DataRBTree {
         if ((node = search(rbtree.Root,begin)) != null) rbtree.remove(node);// 直接删除这个节点
     }
 //   查
+//    找到相邻节点
     public void searchNeibor(long inNode){
         // 清除stack缓存,初始化0,1位置
         stack.clear();
@@ -55,13 +45,13 @@ public class DataRBTree {
     private void searchNeibor(RBTNode x,long begin){
         if (x==null)
             return;
-
-        if (x.key >= begin){
+        int cmp = rbtree.Compare(x,begin);
+        if (cmp == 1){
             // 向左找,赋值右侧节点,注意这个可能会有一样的节点
             stack.set(1, x);
             searchNeibor(x.left, begin);
         }
-        else if (x.key < begin){
+        else if (cmp == -1){
             stack.set(0, x);
             searchNeibor(x.right, begin);
         }
@@ -72,37 +62,20 @@ public class DataRBTree {
 //      返回最后的上级
         if (x==null)
             return x;
-
-        if (x.key > begin)
+        int cmp = rbtree.Compare(x,begin);
+        if (cmp == 1)
             return search(x.left, begin);
-        else if (x.key < begin)
+        else if (cmp == -1)
             return search(x.right, begin);
         else
             return x; // 这个是找到的节点,如果没有的话应该是到null那里面
     }
 
     // 打印这棵树
-    private void print(RBTNode tree, Long begin, int direction) {
-
-        if(tree != null) {
-
-            if(direction==0)    // tree是根节点
-                System.out.printf("%2d(B) is root\n", tree.key);
-            else                // tree是分支节点
-                System.out.printf("%2d(%s) is %2d's %6s child\n", tree.key, tree.color==RED?"R":"B", begin, direction==1?"right" : "left");
-
-            print(tree.left, tree.key, -1);
-            print(tree.right,tree.key,  1);
-        }
-    }
-
-    public void print() {
-        if (rbtree.Root != null)
-            print(rbtree.Root, rbtree.Root.key, 0);
-    }
 
 
-    //  从start到end的节点
+
+    //  中序查找 从start到end的节点
     public void Between(long start, long end) {
         // 自己找到合适的root节点 - 这里找到root在start和end之间的节点
         RBTNode root = rbtree.Root;
@@ -117,7 +90,7 @@ public class DataRBTree {
         stack.clear(); // 暂存栈清零
         Between(root, start, end);
     }
-
+//    部分中序
     private void Between(RBTNode node, long start, long end) {
         // 限界
         if (node == null) {
@@ -125,23 +98,12 @@ public class DataRBTree {
         }
         // 找到在两者之间的节点并且加入
         Between(node.left, start, end);
+        int cmpstart = rbtree.Compare(node,start);
+        int cmpend  = rbtree.Compare(node,end);
         // 该节点满足条件
-        if (node.key >= start && node.key < end) {
+        if (cmpstart>=0 && cmpend<0) {
             stack.add(node);
         }
         Between(node.right, start, end);
-    }
-
-    public boolean sava(){
-        try {
-            FileOutputStream fileOut = new FileOutputStream(BridgeData.getRequestInfo().rbtreeData);
-            ObjectOutputStream out = new ObjectOutputStream(fileOut);
-            out.writeObject(rbtree);
-            out.close();
-            fileOut.close();
-            return true;
-        } catch (IOException i) {
-            return false;
-        }
     }
 }

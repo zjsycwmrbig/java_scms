@@ -1,8 +1,7 @@
 package scms.Interceptor;
 
-import org.apache.coyote.RequestInfo;
 import org.springframework.stereotype.Component;
-import scms.Dao.SCMSFILE;
+import scms.domain.ServerJson.UserFile;
 
 /***
  * @author Administrator
@@ -12,13 +11,14 @@ import scms.Dao.SCMSFILE;
 
 @Component
 public class BridgeData {
-    private static ThreadLocal<SCMSFILE> requestInfoThreadLocal = new ThreadLocal<>();
+    private static ThreadLocal<UserFile> requestInfoThreadLocal = new ThreadLocal<>();
 
-    public static void setRequestInfo(SCMSFILE requestInfo) {
+    public static void setRequestInfo(UserFile requestInfo) {
+
         requestInfoThreadLocal.set(requestInfo);
     }
 
-    public static SCMSFILE getRequestInfo() {
+    public static UserFile getRequestInfo() {
         return requestInfoThreadLocal.get();
     }
 

@@ -1,7 +1,7 @@
 package scms.Dao;
 
 import org.springframework.stereotype.Repository;
-import scms.domain.ClassData;
+import scms.domain.GetJson.ClassData;
 
 /***
  * @author Administrator
@@ -12,7 +12,6 @@ import scms.domain.ClassData;
     @Repository
 public class AddDao extends Dao{
     public boolean put(ClassData item,String className,String userName){
-        scms = new SCMSFILE(className,userName);
         return true;
     }
 }

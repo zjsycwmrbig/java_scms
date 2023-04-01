@@ -1,4 +1,4 @@
-package scms.domain;
+package scms.domain.GetJson;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
@@ -12,8 +12,8 @@ import java.io.Serializable;
  */
 @Component
 public class ClassData implements Serializable {
-    //    判断数据是否有效
-    public boolean visible;
+//    //    判断数据是否有效
+//    public boolean visible;
 //    条目唯一标识id,目前很鸡肋
     public int id;
 //    类型 集体活动 个人活动 课程

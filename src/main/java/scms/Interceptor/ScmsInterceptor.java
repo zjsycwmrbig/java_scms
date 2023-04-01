@@ -3,15 +3,13 @@ package scms.Interceptor;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import jakarta.websocket.Session;
-import org.apache.coyote.RequestInfo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
-import scms.Dao.Dao;
-import scms.Dao.SCMSFILE;
+import scms.Service.UserManager;
+import scms.domain.ServerJson.UserFile;
+
+import java.io.File;
 
 /***
  * @author Administrator
@@ -21,18 +19,20 @@ import scms.Dao.SCMSFILE;
 
 @Component
 public class ScmsInterceptor implements HandlerInterceptor {
-    SCMSFILE scms;
+    UserFile file;
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        // 在请求处理之前进行处理,这里添加拦截
-
 //        1.为线程添加数据
         HttpSession session = request.getSession();
-        scms = (SCMSFILE) session.getAttribute("SCMSFILE");
-
-        BridgeData.setRequestInfo(scms);//可能没用,因为scms不一定存在
-
-        return true; // 返回true表示继续执行请求处理
+        File filePoint = (File) session.getAttribute("User");
+        if(filePoint != null){
+//            存在签证
+            file = UserManager.GetUser(filePoint);
+            BridgeData.setRequestInfo(file);
+            System.out.println(file.toString());
+        }
+        //这里之后需要拦截不存在的请求
+        return true;
     }
 
     @Override

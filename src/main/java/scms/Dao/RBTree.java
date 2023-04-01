@@ -1,7 +1,7 @@
 package scms.Dao;
 
 import org.springframework.stereotype.Component;
-import scms.domain.RBTNode;
+import scms.domain.ServerJson.RBTNode;
 
 import java.io.Serializable;
 
@@ -10,17 +10,54 @@ import java.io.Serializable;
  * @date 2023/3/27 16:22
  * @function
  */
+
+//两个泛型,分别对应这 vaule 和 key
 @Component
-public class RBTree implements Serializable {
+public class RBTree<T,U> implements Serializable {
     private static final boolean RED   = false;
     private static final boolean BLACK = true;
-    public RBTNode Root;    // 根结点
+    public RBTNode<T,U> Root;    // 根结点
     //  构造函数
     public RBTree() {
         Root =null;//初始化根目录
     }
     //  插入操作
+//  面向内部的比较函数
+    private int compare(RBTNode node,RBTNode x){
+        if(node.key instanceof Long){
+            return ((Long)(node.key)).compareTo((Long)x.key);
+        }else if (node.key instanceof String){
+            return ((String)(node.key)).compareTo((String)x.key);
+        }else{
+            return 1;
+        }
+    }
+//  面向外部的比较范式函数
+    public int Compare(RBTNode node,U x){
+        if(x instanceof Long){
+            return ((Long)(node.key)).compareTo((Long)x);
+        }else if(x instanceof String){
+            return ((String)(node.key)).compareTo((String)x);
+        }else{
+            return 1;
+        }
+    }
 
+//    常用的searchNode
+public RBTNode<T,U> searchNode(RBTNode x, U key){
+    if (x==null)
+        return null;
+    int cmp = Compare(x,key);
+    if (cmp == 1)
+        return searchNode(x.left, key);
+    else if (cmp == -1)
+        return searchNode(x.right, key);
+    else
+        return x;
+}
+    public void insert(T vaule,U key){
+        insert(new RBTNode(vaule,key,BLACK,null,null,null));//插入
+    }
     //  内部使用的insert
     public void insert(RBTNode node) {
         int cmp;
@@ -30,7 +67,7 @@ public class RBTree implements Serializable {
         // 1. 将红黑树当作一颗二叉查找树，将节点添加到二叉查找树中。
         while (x != null) {
             y = x;
-            cmp = node.compareTo(x);
+            cmp = compare(node,x);
             if (cmp == 0)
                 x = x.left;
             else
@@ -39,7 +76,7 @@ public class RBTree implements Serializable {
 
         node.parent = y;
         if (y!=null) {
-            cmp = node.compareTo(y);
+            cmp = compare(node,y);
             if (cmp == 0)
                 y.left = node;
             else

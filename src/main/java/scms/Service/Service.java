@@ -1,6 +1,6 @@
 package scms.Service;
 
-import scms.domain.ClassData;
+import scms.domain.GetJson.ClassData;
 
 /***
  * @author zjs

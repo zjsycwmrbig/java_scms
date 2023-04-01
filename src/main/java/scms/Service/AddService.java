@@ -2,9 +2,11 @@ package scms.Service;
 
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Service;
-import scms.Dao.DataDao;
-import scms.domain.ClashErrorData;
-import scms.domain.ClassData;
+import scms.Dao.DataProcessor;
+import scms.Interceptor.BridgeData;
+import scms.domain.ServerJson.ClashErrorData;
+import scms.domain.GetJson.ClassData;
+import scms.domain.ServerJson.UserFile;
 
 import java.util.ArrayList;
 
@@ -18,7 +20,8 @@ import java.util.ArrayList;
 @Service
 public class AddService extends scms.Service.Service {
 //    可以使用Canlendar来判断
-    DataDao dataDao;
+    DataManager dataManager;
+    UserFile user;
     private int Day = 86400000;
 //    判断两个时间节点,是最小单元判断是否有冲突 a在前 b在后
 
@@ -120,15 +123,15 @@ public class AddService extends scms.Service.Service {
         return true;
     }
 //  新添加的节点
-    public  boolean AddItem(ClassData item){
-        dataDao = new DataDao();
-        dataDao.Init();
-        dataDao.print();
+    public  boolean AddItem(ClassData item,int index){//index 代表插入到哪里
+        user = BridgeData.getRequestInfo();
+        dataManager = new DataManager();
+        dataManager.GetDataProcessor(user.owner.get(index)).print();
         System.out.println("--------------更改-------------");
-        boolean flag = dataDao.AddItem(item);
-        dataDao.print();
-        dataDao.Save();
-//        这里没有记忆
+//        添加到本人数据
+        boolean flag = dataManager.AddItem(user.owner.get(index),item);
+        dataManager.GetDataProcessor(user.owner.get(index)).print();
+        flag = dataManager.Save();
         return flag;
     }
 }

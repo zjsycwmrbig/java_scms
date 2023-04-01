@@ -1,4 +1,4 @@
-package scms.domain;
+package scms.domain.ServerJson;
 
 import java.io.File;
 import java.io.Serializable;
@@ -11,7 +11,15 @@ import java.util.List;
  */
 
 public class UserFile implements Serializable {
+    public UserFile(long username, String netname, String password, String personalWord) {
+        this.username = username;
+        this.netname = netname;
+        this.password = password;
+        PersonalWord = personalWord;
+    }
+
     public long username;
+    public String netname;
     public String password;
 //  个性签名
     public String PersonalWord;
@@ -19,6 +27,6 @@ public class UserFile implements Serializable {
 //  文件组,分为拥有者,享有者
     public List<File> owner;
 
-    public List<File> user;
+    public List<File> player;
 
 }

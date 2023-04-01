@@ -7,7 +7,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class Dao {
     //文件指针,指向目录
-    SCMSFILE scms;      //通过session赋值,通过controller拦截request后给Dao赋值
     @Autowired
     ObjectMapper JSON;
 

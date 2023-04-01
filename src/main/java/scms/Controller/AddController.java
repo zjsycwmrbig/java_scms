@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import scms.Service.AddService;
-import scms.domain.ClashErrorData;
-import scms.domain.ClassData;
+import scms.domain.ServerJson.ClashErrorData;
+import scms.domain.GetJson.ClassData;
 
 /***
  * @author Administrator
@@ -38,7 +38,7 @@ public class AddController {
     }
     @RequestMapping("/item")
     public  boolean AddItem(@RequestBody ClassData item){
-        return addService.AddItem(item);
+        return addService.AddItem(item,0);
     }
 
 }

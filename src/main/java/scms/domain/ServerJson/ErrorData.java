@@ -1,4 +1,4 @@
-package scms.domain;
+package scms.domain.ServerJson;
 
 import java.lang.reflect.Type;
 

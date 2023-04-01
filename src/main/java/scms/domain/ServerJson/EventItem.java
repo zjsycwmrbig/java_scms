@@ -1,4 +1,4 @@
-package scms.domain;
+package scms.domain.ServerJson;
 
 /***
  * @author Administrator
@@ -8,17 +8,16 @@ package scms.domain;
 
 //json 返回值
 
-public class ItemData {
-    public ItemData(int id, String title, int type, int location, long begin, long length){
+public class EventItem {
+    public EventItem(int id, String title, int location, long begin, long length){
         this.id = id;
         this.title = title;
-        this.type = type;
         this.begin = begin;
         this.length = length;
+        this.location = location;
     }
     public int id;
     public String title;
-    public int type;
     public int location;
     public long begin;
     public long length;
