@@ -44,17 +44,17 @@ public class RBTree<T,U> implements Serializable {
     }
 
 //    常用的searchNode
-public RBTNode<T,U> searchNode(RBTNode x, U key){
-    if (x==null)
-        return null;
-    int cmp = Compare(x,key);
-    if (cmp == 1)
-        return searchNode(x.left, key);
-    else if (cmp == -1)
-        return searchNode(x.right, key);
-    else
-        return x;
-}
+    public RBTNode<T,U> searchNode(RBTNode x, U key){
+        if (x==null)
+            return null;
+        int cmp = Compare(x,key);
+        if (cmp == 1)
+            return searchNode(x.left, key);
+        else if (cmp == -1)
+            return searchNode(x.right, key);
+        else
+            return x;
+    }
     public void insert(T vaule,U key){
         insert(new RBTNode(vaule,key,BLACK,null,null,null));//插入
     }

@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
+import java.security.Key;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,8 +45,11 @@ public class DataProcessor implements Serializable {
 
         if(!dataItem.AddItem(item)){return false;}
     //
-        for (long id = item.begin;id  <= item.end - item.length;id += item.circle * 86400000L){
-            dataRBTree.AddItem(id);
+
+        long id = item.begin;
+        for (long begin = item.begin;begin  <= item.end - item.length;begin += item.circle * 86400000L){
+
+            dataRBTree.AddItem(id, begin);
             if(item.circle == 0) break; //单次跳出
         }
     //
@@ -58,9 +62,10 @@ public class DataProcessor implements Serializable {
         List<EventItem> list = new ArrayList<>();//返回的数据
         dataRBTree.Between(begin,end);
         for(int i = 0; i < dataRBTree.stack.size(); i++){
+            System.out.println("stack debug");
             RBTNode item = dataRBTree.stack.get(i);
-            ClassData data = dataItem.SearchItem((Long)(item.vaule));
-            list.add(new EventItem((Integer)(item.vaule),data.title,data.location,(Long) item.key,data.length));
+            ClassData data = dataItem.SearchItem((Long)(item.vaule));//这里应该是id
+            list.add(new EventItem((Long)(item.vaule),data.title,data.location,(Long) item.key,data.length));
 //        装填完毕
         }
         return list;
@@ -91,8 +96,6 @@ public class DataProcessor implements Serializable {
                 else                // tree是分支节点
                     System.out.printf("%s  (%s) is %s's %6s child\n", tree.key, tree.color==false?"R":"B", begin, direction==1?"right" : "left");
             }
-
-
             print(tree.left, tree.key, -1);
             print(tree.right,tree.key,  1);
         }

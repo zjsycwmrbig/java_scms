@@ -3,6 +3,7 @@ package scms.Service;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import scms.Dao.UserRBTree;
+import scms.Interceptor.BridgeData;
 import scms.domain.ReturnJson.ReturnUserData;
 import scms.domain.GetJson.GetUserData;
 import scms.domain.ServerJson.UserFile;
@@ -17,15 +18,14 @@ import java.util.ArrayList;
  */
 public class UserManager {
     static int VisitTime = 12*60*60;//12小时
-    static String userimage = "userimage.png";
+//    static String userimage = "userimage.png"; //允许查看
     static String userdata = "userdata.scms";
-
     //  给出用户目录,给出用户文件
     public static File GetUserFile(File file) {
         return new File(file.getAbsolutePath()+'/'+userdata);
     }
-    public static File GetImageFile(File file){
-        return new File(file.getAbsolutePath()+'/'+userimage);
+    public static File GetImageFile(File file){//用户的照片信息
+        return new File("D:\\SCMSFILE\\FileManager\\ImageFile"+'/'+file.getName()+".png");
     }
 //    登录服务 -- 比对用户名和密码,成功返回用户数据
     public static ReturnUserData CheckLogin(GetUserData user, HttpServletRequest request){
@@ -53,7 +53,7 @@ public class UserManager {
         if(UserRBTree.searchFile(user.getUsername())==null){
             File file = UserRBTree.AddItem(user.getUsername());//获得File文件,创建文件,写入文件树,写入UserFile数据
             //拿到数据文件指针,然后放到文件里面去
-            ReturnUserData returnUserData = SetUserData(file,user);//这里面负责创建data文件,写入到file文件里面去
+            ReturnUserData returnUserData = SetUserData(file,user); //这里面负责创建data文件,写入到file文件里面去
             if(returnUserData.state == "注册成功"){
                 UserRBTree.sava();
             }
@@ -96,7 +96,7 @@ public class UserManager {
         return res;
     }
 
-    //    写入初始文件,包括网名,组织名称
+    //    写入初始文件,包括网名,组织名称,返回returnUserData
     private static ReturnUserData SetUserData(File file,GetUserData user){
 //        把user数据放到userFile中
         UserFile filedata = new UserFile(user.getUsername(),user.getNetname(),user.getPassword(),user.getPersonalword());
@@ -117,7 +117,7 @@ public class UserManager {
         return returnUserData;
     }
 
-//  根据file找到file
+    //  根据file找到UserFile
     static public UserFile GetUser(File file){
         UserFile userFile = null;
         try {
@@ -129,6 +129,21 @@ public class UserManager {
         }
         return userFile;
     }
+    // 写入头像图片,返回头像的路径
+    static public String SaveImage(byte[] bytes){
+        UserFile user = BridgeData.getRequestInfo();
+        File file = UserRBTree.searchFile(user.username);
+        try {
+            FileOutputStream outputStream = new FileOutputStream(GetImageFile(file));
+            outputStream.write(bytes);
+            outputStream.close();//写入成功
+            return "OK";
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     //    修改用户文件,添加组织,接收一个Get,修改文件,给出文件,修改后面看看是不是要放到后面
 
     //    添加组织删除组织

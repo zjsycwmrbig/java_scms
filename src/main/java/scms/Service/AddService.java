@@ -23,10 +23,9 @@ public class AddService extends scms.Service.Service {
     DataManager dataManager;
     UserFile user;
     private int Day = 86400000;
-//    判断两个时间节点,是最小单元判断是否有冲突 a在前 b在后
-
-    //   判断两个事件是否存在冲突,理论上讲所有事件判断后即可判定,a是在之前的事件,b是之后的事件
-//  返回在第几个周期后存在冲突,-1代表无冲突
+    //    判断两个时间节点,是最小单元判断是否有冲突 a在前 b在后
+    //    判断两个事件是否存在冲突,理论上讲所有事件判断后即可判定,a是在之前的事件,b是之后的事件
+    //    返回在第几个周期后存在冲突,-1代表无冲突
     public int CheckItem(ClassData a,ClassData b){
 //  把a贴近b的时间,检查两个时间点是否存在冲突
 
@@ -126,12 +125,13 @@ public class AddService extends scms.Service.Service {
     public  boolean AddItem(ClassData item,int index){//index 代表插入到哪里
         user = BridgeData.getRequestInfo();
         dataManager = new DataManager();
-        dataManager.GetDataProcessor(user.owner.get(index)).print();
+        dataManager.GetDataProcessor(0).print();
         System.out.println("--------------更改-------------");
 //        添加到本人数据
-        boolean flag = dataManager.AddItem(user.owner.get(index),item);
-        dataManager.GetDataProcessor(user.owner.get(index)).print();
-        flag = dataManager.Save();
-        return flag;
+        if(dataManager.AddItem(0,item) && dataManager.Save()) {
+            dataManager.GetDataProcessor(0).print();
+            return true;
+        }
+        else return false;
     }
 }

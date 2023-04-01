@@ -3,7 +3,8 @@ package scms.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
-import scms.Interceptor.BridgeData;
+import scms.Service.UserManager;
+
 
 /***
  * @author Administrator
@@ -18,8 +19,7 @@ public class UploadController {
         try {
             // 处理文件上传操作
             byte[] bytes = file.getBytes(); //拿到文件
-            BridgeData.getRequestInfo();
-            return "File uploaded successfully.";
+            return UserManager.SaveImage(bytes);
         } catch (Exception e) {
             return "Error uploading file.";
         }

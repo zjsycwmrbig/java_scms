@@ -38,7 +38,7 @@ public class DataItem implements Serializable {
         return true;
     }
 
-//    查询
+//    查询 - 键值是begin的节点数据节点
     public  ClassData SearchItem(Long begin){
         //begin作为id
         return itemRbtree.searchNode(itemRbtree.Root,begin).vaule;

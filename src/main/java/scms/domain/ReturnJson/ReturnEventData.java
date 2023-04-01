@@ -10,6 +10,10 @@ import java.util.ArrayList;
  * @function
  */
 public class ReturnEventData extends ReturnJson{
-//    返回事件数据
+    public ReturnEventData() {
+        this.events = new ArrayList<>();
+    }
+
+    //    返回事件数据
     public ArrayList<EventData> events;//数据列表
 }

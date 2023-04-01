@@ -21,8 +21,8 @@ public class DataRBTree implements Serializable{
 
     public ArrayList<RBTNode> stack; //暂存栈
 //    增
-    public void AddItem(long id) {
-        RBTNode node=new RBTNode(id,id,BLACK,null,null,null);
+    public void AddItem(long id,long key) {
+        RBTNode node=new RBTNode(id,key,BLACK,null,null,null);
     // 如果新建结点失败，则返回。
         if (node != null) rbtree.insert(node);
     }
@@ -79,8 +79,12 @@ public class DataRBTree implements Serializable{
     public void Between(long start, long end) {
         // 自己找到合适的root节点 - 这里找到root在start和end之间的节点
         RBTNode root = rbtree.Root;
-        while(start > rbtree.Root.key || end < rbtree.Root.key){
-            if(start > rbtree.Root.key){
+        int cmpstart = rbtree.Compare(rbtree.Root,start);
+        int cmpend = rbtree.Compare(rbtree.Root,end);
+        while(cmpstart < -1 || cmpend > 1){
+            cmpstart = rbtree.Compare(rbtree.Root,start);
+            cmpend = rbtree.Compare(rbtree.Root,end);
+            if(cmpstart < 0){
                 root = rbtree.Root.right;
             }else{
                 root = rbtree.Root.left;

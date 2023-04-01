@@ -1,14 +1,6 @@
 package scms.Service;
 
-import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import scms.domain.GetJson.ClassData;
-
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-
 /***
  * @author zjs
  * @date 2023/3/15 15:06

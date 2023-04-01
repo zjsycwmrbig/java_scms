@@ -24,21 +24,9 @@ public class AddController {
     AddService addService;
 
 //增加课程数据,请求通过post/put传输一个对象
-    @RequestMapping("/class")
-    public ClashErrorData CheckLogin(@RequestBody ClassData item, HttpServletRequest request) {
-        HttpSession session = request.getSession();
-        return (addService.CheckLogic(item,session));
-    }
-//  添加日程,添加到个人的文件里面
-    @RequestMapping("/schedule")
-    public ClashErrorData AddSchedule(@RequestBody ClassData item, HttpServletRequest request){
-//        获得session对象
-        HttpSession session = request.getSession();
-        return (addService.CheckLogic(item,session));
-    }
     @RequestMapping("/item")
     public  boolean AddItem(@RequestBody ClassData item){
-        return addService.AddItem(item,0);
+        return addService.AddItem(item,0);//这里往哪里加入,看index
     }
 
 }

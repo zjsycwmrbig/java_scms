@@ -1,7 +1,6 @@
 package scms.Controller;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,4 +26,17 @@ public class UserController {
     public ReturnUserData CreatUser(@RequestBody GetUserData user) throws IOException {
         return UserManager.Register(user);
     }
+
+//    加入组织
+    @RequestMapping("/joingroup")
+    public ReturnUserData JoinGroup(@RequestBody GetUserData user){
+        return UserManager.Register(user);
+    }
+
+//    创建组织
+    @RequestMapping("/creatgroup")
+    public ReturnUserData CreatGroup(@RequestBody GetUserData user){
+        return UserManager.Register(user);
+    }
+
 }

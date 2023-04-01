@@ -12,4 +12,10 @@ public class EventData {
     public int type;//类型 - 个人或者组织
 
     public List<EventItem> data; //数据
+
+    public EventData(String name, int type, List<EventItem> data) {
+        this.name = name;
+        this.type = type;
+        this.data = data;
+    }
 }
