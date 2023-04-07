@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import scms.Service.AddService;
+import scms.domain.ReturnJson.ReturnAddJson;
 import scms.domain.ServerJson.ClashErrorData;
 import scms.domain.GetJson.ClassData;
 
@@ -25,7 +26,7 @@ public class AddController {
 
 //增加课程数据,请求通过post/put传输一个对象
     @RequestMapping("/item")
-    public  boolean AddItem(@RequestBody ClassData item){
+    public ReturnAddJson AddItem(@RequestBody ClassData item){
         return addService.AddItem(item,0);//这里往哪里加入,看index
     }
 

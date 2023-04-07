@@ -2,34 +2,36 @@ package scms.Dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import scms.Interceptor.BridgeData;
+import scms.domain.ServerJson.ClashRBTNode;
 import scms.domain.ServerJson.RBTNode;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class DataRBTree implements Serializable{
     private static final boolean BLACK = true;
+
     @Autowired
-    RBTree<Long,Long> rbtree;//指定节点类型,id是begin的值
+    ClashRBTree<Long,Long> rbtree;//指定节点类型,id是begin的值
 
     public DataRBTree() {
-        rbtree = new RBTree<>();
+        rbtree = new ClashRBTree<>();
         stack = new ArrayList<>();
     }
 
-    public ArrayList<RBTNode> stack; //暂存栈
+    public ArrayList<ClashRBTNode> stack; //暂存栈
 //    增
-    public void AddItem(long id,long key) {
-        RBTNode node=new RBTNode(id,key,BLACK,null,null,null);
+    public void AddItem(long id,long key,long end) {
+        ClashRBTNode node=new ClashRBTNode(id,key,end,BLACK,null,null,null);
     // 如果新建结点失败，则返回。
         if (node != null) rbtree.insert(node);
     }
 
 //   删
     public void remove(long begin) {
-        RBTNode node;
+        ClashRBTNode node;
         if ((node = search(rbtree.Root,begin)) != null) rbtree.remove(node);// 直接删除这个节点
     }
 //   查
@@ -37,12 +39,12 @@ public class DataRBTree implements Serializable{
     public void searchNeibor(long inNode){
         // 清除stack缓存,初始化0,1位置
         stack.clear();
-        stack.add(rbtree.Root);
-        stack.add(rbtree.Root);
+        stack.add(null);
+        stack.add(null);
         searchNeibor(rbtree.Root,inNode);
     }
     //
-    private void searchNeibor(RBTNode x,long begin){
+    private void searchNeibor(ClashRBTNode x,long begin){
         if (x==null)
             return;
         int cmp = rbtree.Compare(x,begin);
@@ -58,7 +60,7 @@ public class DataRBTree implements Serializable{
     }
 
     // 普通查找
-    private RBTNode search(RBTNode x,long begin) {
+    private ClashRBTNode search(ClashRBTNode x,long begin) {
 //      返回最后的上级
         if (x==null)
             return x;
@@ -78,7 +80,8 @@ public class DataRBTree implements Serializable{
     //  中序查找 从start到end的节点
     public void Between(long start, long end) {
         // 自己找到合适的root节点 - 这里找到root在start和end之间的节点
-        RBTNode root = rbtree.Root;
+        ClashRBTNode root = rbtree.Root;
+        if(root ==  null)return;//空就不找了
         int cmpstart = rbtree.Compare(rbtree.Root,start);
         int cmpend = rbtree.Compare(rbtree.Root,end);
         while(cmpstart < -1 || cmpend > 1){
@@ -95,7 +98,7 @@ public class DataRBTree implements Serializable{
         Between(root, start, end);
     }
 //    部分中序
-    private void Between(RBTNode node, long start, long end) {
+    private void Between(ClashRBTNode node, long start, long end) {
         // 限界
         if (node == null) {
             return;
@@ -105,7 +108,7 @@ public class DataRBTree implements Serializable{
         int cmpstart = rbtree.Compare(node,start);
         int cmpend  = rbtree.Compare(node,end);
         // 该节点满足条件
-        if (cmpstart>=0 && cmpend<0) {
+        if (cmpstart>=0 && cmpend<=0) {
             stack.add(node);
         }
         Between(node.right, start, end);

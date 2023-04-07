@@ -7,6 +7,7 @@ import scms.domain.ServerJson.RBTNode;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
 
 /***
  * @author Administrator
@@ -19,11 +20,13 @@ import java.util.ArrayList;
 //    分开维护
 public class DataItem implements Serializable {
     private static final boolean BLACK = true;
+    public List<Long> users; //用户组
     RBTree<ClassData,Long> itemRbtree; //用classdata当做vaule,Long值当做key,Long直接记录Begin就好
 //  增删改查
 
     public DataItem() {
         itemRbtree = new RBTree<>();
+        users = new ArrayList<>();
     }
 
     public boolean AddItem(ClassData item){

@@ -1,6 +1,7 @@
 package scms.domain.ReturnJson;
 
-import scms.domain.ServerJson.EventData;
+import scms.domain.ServerJson.EventDataByTime;
+import scms.domain.ServerJson.EventDataByType;
 
 import java.util.ArrayList;
 
@@ -11,9 +12,13 @@ import java.util.ArrayList;
  */
 public class ReturnEventData extends ReturnJson{
     public ReturnEventData() {
-        this.events = new ArrayList<>();
+        this.events = new ArrayList<>();this.routines = new ArrayList<>();
     }
 
     //    返回事件数据
-    public ArrayList<EventData> events;//数据列表
+    public ArrayList<EventDataByType> events;//数据列表,按照页面分配,这个的意义
+
+    public ArrayList<EventDataByTime> routines;//按照时间分配所以是routine
+
+
 }

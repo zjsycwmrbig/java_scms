@@ -1,29 +1,28 @@
 package scms.Dao;
 
 import org.springframework.stereotype.Component;
-import scms.domain.ServerJson.RBTNode;
+import scms.domain.ServerJson.ClashRBTNode;
 
 import java.io.Serializable;
 
 /***
  * @author Administrator
- * @date 2023/3/27 16:22
+ * @date 2023/4/7 19:19
  * @function
  */
-
-//两个泛型,分别对应这 vaule 和 key
 @Component
-public class RBTree<T,U> implements Serializable {
+public class ClashRBTree<T,U> implements Serializable {
+
     private static final boolean RED   = false;
     private static final boolean BLACK = true;
-    public RBTNode<T,U> Root;    // 根结点
+    public ClashRBTNode<T,U> Root;    // 根结点
     //  构造函数
-    public RBTree() {
+    public ClashRBTree() {
         Root = null;//初始化根目录
     }
     //  插入操作
 //  面向内部的比较函数
-    private int compare(RBTNode node,RBTNode x){
+    private int compare(ClashRBTNode node,ClashRBTNode x){
         if(node.key instanceof Long){
             return ((Long)(node.key)).compareTo((Long)x.key);
         }else if (node.key instanceof String){
@@ -32,8 +31,8 @@ public class RBTree<T,U> implements Serializable {
             return 1;
         }
     }
-//  面向外部的比较范式函数
-    public int Compare(RBTNode node,U x){
+    //  面向外部的比较范式函数
+    public int Compare(ClashRBTNode node,U x){
         if(x instanceof Long){
             return ((Long)(node.key)).compareTo((Long)x);
         }else if(x instanceof String){
@@ -43,8 +42,8 @@ public class RBTree<T,U> implements Serializable {
         }
     }
 
-//    常用的searchNode
-    public RBTNode<T,U> searchNode(RBTNode x, U key){
+    //    常用的searchNode
+    public ClashRBTNode<T,U> searchNode(ClashRBTNode x, U key){
         if (x==null)
             return null;
         int cmp = Compare(x,key);
@@ -55,14 +54,14 @@ public class RBTree<T,U> implements Serializable {
         else
             return x;
     }
-    public void insert(T vaule,U key){
-        insert(new RBTNode(vaule,key,BLACK,null,null,null));//插入
+    public void insert(T vaule,U key,U end){
+        insert(new ClashRBTNode(vaule,key,end,BLACK,null,null,null));//插入
     }
     //  内部使用的insert
-    public void insert(RBTNode node) {
+    public void insert(ClashRBTNode node) {
         int cmp;
-        RBTNode y = null;
-        RBTNode x = this.Root;
+        ClashRBTNode y = null;
+        ClashRBTNode x = this.Root;
 
         // 1. 将红黑树当作一颗二叉查找树，将节点添加到二叉查找树中。
         while (x != null) {
@@ -92,8 +91,8 @@ public class RBTree<T,U> implements Serializable {
         insertFixUp(node);
     }
     //  插入修正
-    private void insertFixUp(RBTNode node) {
-        RBTNode parent, gparent;
+    private void insertFixUp(ClashRBTNode node) {
+        ClashRBTNode parent, gparent;
 
         // 若“父节点存在，并且父节点的颜色是红色”
         while (((parent = node.parent)!=null) && parent.color==false) {
@@ -102,7 +101,7 @@ public class RBTree<T,U> implements Serializable {
             //若“父节点”是“祖父节点的左孩子”
             if (parent == gparent.left) {
                 // Case 1条件：叔叔节点是红色
-                RBTNode uncle = gparent.right;
+                ClashRBTNode uncle = gparent.right;
                 if ((uncle!=null) && uncle.color==false) {
                     uncle.color = BLACK;
                     parent.color = BLACK;
@@ -113,7 +112,7 @@ public class RBTree<T,U> implements Serializable {
 
                 // Case 2条件：叔叔是黑色，且当前节点是右孩子
                 if (parent.right == node) {
-                    RBTNode tmp;
+                    ClashRBTNode tmp;
                     leftRotate(parent);
                     tmp = parent;
                     parent = node;
@@ -126,7 +125,7 @@ public class RBTree<T,U> implements Serializable {
                 rightRotate(gparent);
             } else {    //若“z的父节点”是“z的祖父节点的右孩子”
                 // Case 1条件：叔叔节点是红色
-                RBTNode uncle = gparent.left;
+                ClashRBTNode uncle = gparent.left;
                 if ((uncle!=null) && uncle.color==false) {
                     uncle.color = BLACK;
                     parent.color = BLACK;
@@ -137,7 +136,7 @@ public class RBTree<T,U> implements Serializable {
 
                 // Case 2条件：叔叔是黑色，且当前节点是左孩子
                 if (parent.left == node) {
-                    RBTNode tmp;
+                    ClashRBTNode tmp;
                     rightRotate(parent);
                     tmp = parent;
                     parent = node;
@@ -155,9 +154,9 @@ public class RBTree<T,U> implements Serializable {
         this.Root.color = BLACK;
     }
     //  左旋
-    private void leftRotate(RBTNode x) {
+    private void leftRotate(ClashRBTNode x) {
         // 设置x的右孩子为y
-        RBTNode y = x.right;
+        ClashRBTNode y = x.right;
 
         // 将 “y的左孩子” 设为 “x的右孩子”；
         // 如果y的左孩子非空，将 “x” 设为 “y的左孩子的父亲”
@@ -183,9 +182,9 @@ public class RBTree<T,U> implements Serializable {
         x.parent = y;
     }
     //  右旋
-    private void rightRotate(RBTNode y) {
+    private void rightRotate(ClashRBTNode y) {
         // 设置x是当前节点的左孩子。
-        RBTNode x = y.left;
+        ClashRBTNode x = y.left;
 
         // 将 “x的右孩子” 设为 “y的左孩子”；
         // 如果"x的右孩子"不为空的话，将 “y” 设为 “x的右孩子的父亲”
@@ -213,15 +212,15 @@ public class RBTree<T,U> implements Serializable {
     }
 
     //  移除以begin开始的节点
-    public void remove(RBTNode node) {
-        RBTNode child, parent;
+    public void remove(ClashRBTNode node) {
+        ClashRBTNode child, parent;
         boolean color;
 
         // 被删除节点的"左右孩子都不为空"的情况。
         if ( (node.left!=null) && (node.right!=null) ) {
             // 被删节点的后继节点。(称为"取代节点")
             // 用它来取代"被删节点"的位置，然后再将"被删节点"去掉。
-            RBTNode replace = node;
+            ClashRBTNode replace = node;
 
             // 获取后继节点
             replace = replace.right;
@@ -299,8 +298,8 @@ public class RBTree<T,U> implements Serializable {
         node = null;
     }
     //   删除修正
-    private void removeFixUp(RBTNode node, RBTNode parent) {
-        RBTNode other;
+    private void removeFixUp(ClashRBTNode node, ClashRBTNode parent) {
+        ClashRBTNode other;
 
         while ((node==null || node.color==BLACK) && (node != this.Root)) {
             if (parent.left == node) {
@@ -378,5 +377,4 @@ public class RBTree<T,U> implements Serializable {
         if (node!=null)
             node.color = BLACK;
     }
-
 }

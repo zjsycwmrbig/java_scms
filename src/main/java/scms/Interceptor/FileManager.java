@@ -21,13 +21,13 @@ public  class FileManager {
     private static int Size [] = {100,100,3}; // 0 : 100,1 : 100
     private static int GroupSize = 3;//分层尺寸限制
 
-    private static File NextFile(File f,String arg){
+    public static File NextFile(File f, String arg){
         StringBuilder os = new StringBuilder(f.getAbsolutePath());
         os.append('/').append(arg);
         return new File(os.toString());
     }
 //  根据目前的目录状态返回合适的文件指针
-    private static File NewFile(File f,String name){
+    public static File NewFile(File f,String name){
         List<Integer> Path = new ArrayList<>();
         File temp = f;
         for(int i = 0;i < GroupSize;i++){
@@ -69,6 +69,7 @@ public  class FileManager {
         if(file.mkdirs()) {
             try{
                 UserManager.GetUserFile(file).createNewFile();
+
                 UserManager.GetImageFile(file).createNewFile();
                 return file;
             }catch (Exception e){
@@ -79,13 +80,14 @@ public  class FileManager {
         else return null;
     }
 
-//  返回一个Data文件指针
+//  返回一个Data文件指针,修改Data文件
     public static File AddData(String name){
         File file = NewFile(datafile,name);//获得应该的文件
         file.mkdirs();
-        file = NextFile(file,"index.scms");//真正的文件
         try{
-            file.createNewFile();
+            NextFile(file,"DataMap").createNewFile();
+            NextFile(file,"DataRBTree").createNewFile();
+            NextFile(file,"DataItem").createNewFile();
             return file;
         }catch (Exception e){
             file.delete();//异常出现删除目录

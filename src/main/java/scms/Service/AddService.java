@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Service;
 import scms.Dao.DataProcessor;
 import scms.Interceptor.BridgeData;
+import scms.domain.ReturnJson.ReturnAddJson;
 import scms.domain.ServerJson.ClashErrorData;
 import scms.domain.GetJson.ClassData;
 import scms.domain.ServerJson.UserFile;
@@ -122,16 +123,14 @@ public class AddService extends scms.Service.Service {
         return true;
     }
 //  新添加的节点
-    public  boolean AddItem(ClassData item,int index){//index 代表插入到哪里
+    public ReturnAddJson AddItem(ClassData item, int index){//index 代表插入到哪里
         user = BridgeData.getRequestInfo();
         dataManager = new DataManager();
-        dataManager.GetDataProcessor(0).print();
-        System.out.println("--------------更改-------------");
+        ReturnAddJson returnAddJson = dataManager.AddItem(0,item);
 //        添加到本人数据
-        if(dataManager.AddItem(0,item) && dataManager.Save()) {
+        if(returnAddJson.res && dataManager.Save()) {
             dataManager.GetDataProcessor(0).print();
-            return true;
         }
-        else return false;
+        return returnAddJson;
     }
 }

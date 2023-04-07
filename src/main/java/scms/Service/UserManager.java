@@ -2,8 +2,11 @@ package scms.Service;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import scms.Dao.DataItem;
+import scms.Dao.DataRBTree;
 import scms.Dao.UserRBTree;
 import scms.Interceptor.BridgeData;
+import scms.Interceptor.FileManager;
 import scms.domain.ReturnJson.ReturnUserData;
 import scms.domain.GetJson.GetUserData;
 import scms.domain.ServerJson.UserFile;
@@ -33,12 +36,14 @@ public class UserManager {
         ReturnUserData returnUserData = new ReturnUserData("","",""); //初始化内容
         File file = UserRBTree.searchFile(user.getUsername());
         if(file == null) {
+            returnUserData.res = false;
             returnUserData.state = "用户不存在";
         }//返回null代表登录失败
         else{
             //找到用户文件
             returnUserData = GetUserData(file,user.getPassword());//在用户文件里面查找比对信息
             if(returnUserData.state == "登录成功"){
+                returnUserData.res = true;
                 // 颁发签证
                 HttpSession session = request.getSession();
                 session.setMaxInactiveInterval(VisitTime);  //设置持续session时长为12个小时
@@ -55,11 +60,15 @@ public class UserManager {
             //拿到数据文件指针,然后放到文件里面去
             ReturnUserData returnUserData = SetUserData(file,user); //这里面负责创建data文件,写入到file文件里面去
             if(returnUserData.state == "注册成功"){
+                returnUserData.res = true;
                 UserRBTree.sava();
+            }else{
+                file.delete();
             }
             return returnUserData;
         }else{
             ReturnUserData returnUserData = new ReturnUserData(user.getNetname(),user.getPersonalword(),"用户已存在");
+            returnUserData.res = false;
             return returnUserData;
         }
     }
@@ -98,12 +107,32 @@ public class UserManager {
 
     //    写入初始文件,包括网名,组织名称,返回returnUserData
     private static ReturnUserData SetUserData(File file,GetUserData user){
-//        把user数据放到userFile中
+        ReturnUserData returnUserData = new ReturnUserData(user.getNetname(),user.getPersonalword(),"");
+        //把user数据放到userFile中
         UserFile filedata = new UserFile(user.getUsername(),user.getNetname(),user.getPassword(),user.getPersonalword());
 //        添加本身这个组织
         filedata.owner = new ArrayList<>();
-        filedata.owner.add(DatabaseManager.AddData(String.valueOf(user.getUsername())));//添加一个指向组织的File文件;
-        ReturnUserData returnUserData = new ReturnUserData(user.getNetname(),user.getPersonalword(),"");
+//      构建组织文件
+        File dataFile = DatabaseManager.AddData(String.valueOf(user.getUsername()));//获得一个指向组织的File文件;
+        filedata.owner.add(dataFile);
+
+//      新建数据文件中红黑树指向用户文件
+        DataItem dataItem = new DataItem();
+        dataItem.users.add(user.getUsername());
+//      写入到数据文件
+        File dataItemFile = FileManager.NextFile(dataFile,"DataItem");
+        try {
+            FileOutputStream fileOut = new FileOutputStream(dataItemFile);
+            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+            out.writeObject(dataItem);
+            out.close();
+            fileOut.close();
+        } catch (IOException i) {
+            returnUserData.state = "注册失败";
+            returnUserData.res = false;
+        }
+//      写入用户文件
+
         try {
             FileOutputStream fileOut = new FileOutputStream(GetUserFile(file));
             ObjectOutputStream out = new ObjectOutputStream(fileOut);
@@ -113,6 +142,7 @@ public class UserManager {
             returnUserData.state = "注册成功";
         }catch (Exception e){
             returnUserData.state = "注册失败";
+            returnUserData.res = false;
         }
         return returnUserData;
     }

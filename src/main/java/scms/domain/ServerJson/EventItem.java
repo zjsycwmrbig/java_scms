@@ -8,17 +8,28 @@ package scms.domain.ServerJson;
 
 //json 返回值
 
-public class EventItem {
-    public EventItem(long id, String title, int location, long begin, long length){
-        this.id = id;
+public class EventItem implements Comparable<EventItem>{
+    public EventItem(int type, String title, int location, long begin, long length){
+        this.type = type;
         this.title = title;
         this.begin = begin;
         this.length = length;
         this.location = location;
     }
-    public long id;
+    public int type;//给出类型
     public String title;
     public int location;
     public long begin;
     public long length;
+
+    @Override
+    public int compareTo(EventItem o) {
+        if(this.begin < o.begin){
+            return -1;
+        }else if(this.begin > o.begin){
+            return 1;
+        }else{
+            return 0;
+        }
+    }
 }

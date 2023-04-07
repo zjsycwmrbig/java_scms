@@ -21,6 +21,7 @@ public class UserController {
 
         return UserManager.CheckLogin(user,request);
     }
+
 //    注册请求
     @RequestMapping("/register")
     public ReturnUserData CreatUser(@RequestBody GetUserData user) throws IOException {
@@ -38,5 +39,4 @@ public class UserController {
     public ReturnUserData CreatGroup(@RequestBody GetUserData user){
         return UserManager.Register(user);
     }
-
 }

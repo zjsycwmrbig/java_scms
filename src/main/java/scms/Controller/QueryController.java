@@ -20,8 +20,9 @@ import java.util.Date;
 public class QueryController {
     //    查询当下日期一周之内的课程数据,采用GET方式
     @RequestMapping("/now")//查询当下的时间
-    public ReturnEventData QueryNow(@RequestParam("date") @DateTimeFormat(pattern = "yyyy-MM-dd") Date date){//拿到data的值
+    public ReturnEventData QueryNow(@RequestParam("date") long datetime){//拿到data的值
         //处理星期数据
+        Date date = new Date(datetime);
         DataManager dataManager = new DataManager();//新建一个data
         return dataManager.QueryWeek(date);
     }
