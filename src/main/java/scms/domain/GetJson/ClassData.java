@@ -12,11 +12,6 @@ import java.io.Serializable;
  */
 @Component
 public class ClassData implements Serializable {
-//    //    判断数据是否有效
-//    public boolean visible;
-//    条目唯一标识id,目前很鸡肋
-    public int id;
-//    类型 集体活动 个人活动 课程
     public int type;
 //    映射到hash表上的title
 //    更改:因为class分开存储,title重复减少,直接存储在这里面
