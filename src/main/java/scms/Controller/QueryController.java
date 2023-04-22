@@ -26,4 +26,9 @@ public class QueryController {
         DataManager dataManager = new DataManager();//新建一个data
         return dataManager.QueryWeek(date);
     }
+    @RequestMapping("/all")
+    public ReturnEventData QueryAll(){
+        DataManager dataManager = new DataManager();
+        return dataManager.QueryAll();
+    }
 }

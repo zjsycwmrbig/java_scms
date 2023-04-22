@@ -1,5 +1,6 @@
 package scms.Dao;
 
+import org.apache.juli.logging.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import scms.domain.GetJson.ClassData;
@@ -16,7 +17,6 @@ import java.util.List;
  * @date 2023/3/28 9:53
  * @function 整合data辈分的东西
  */
-
 
 @Component
 // 三剑客数据
@@ -38,18 +38,14 @@ public class DataProcessor implements Serializable {
 
     //  增 - 增加一个数据条/增加多个数据条/
     public boolean AddItem(ClassData item){
-    //        依次更新三树
-
-        if(!dataItem.AddItem(item)){return false;}
-    //
+        //依次更新三树
+        if(!dataItem.AddItem(item)){return false;}//key值是开始时间
 
         long id = item.begin;
         for (long end = item.begin + item.length;end  <= item.end;end += item.circle * 86400000L){
-
             dataRBTree.AddItem(id,end - item.length ,end);
             if(item.circle == 0) break; //单次跳出
         }
-    //
         String key = item.title + item.location; //关键词 - 这里的location是数字,之后肯定得换成字符串,或者通过别的方式搜索
         dataMap.AddMap(key,item.begin);
         return true;
@@ -60,8 +56,14 @@ public class DataProcessor implements Serializable {
         dataRBTree.Between(begin,end);
         for(int i = 0; i < dataRBTree.stack.size(); i++){
             ClashRBTNode item = dataRBTree.stack.get(i);
-            ClassData data = dataItem.SearchItem((Long)(item.vaule));  //这里应该是id
-            list.add(new EventItem(0,data.title,data.location,(Long) item.key,data.length)); //type这里不知道
+            ClassData data = dataItem.SearchItem((Long) item.vaule);
+            //这里有bug,验证dataItem非空,验证键值没错,下一步验证search逻辑,好像是叶子节点读取错误,搜索不到,是二叉树构建出现错误!!!
+            if(data == null){
+                System.out.println("数据错误!!!");
+            }else{
+                list.add(new EventItem(data.type,data.title,data.location,(Long) item.key,data.length)); //type这里不知道
+            }
+
         }
         return list;
     }

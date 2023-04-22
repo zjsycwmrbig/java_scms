@@ -1,7 +1,6 @@
 package scms.Dao;
 
 import org.springframework.stereotype.Component;
-import scms.Interceptor.BridgeData;
 import scms.domain.GetJson.ClassData;
 import scms.domain.ServerJson.RBTNode;
 
@@ -44,6 +43,8 @@ public class DataItem implements Serializable {
 //    查询 - 键值是begin的节点数据节点
     public  ClassData SearchItem(Long begin){
         //begin作为id
-        return itemRbtree.searchNode(itemRbtree.Root,begin).vaule;
+        RBTNode node = itemRbtree.searchNode(itemRbtree.Root,begin);
+        if(node == null) return null;
+        else return (ClassData) node.vaule;
     }
 }

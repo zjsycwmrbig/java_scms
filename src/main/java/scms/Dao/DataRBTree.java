@@ -3,11 +3,10 @@ package scms.Dao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import scms.domain.ServerJson.ClashRBTNode;
-import scms.domain.ServerJson.RBTNode;
+
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.List;
 
 @Component
 public class DataRBTree implements Serializable{
@@ -60,10 +59,9 @@ public class DataRBTree implements Serializable{
     }
 
     // 普通查找
-    private ClashRBTNode search(ClashRBTNode x,long begin) {
+    private ClashRBTNode search(ClashRBTNode x,Long begin) {
 //      返回最后的上级
-        if (x==null)
-            return x;
+        if (x==null) return null;
         int cmp = rbtree.Compare(x,begin);
         if (cmp == 1)
             return search(x.left, begin);
@@ -74,8 +72,6 @@ public class DataRBTree implements Serializable{
     }
 
     // 打印这棵树
-
-
 
     //  中序查找 从start到end的节点
     public void Between(long start, long end) {

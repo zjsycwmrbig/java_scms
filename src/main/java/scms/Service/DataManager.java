@@ -214,17 +214,27 @@ public class DataManager {
         return clashData;
     }
 //    查
+    //查询当前一周的数据,并且按照规定好的数据格式返回
     public ReturnEventData QueryWeek(Date date){
+        //获得user认证
         user = BridgeData.getRequestInfo();
         Calendar now = Calendar.getInstance();
-        now.setTime(date);
-        // 获得当前日期是本周的第几天（1代表周日，2代表周一，以此类推）
+        now.setTime(date);//设置时间
+
+        // 将时分秒,毫秒域清零
+        now.set(Calendar.HOUR_OF_DAY, 0);
+        now.set(Calendar.MINUTE, 0);
+        now.set(Calendar.SECOND, 0);
+        now.set(Calendar.MILLISECOND, 0);
+
         int dayOfWeek = now.get(Calendar.DAY_OF_WEEK);
         // 计算本周的周一和周末的日期
         now.add(Calendar.DATE, -dayOfWeek + 2); // 本周的周一
         long monday = now.getTime().getTime();
         now.add(Calendar.DATE, 7); // 下周的周一
         long sunday = now.getTime().getTime();
+        System.out.println(new Date(monday));
+        System.out.println(new Date(sunday));
         ReturnEventData returnEventData = new ReturnEventData();
 //        新建一套体系
         ArrayList<EventDataByTime> eventDataByTimes = new ArrayList<>();
@@ -265,7 +275,11 @@ public class DataManager {
         returnEventData.routines = eventDataByTimes;
         return returnEventData;
     }
-
+    //待实现
+    public ReturnEventData QueryAll(){
+        user = BridgeData.getRequestInfo();
+        return new ReturnEventData();
+    }
 //  存储该用户文件,按照等级存储
     public boolean Save(){
         if(owner != null && owner.size() != 0){

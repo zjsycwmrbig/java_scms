@@ -39,21 +39,20 @@ public class RBTree<T,U> implements Serializable {
         }else if(x instanceof String){
             return ((String)(node.key)).compareTo((String)x);
         }else{
-            return 1;
+            return 0;
         }
     }
 
 //    常用的searchNode
-    public RBTNode<T,U> searchNode(RBTNode x, U key){
-        if (x==null)
-            return null;
+    public RBTNode searchNode(RBTNode x, U key){
+        //没找到
+        if (x==null) return null;
+
         int cmp = Compare(x,key);
-        if (cmp == 1)
-            return searchNode(x.left, key);
-        else if (cmp == -1)
-            return searchNode(x.right, key);
-        else
-            return x;
+
+        if (cmp > 0) return searchNode(x.left, key);
+        else if (cmp < 0) return searchNode(x.right, key);
+        else return x;
     }
     public void insert(T vaule,U key){
         insert(new RBTNode(vaule,key,BLACK,null,null,null));//插入
@@ -68,7 +67,7 @@ public class RBTree<T,U> implements Serializable {
         while (x != null) {
             y = x;
             cmp = compare(node,x);
-            if (cmp == 0)
+            if (cmp <= 0)
                 x = x.left;
             else
                 x = x.right;
@@ -77,7 +76,7 @@ public class RBTree<T,U> implements Serializable {
         node.parent = y;
         if (y!=null) {
             cmp = compare(node,y);
-            if (cmp == 0)
+            if (cmp <= 0)
                 y.left = node;
             else
                 y.right = node;

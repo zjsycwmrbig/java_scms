@@ -1,14 +1,10 @@
 package scms.Controller;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import scms.Service.AddService;
 import scms.domain.ReturnJson.ReturnAddJson;
-import scms.domain.ServerJson.ClashErrorData;
 import scms.domain.GetJson.ClassData;
 
 /***
