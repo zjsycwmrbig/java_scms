@@ -51,6 +51,7 @@ public class ScmsInterceptor implements HandlerInterceptor {
         System.out.println("调用的方法名为" + handlerMethod.getMethod().getName()); //输出方法的名称
         //根据请求得到学生文件路径
         UserFile userFile = BridgeData.getRequestInfo();
+        if(userFile == null) return;//注册的时候没有userFile
         File UserPath = UserRBTree.searchFile(userFile.username);
         String LogPath = UserPath.getAbsolutePath().concat("Log.txt");
         //根据请求得到一行的日志字符串，格式为 xxxx年xx月xx日 xx时xx分xx秒 用户调用的方法名为 xxxxxx

@@ -1,6 +1,4 @@
 package scms.Controller;
-
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import scms.Service.DataManager;
@@ -12,7 +10,7 @@ import java.util.Date;
 /***
  * @author zjs
  * @date 2023/3/14 22:48
- * @function
+ * @function 查询接口
  */
 
 @Controller

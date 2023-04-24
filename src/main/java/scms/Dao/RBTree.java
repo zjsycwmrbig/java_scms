@@ -28,8 +28,10 @@ public class RBTree<T,U> implements Serializable {
             return ((Long)(node.key)).compareTo((Long)x.key);
         }else if (node.key instanceof String){
             return ((String)(node.key)).compareTo((String)x.key);
+        }else if (node.key instanceof Character){
+            return ((Character)(node.key)).compareTo((Character) x.key);
         }else{
-            return 1;
+            return 0;
         }
     }
 //  面向外部的比较范式函数
@@ -38,7 +40,9 @@ public class RBTree<T,U> implements Serializable {
             return ((Long)(node.key)).compareTo((Long)x);
         }else if(x instanceof String){
             return ((String)(node.key)).compareTo((String)x);
-        }else{
+        }else if(x instanceof Character){
+            return ((Character)(node.key)).compareTo((Character)x);
+        }else {
             return 0;
         }
     }
@@ -57,7 +61,7 @@ public class RBTree<T,U> implements Serializable {
 
     public T search(U key){
         RBTNode res = searchNode(Root,key);
-        if(res != null)return (T)(res.vaule);
+        if(res != null) return (T)(res.vaule);
         else return null;
     }
     public void insert(T vaule,U key){

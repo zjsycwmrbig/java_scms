@@ -2,6 +2,9 @@ package scms.domain.ServerJson;
 
 import scms.domain.GetJson.ClassData;
 
+import java.beans.Transient;
+import java.io.Serializable;
+
 /***
  * @author Administrator
  * @date 2023/4/24 11:54
@@ -13,8 +16,6 @@ public class QueryEventItem {
         this.score = score;
     }
 
-    ClassData item;
-    int score;
-
-
+    public ClassData item;
+    public int score;
 }

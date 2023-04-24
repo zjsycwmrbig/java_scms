@@ -4,9 +4,11 @@ import org.springframework.stereotype.Component;
 import scms.domain.ServerJson.MapItem;
 import scms.domain.ServerJson.MapList;
 import scms.domain.ServerJson.MapSortPair;
+import scms.domain.ServerJson.RBTNode;
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,18 +35,25 @@ public class DataMap implements Serializable {
         char[] charArray = key.toCharArray();
         for(int i = 0;i < key.length();i++){
             //查找c有没有对应的字符
-            MapList list = mapRbtree.search(charArray[i]);
+            RBTNode node = mapRbtree.searchNode(mapRbtree.Root,charArray[i]);
             char next = '\0';
             if(i!=key.length() - 1){
                 next = charArray[i+1];
             }
-            if(list == null){
-                list = new MapList();
-                list.mapList.add(new MapItem(ID,next));
-                mapRbtree.insert(list,charArray[i]);
+            MapItem item = new MapItem(ID,next);
+            if(node == null){
+                System.out.printf("%c %d 节点不存在\n",charArray[i],i);
+                MapList List = new MapList();
+                List.mapList = new HashSet<>();
+                List.mapList.add(item);
+                mapRbtree.insert(List,charArray[i]);
             }else{
-                mapRbtree.search(charArray[i]).mapList.add(new MapItem(ID,next));
+                System.out.printf("%c %d 节点已存在\n",charArray[i],i);
+                MapList List = (MapList) node.vaule;
+                List.mapList.add(item);
+                node.vaule = List;
             }
+
         }
     }
 //    删
