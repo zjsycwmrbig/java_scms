@@ -54,7 +54,7 @@ public class NavigationController {
         //序列化和反序列化应该拆开到不同代码地方吧？？？？？？？
         //注意反序列化之前Vertex类和Node类都必须已经加载
         try {
-            FileInputStream fileInputStream = new FileInputStream("C:\\Users\\wwhb\\Desktop\\edges.ser");
+            FileInputStream fileInputStream = new FileInputStream("C:\\Users\\wwhb\\Desktop\\edges.ser"); //文件位置可能需要更改
             ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
             vertexes = (Vertex[]) objectInputStream.readObject();
             objectInputStream.close();
@@ -126,7 +126,7 @@ public class NavigationController {
         int tempNumber = endNumber;
         while(whichVertexToMe[tempNumber] != startNumber){
             tempNumber = whichVertexToMe[tempNumber];
-            Path = String.valueOf(tempNumber) + "->" + Path;
+            Path = String.valueOf(tempNumber) + "->" + Path; //插在原字符串的前面就形成倒序
         }
         Path = String.valueOf(startNumber) + "->" + Path;
         //System.out.println("起点到终点的最短路径长度为" + distanceToAll[endNumber]);
@@ -533,7 +533,6 @@ public class NavigationController {
         return path;
     }
 }
-
 
 class Vertex implements Serializable{
     private int id;
