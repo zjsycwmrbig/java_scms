@@ -17,10 +17,11 @@ import java.util.List;
 public  class FileManager {
     private static File userfile = new File("D:\\SCMSFILE\\FileManager\\UserFile");
     private static File datafile = new File("D:\\SCMSFILE\\FileManager\\DataFile");
-
+    private static String LOG = "log.scms";//日志的名字
+    private static String TIPS = "tips.scms";//通知消息
     private static int Size [] = {100,100,3}; // 0 : 100,1 : 100
     private static int GroupSize = 3;//分层尺寸限制
-
+    //返回下一级arg
     public static File NextFile(File f, String arg){
         StringBuilder os = new StringBuilder(f.getAbsolutePath());
         os.append('/').append(arg);
@@ -63,14 +64,15 @@ public  class FileManager {
         return new  File(os.toString());
     }
 
-    //  返回一个User文件指针,创建一个user应有的文件
+    //  返回一个User文件指针,创建一个user应有的文件,包括用户信息,头像文件,日志系统,消息盒子等
     public static File AddUser(String name){
         File file = NewFile(userfile,name);//获得应该的文件
         if(file.mkdirs()) {
             try{
-                UserManager.GetUserFile(file).createNewFile();
-
-                UserManager.GetImageFile(file).createNewFile();
+                UserManager.GetUserFile(file).createNewFile();//用户文件
+                UserManager.GetImageFile(file).createNewFile();//头像文件
+                NextFile(file,LOG).createNewFile();//日志文件
+                NextFile(file,TIPS).createNewFile();//消息文件
                 return file;
             }catch (Exception e){
                 file.delete();//异常出现删除目录

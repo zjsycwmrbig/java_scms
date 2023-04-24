@@ -18,15 +18,15 @@ public class UserFile implements Serializable {
         PersonalWord = personalWord;
     }
 
-    public long username;
-    public String netname;
-    public String password;
+    public long username;//账号
+    public String netname;//姓名
+    public String password;//密码
 //  个性签名
-    public String PersonalWord;
+    public String PersonalWord;//签名
 
 //  文件组,分为拥有者,享有者
-    public List<File> owner;
+    public List<File> owner; //拥有者,管理员,读写权限
 
-    public List<File> player;
+    public List<File> player;//使用者,只读权限
 
 }

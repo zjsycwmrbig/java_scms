@@ -54,6 +54,12 @@ public class RBTree<T,U> implements Serializable {
         else if (cmp < 0) return searchNode(x.right, key);
         else return x;
     }
+
+    public T search(U key){
+        RBTNode res = searchNode(Root,key);
+        if(res != null)return (T)(res.vaule);
+        else return null;
+    }
     public void insert(T vaule,U key){
         insert(new RBTNode(vaule,key,BLACK,null,null,null));//插入
     }

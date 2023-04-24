@@ -3,7 +3,6 @@ package scms.Service;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import scms.Dao.DataItem;
-import scms.Dao.DataRBTree;
 import scms.Dao.UserRBTree;
 import scms.Interceptor.BridgeData;
 import scms.Interceptor.FileManager;
@@ -54,7 +53,7 @@ public class UserManager {
     }
 //    注册服务 -- 注册创建一个文件,并且存储起来
     public static ReturnUserData Register(GetUserData user){
-        UserRBTree.Init();
+        UserRBTree.Init();//读取用户树
         if(UserRBTree.searchFile(user.getUsername())==null){
             File file = UserRBTree.AddItem(user.getUsername());//获得File文件,创建文件,写入文件树,写入UserFile数据
             //拿到数据文件指针,然后放到文件里面去
@@ -67,6 +66,7 @@ public class UserManager {
             }
             return returnUserData;
         }else{
+            //用户已经存在
             ReturnUserData returnUserData = new ReturnUserData(user.getNetname(),user.getPersonalword(),"用户已存在");
             returnUserData.res = false;
             return returnUserData;
@@ -173,6 +173,9 @@ public class UserManager {
             return null;
         }
     }
+
+    //日志系统
+
 
     //    修改用户文件,添加组织,接收一个Get,修改文件,给出文件,修改后面看看是不是要放到后面
 

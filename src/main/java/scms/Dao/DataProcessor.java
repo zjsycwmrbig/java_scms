@@ -1,16 +1,16 @@
 package scms.Dao;
 
-import org.apache.juli.logging.Log;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.stereotype.Component;
 import scms.domain.GetJson.ClassData;
-import scms.domain.ServerJson.ClashRBTNode;
-import scms.domain.ServerJson.EventItem;
-import scms.domain.ServerJson.RBTNode;
+import scms.domain.ServerJson.*;
+
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /***
  * @author Administrator
@@ -39,15 +39,16 @@ public class DataProcessor implements Serializable {
     //  增 - 增加一个数据条/增加多个数据条/
     public boolean AddItem(ClassData item){
         //依次更新三树
+        //添加数据原本树
         if(!dataItem.AddItem(item)){return false;}//key值是开始时间
-
+        //添加冲突树
         long id = item.begin;
         for (long end = item.begin + item.length;end  <= item.end;end += item.circle * 86400000L){
             dataRBTree.AddItem(id,end - item.length ,end);
             if(item.circle == 0) break; //单次跳出
         }
-        String key = item.title + item.location; //关键词 - 这里的location是数字,之后肯定得换成字符串,或者通过别的方式搜索
-        dataMap.AddMap(key,item.begin);
+        //添加字符树
+        dataMap.AddMap(item.title,item.begin);
         return true;
     }
 //  查找
@@ -68,8 +69,24 @@ public class DataProcessor implements Serializable {
         return list;
     }
 
+    //多关键字查询
+    public  List<MapSortPair> QueryMulti(String key){
+        List<MapSortPair> list = new ArrayList<>();
+        Map<Long, MapSortPair> map = dataMap.MultiSearch(key);
+        for (Long id : map.keySet()){
+            list.add(map.get(id));
+        }
+        //排序下返回,需要快速排序
 
-//    打印数据结构
+        return list;
+    }
+
+
+
+
+
+
+//    打印数据结构 - debug用
     public void print(){
         System.out.println("这页数据的用户组有:");
         for(int i = 0;i < dataItem.users.size();i++){
