@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
@@ -24,5 +25,7 @@ public class SpringMvcConfig implements WebMvcConfigurer {
         registry.addInterceptor(scmsInterceptor).addPathPatterns("/add/*"); //对请求路径进行标识
         registry.addInterceptor(scmsInterceptor).addPathPatterns("/user/*");
         registry.addInterceptor(scmsInterceptor).addPathPatterns("/query/*");
+        registry.addInterceptor(scmsInterceptor).addPathPatterns("/static/*");
     }
+
 }

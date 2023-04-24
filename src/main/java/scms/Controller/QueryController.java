@@ -32,7 +32,8 @@ public class QueryController {
     }
 
     @RequestMapping("/search")
-    public ReturnQueryData QueryKey(@RequestParam("key") String key){
+    public ReturnQueryData QueryKey(@RequestParam("key") String key,@RequestParam("searchmode") int searchmode){
+        System.out.println(searchmode);
         DataManager dataManager = new DataManager();
         return dataManager.QueryMulti(key);
     }
