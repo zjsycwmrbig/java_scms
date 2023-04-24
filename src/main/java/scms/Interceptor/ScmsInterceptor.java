@@ -29,7 +29,7 @@ public class ScmsInterceptor implements HandlerInterceptor {
 //            存在签证
             file = UserManager.GetUser(filePoint);
             BridgeData.setRequestInfo(file);
-            System.out.println(file.toString());
+
         }
         //这里之后需要拦截不存在的请求
         return true;

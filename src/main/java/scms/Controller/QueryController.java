@@ -5,6 +5,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import scms.Service.DataManager;
 import scms.domain.ReturnJson.ReturnEventData;
+import scms.domain.ReturnJson.ReturnQueryData;
 
 import java.util.Date;
 
@@ -30,5 +31,11 @@ public class QueryController {
     public ReturnEventData QueryAll(){
         DataManager dataManager = new DataManager();
         return dataManager.QueryAll();
+    }
+
+    @RequestMapping("/search")
+    public ReturnQueryData QueryKey(@RequestParam("key") String key){
+        DataManager dataManager = new DataManager();
+        return dataManager.QueryMulti(key);
     }
 }

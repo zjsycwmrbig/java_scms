@@ -8,6 +8,7 @@ import scms.domain.GetJson.ClassData;
 
 import scms.domain.ReturnJson.ReturnAddJson;
 import scms.domain.ReturnJson.ReturnEventData;
+import scms.domain.ReturnJson.ReturnQueryData;
 import scms.domain.ServerJson.*;
 
 import java.io.*;
@@ -111,13 +112,15 @@ public class DataManager {
             return new DataRBTree();
         }
     }
-//  根据序号找dataProcessor的方法,后面一定废弃
+
+    //  根据序号找dataProcessor的方法,后面一定废弃
     public DataProcessor GetDataProcessor(int i){//看是owner还是player
         DataProcessor data = owner.get(i);
         if(data == null) return player.get(i);
         else return data;
     }
-//  得到weekIndex的方法,是查询的辅助方法
+
+    //  得到weekIndex的方法,是查询的辅助方法
     private int GetWeekIndex(long begin){
         Calendar now = Calendar.getInstance();
         now.setTime(new Date(begin));
@@ -213,6 +216,8 @@ public class DataManager {
         }
         return clashData;
     }
+
+
 //    查
     //查询当前一周的数据,并且按照规定好的数据格式返回
     public ReturnEventData QueryWeek(Date date){
@@ -280,6 +285,43 @@ public class DataManager {
         user = BridgeData.getRequestInfo();
         return new ReturnEventData();
     }
+    //多关键字查询
+    public ReturnQueryData QueryMulti(String key){
+        //多文件查询
+        ReturnQueryData returnQueryData = new ReturnQueryData();
+        returnQueryData.list = new ArrayList<>();
+
+
+        //查询owner文件
+        if(owner != null){
+            for(int i = 0;i < owner.size();i++){
+                List<MapSortPair> list = owner.get(i).QueryMulti(key);
+                for(MapSortPair mapSortPair : list){
+                    ClassData data = owner.get(i).dataItem.SearchItem(mapSortPair.id);//获得数据
+                    returnQueryData.list.add(new QueryEventItem(data,mapSortPair.score));
+                }
+
+            }
+        }
+        //查询player文件
+        if(player != null){
+            for(int i = 0;i < player.size();i++){
+                List<MapSortPair> list = owner.get(i).QueryMulti(key);
+                for(MapSortPair mapSortPair : list){
+                    ClassData data = player.get(i).dataItem.SearchItem(mapSortPair.id);//获得数据
+                    returnQueryData.list.add(new QueryEventItem(data,mapSortPair.score));
+                }
+            }
+        }
+        //排序
+        Collections.sort(returnQueryData.list,new compareQuery());
+        //填充
+        return  returnQueryData;
+    }
+
+
+
+
 //  存储该用户文件,按照等级存储
     public boolean Save(){
         if(owner != null && owner.size() != 0){
