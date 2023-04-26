@@ -13,11 +13,11 @@ import java.util.LinkedList;
  * @author seaside
  * 2023-03-22 15:59
  */
-//@RestController
-//@RequestMapping("/god")
+@RestController
+@RequestMapping("/navigate")
 public class NavigationController {
     Vertex[] vertexes = null; //共有126个顶点，但第一个顶点在json文件中编号为1，所以数组0号不用
-    //@RequestMapping("/readmap")
+    @RequestMapping("/readMap")
     public void readMap() throws IOException {
         //从边的json中读取
         ObjectMapper Json = new ObjectMapper();
@@ -74,6 +74,7 @@ public class NavigationController {
             }
         }*///输出每条边，以对照是否反序列化正确，后续可以删掉。。。。。
     }
+    @RequestMapping("/oneTarget")
     public String getShortedPath(int startNumber,int endNumber,int mode){
         //使用迪杰斯特拉算法得到最短路径
         //mode == 1 返回最短路径， mode == 2 时返回最短路径的长度
@@ -136,7 +137,6 @@ public class NavigationController {
             return String.valueOf(distanceToAll[endNumber]);
         }
     }
-    @RequestMapping("/moretargets")
     public String getPathWithMoreTargets(int startNumber,int[] targetNumbers){
         String path = "";
         CrossLinkedListVertex[] necessaryVertexes = new CrossLinkedListVertex[targetNumbers.length + 1];
@@ -366,6 +366,7 @@ public class NavigationController {
         }
     }
 
+    @RequestMapping("/moreTargets")
     public String getPathWithMoreTargetsUsingARA(int startNumber,int[] targetNumbers){
         String path = "";
         ARAVertex[] araVertices = new ARAVertex[targetNumbers.length +1]; //ARA算法使用的顶点也都是必经点

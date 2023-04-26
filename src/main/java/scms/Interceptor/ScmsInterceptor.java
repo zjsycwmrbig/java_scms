@@ -53,12 +53,15 @@ public class ScmsInterceptor implements HandlerInterceptor {
         UserFile userFile = BridgeData.getRequestInfo();
         if(userFile == null) return;//注册的时候没有userFile
         File UserPath = UserRBTree.searchFile(userFile.username);
-        String LogPath = UserPath.getAbsolutePath().concat("Log.txt");
-        //根据请求得到一行的日志字符串，格式为 xxxx年xx月xx日 xx时xx分xx秒 用户调用的方法名为 xxxxxx
+        String LogPath = UserPath.getAbsolutePath().concat("\\Log.txt");
+
+        //根据请求得到一行的日志字符串，格式为 xxxx年xx月xx日 xx时xx分xx秒 “用户名” “操作”
         LocalDateTime localDateTime = LocalDateTime.now();
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy年MM月dd日 HH时mm分ss秒");
         String timeString =dateTimeFormatter.format(localDateTime);
-        String logString = timeString.concat(" 用户调用的方法名为 "+handlerMethod.getMethod().getName());
+        ////先根据方法名，用静态方法getFunctionString得到对应操作字符串。后续如果要改成用请求名或者请求名+方法名搭配着用的话，在getFunctionString中修改
+        String logString = timeString.concat(" " + userFile.username + " "+ FunctionMatch.getFunctionString(handlerMethod.getMethod().getName()) + "\n");
+
         //FileWriter文件流，向日志文件中添加字符串
         FileWriter fileWriter = new FileWriter(LogPath,true);
         fileWriter.write(logString);
