@@ -21,7 +21,6 @@ import java.util.Map;
 @Component
 // 三剑客数据
 public class DataProcessor implements Serializable {
-    File Point;//指向的指针,通过user可以直接找到
 //    序列化和反序列化都在这里
     @Autowired
     public DataItem dataItem;
@@ -30,6 +29,7 @@ public class DataProcessor implements Serializable {
     @Autowired
     public DataRBTree dataRBTree;//这个后面应该是多个DataRBTree
 
+    public String name; //该组织的名字
     public DataProcessor() {
         dataItem = new DataItem();
         dataMap = new DataMap();
@@ -80,11 +80,6 @@ public class DataProcessor implements Serializable {
 
         return list;
     }
-
-
-
-
-
 
 //    打印数据结构 - debug用
     public void print(){

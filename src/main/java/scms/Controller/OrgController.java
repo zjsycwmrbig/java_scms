@@ -3,6 +3,7 @@ package scms.Controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import scms.Service.UserManager;
 import scms.domain.GetJson.GetOrgInviteData;
@@ -33,7 +34,14 @@ public class OrgController {
 
         return UserManager.AddNotice(data.userlist,notice);
     }
-
+    @RequestMapping("create")
+    public ReturnJson OrgCreate(@RequestParam String org){
+        //接收org名称
+        // -1.org已经存在
+        // -2.捕获异常
+        ReturnJson returnJson = new ReturnJson(true,"组织创建成功");
+        return  returnJson;
+    }
     @RequestMapping("/jion")
     public ReturnJson OrgJion(@RequestBody GetOrgJionData data){
         //加入某个组织,默认已经通过拦截

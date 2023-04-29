@@ -5,10 +5,16 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import scms.Interceptor.BridgeData;
+import scms.Service.OnlineManager;
 import scms.domain.GetJson.GetOrgJionData;
 import scms.domain.GetMapJson.NoticeMaker;
 import scms.domain.ReturnJson.ReturnJson;
 import scms.domain.ServerJson.NoticeData;
+import scms.domain.ServerJson.OnlineData;
+import scms.domain.ServerJson.UserFile;
+
+import java.util.List;
 
 /***
  * @author Administrator
@@ -58,6 +64,12 @@ public class NoticeController {
         return new ReturnJson(true,"");
     }
 
-    //忽略通知
-
+    //轮询获取通知
+    // 这里起始有个问题,怎么确定通知里面是不是新的,可以通过通知的有序添加完成
+    @RequestMapping("/Polling")
+    public List<NoticeData> NoticePolling(){
+        //只能从在线树中获得,并且必然不是null
+        OnlineData onlineData = OnlineManager.PiggySearch(BridgeData.getRequestInfo().username);
+        return ((UserFile)(onlineData.data)).notice;//返回数据
+    }
 }

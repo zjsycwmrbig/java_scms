@@ -31,15 +31,18 @@ public class DataManager {
     public DataManager() {
         //只有自己才能操作自己的Data
         user = BridgeData.getRequestInfo();
-        //先查在线树,后自己从内存里拿
-        OnlineData onlineData = null;
-        if(user!=null) onlineData = OnlineManager.GetData(user.username);
-        if(onlineData != null) {
-            this.owner = onlineData.data.owner;
-            this.player = onlineData.data.player;
-        }else{
-            assert user != null;
-            GetData(user);//根据user获取数据
+        //依次填充数据
+        owner = new ArrayList<>();
+        if(user.owner!=null){
+            for(int i = 0;i < user.owner.size();i++){
+                owner.add(OnlineManager.GetEventData(user.owner.get(i).getName()));
+            }
+        }
+        player = new ArrayList<>();
+        if(user.player!=null){
+            for(int i = 0;i < user.player.size();i++){
+                owner.add(OnlineManager.GetEventData(user.player.get(i).getName()));
+            }
         }
     }
     private void GetData(UserFile user){
@@ -56,15 +59,12 @@ public class DataManager {
             }
         }
     }
-    public DataManager(UserFile User){ //有参构造
-        user = User;
-        GetData(User);
-    }
 
-
+    //对org数据进行填充,一般走投无路进行填充,最好在onlinedata里面能找到
     private DataProcessor Fill(File file){
 //        给出的是file目录,我们要的是下面的文件
         DataProcessor dataProcessor = new DataProcessor();
+        dataProcessor.name = file.getName();//获得name
         File tempFile = FileManager.NextFile(file,"DataItem");
         try {
             ObjectInputStream ois = new ObjectInputStream(new FileInputStream(tempFile));
@@ -104,11 +104,6 @@ public class DataManager {
     }
 
     //  根据序号找dataProcessor的方法,后面一定废弃
-    public DataProcessor GetDataProcessor(int i){//看是owner还是player
-        DataProcessor data = owner.get(i);
-        if(data == null) return player.get(i);
-        else return data;
-    }
 
     //  得到weekIndex的方法,是查询的辅助方法
     private int GetWeekIndex(long begin){

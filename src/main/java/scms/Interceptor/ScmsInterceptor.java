@@ -41,8 +41,8 @@ public class ScmsInterceptor implements HandlerInterceptor {
 
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
-        //在请求处理之后进行处理，注意不要有两次请求
-        //System.out.print(request.getHeader("content-type")); //输出请求的各种信息，需对应请求格式，感觉日志只需要方法名称
+//        在请求处理之后进行处理，注意不要有两次请求
+        System.out.print(request.getHeader("content-type")); //输出请求的各种信息，需对应请求格式，感觉日志只需要方法名称
 
         System.out.println("postHandle Method");
         HandlerMethod handlerMethod = (HandlerMethod) handler;

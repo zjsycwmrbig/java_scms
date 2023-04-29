@@ -1,17 +1,13 @@
 package scms.Service;
 
-import scms.Dao.DataProcessor;
-import scms.Dao.RBTree;
+import scms.Dao.*;
 import scms.Interceptor.FileManager;
 import scms.domain.ReturnJson.ReturnJson;
 import scms.domain.ServerJson.OnlineData;
 import scms.domain.ServerJson.RBTNode;
 import scms.domain.ServerJson.UserFile;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.util.Date;
 import java.util.Stack;
 
@@ -23,27 +19,65 @@ import java.util.Stack;
  * 2. 登出时销毁在线树
  * 3. 访问时先访问在线树 -修改用户信息 -修改课程信息 -修改组织信息
  * 4. 唯一需要绕开在线树通知的是添加通知给某些用户
+ * 5. 多用户文件也需要创建一个在线数据树,这个也需要重新新建一个
  */
 
 public class OnlineManager {
-    final static long LeaveTime = 10*10*1000;//设置多久一个用户才算离去,这里设置100s
-    static RBTree<OnlineData,Long> onlineTree = new RBTree<>();
-    static Stack<RBTNode> LeaveUser = new Stack<>();//离去的用户
-    //返回在在线树里面找到的数据
-    static OnlineData GetData(Long user){
-        return PiggySearch(user);
-    }
-    // 特殊的search
-    static OnlineData PiggySearch(Long user){
-        return PiggySearch(onlineTree.Root,user);
+
+    //设置多久一个用户和一份数据多久才算离去,这里设置100s
+    final static long LeaveTime = 10*10*1000;
+    static RBTree<OnlineData<UserFile>,Long> onlineUser = new RBTree<>();//在线用户cache
+    static RBTree<OnlineData<DataProcessor>,String> onlineData = new RBTree<>();//在线数据cache
+    static Stack<RBTNode> Leave = new Stack<>();//离去的用户和数据
+
+    //返回在在线树里面找到的用户数据,找不到就返回在系统中找到的数据,最后是null代表没有
+    static UserFile GetUserData(Long user){
+        OnlineData<UserFile> res = PiggySearch(user);
+        if(res != null) return res.data;
+        else {
+            //没有 必须从文件里读取
+            UserFile userFile = ReadUserFile(UserRBTree.searchFile(user));
+            AddOnlineUser(userFile);
+            return userFile;
+        }
     }
 
-    static OnlineData PiggySearch(RBTNode x,Long key){
+    //返回在online里面找到的Processor
+    static DataProcessor GetEventData(String org){
+        OnlineData<DataProcessor> res = PiggySearch(org);
+        if(res != null) return res.data;
+        else {
+            System.out.println(DatabaseRBTree.searchFile(org).getAbsoluteFile());
+            DataProcessor dataProcessor = ReadDataProcessor(DatabaseRBTree.searchFile(org));
+            AddOnlineData(dataProcessor);
+            return dataProcessor;
+        }
+    }
+    // 特殊的search
+
+    static public OnlineData PiggySearch(Long user){
+        RBTNode node = PiggySearch(onlineUser.Root,user);
+        if(node != null) return (OnlineData) (node.vaule);
+        else return null;
+    }
+
+    static public OnlineData PiggySearch(String org){
+        RBTNode node = PiggySearch(onlineData.Root,org);
+        if(node != null) return (OnlineData) (node.vaule);
+        else return null;
+
+
+    }
+    //泛型寻找
+    static RBTNode PiggySearch(RBTNode x,Object key){
         if (x==null) return null;
-        int cmp = (key).compareTo((Long) x.key);
+        int cmp;
+        if(key instanceof Long) cmp = ((Long)(key)).compareTo((Long) x.key);
+        else cmp = ((String)(key)).compareTo((String) x.key);
+
         if(cmp != 0){
-            if((new Date()).getTime()-((OnlineData)(x.vaule)).lastLogin.getTime()> LeaveTime){
-                LeaveUser.push(x);//把x加入LeaveUser的栈里面,定时清理这个离开的栈
+            if(IsDeadNode(x)){
+                Leave.push(x);//把x加入LeaveUser的栈里面,定时清理这个离开的栈
             }
         }
         if (cmp < 0) {
@@ -53,85 +87,182 @@ public class OnlineManager {
             return PiggySearch(x.right, key);
         }
         else {
-            ((OnlineData)(x.vaule)).lastLogin = (new Date());//赋值为最新的
-            return (OnlineData) (x.vaule);
+            if(((OnlineData)(x.vaule)).data instanceof UserFile) ((OnlineData)(x.vaule)).cache = (new Date()).getTime();//如果是用户的话赋值为最新的
+            return  x;
         }
     }
 
-    //添加用户到在线树
-    static private void AddOnline(OnlineData data){
-        onlineTree.insert(data,data.user.username);
+    static private void AddOnlineDataList(OnlineData data){
+        if(data == null) return;
+        if(data.data instanceof UserFile) onlineUser.insert(data,((UserFile) data.data).username);
+        else onlineData.insert(data,((DataProcessor)(data.data)).name);
     }
 
-    static public void AddOnline(UserFile user){
-        OnlineData onlineData = new OnlineData();
-        onlineData.user = user;
-        onlineData.data = new DataManager(user);//创建一个DataManager
-        onlineData.lastLogin = new Date();
-        AddOnline(onlineData);
+    //添加用户或者数据到在线树
+    // ---重点是不能添加重复!!!
+
+    //添加一整套数据到在线树,一般是
+    static public void AddOnlineDataList(UserFile user){
+        //只是把所有的datalist加入在线树
+        if(user.owner != null && user.owner.size() != 0){
+            for(int i = 0;i < user.owner.size();i++){
+                AddOnlineData(ReadDataProcessor(user.owner.get(i)));
+            }
+        }
+
+        if(user.player != null &&user.player.size() != 0){
+            for(int i = 0 ;i < user.player.size();i++){
+                AddOnlineData(ReadDataProcessor(user.player.get(i)));
+            }
+        }
+        //一个一个的加入,主要在登录的时候使用这个
     }
 
-    //删除用户树,指定一个清除
-    static public ReturnJson RemoveOnline(Long user){
+    static public void AddOnlineUser(UserFile user){
+        if(PiggySearch(user.username)==null){
+            OnlineData onlineData = new OnlineData();
+            onlineData.data = user;
+            onlineData.cache = (new Date()).getTime();
+            AddOnlineDataList(onlineData); //添加用户在线信息
+        }
+    }
+
+    static  public void AddOnlineData(DataProcessor data){
+        RBTNode node = PiggySearch(onlineData.Root,data.name);
+        if(node ==null){
+            OnlineData onlineData = new OnlineData();
+            onlineData.data = data;
+            onlineData.cache = 1L;
+            AddOnlineDataList(onlineData);//添加数据cache信息
+        }else{
+            //不是空,那就是需要加一
+            ((OnlineData)(node.vaule)).cache ++;//加1
+        }
+    }
+
+    //删除用户树,指定一个清除,捎带删除相关的组织数据
+    static public ReturnJson RemoveOnline(Long username){
         ReturnJson returnJson = new ReturnJson(true,"登出成功");
-        RBTNode node = onlineTree.searchNode(onlineTree.Root,user);
+
+        RBTNode node = onlineUser.searchNode(onlineUser.Root,username);//查询用户节点
+
         if(node != null) {
             try {
-                ((OnlineData) node.vaule).data.owner.get(0).print();
-                SaveFile((OnlineData) node.vaule);//这个地方保存失败！！！
-
-                System.out.println("进行移除");
-
-                onlineTree.remove(node);
-                System.out.println(PiggySearch(user));
+                SaveUser((UserFile) (((OnlineData) (node.vaule)).data));
+                onlineUser.remove(node);
             }catch (Exception e){
                 returnJson.res = false;
                 returnJson.state = "服务器出错";
+                return returnJson;
             }
         }else{
             returnJson.res =false;
             returnJson.state = "用户未登录";
+            return returnJson;
         }
-        return returnJson;
-    }
-    //清除Leave用户栈
-    static public void ClearLeave(){
-        while(!LeaveUser.empty()){//栈非空,一个个清除数据
-            onlineTree.remove(LeaveUser.pop());
-        }
-    }
+        //移除data
+        UserFile user = (UserFile) (((OnlineData) (node.vaule)).data);
 
-    //保存用户数据
-    static public boolean SaveFile(OnlineData data){
-        //存储用户信息
-        try {
-            FileOutputStream fileOut = new FileOutputStream(UserManager.GetUserFile(data.user.file));//session中存储用户username和file地址!!!
-            ObjectOutputStream out = new ObjectOutputStream(fileOut);
-            out.writeObject(data.user);
-            out.close();
-            fileOut.close();
-        }catch (Exception e){
-            return false;
-        }
-        //存储数据信息
-        return SaveData(data.user, data.data);
-    }
-    public static boolean SaveData(UserFile user, DataManager data){
         if(user.owner != null && user.owner.size() != 0){
             for(int i = 0;i < user.owner.size();i++){
-                if(!SaveDataItem(data.owner.get(i),user.owner.get(i))) return false;//一个个保存
+                node = onlineData.searchNode(onlineData.Root,user.owner.get(i).getName());//找到节点
+                ((OnlineData)(node.vaule)).cache --;
+                if(IsDeadNode(node)){
+                    SaveDataProcessor((DataProcessor) (((OnlineData) (node.vaule)).data),user.owner.get(i));//保存起来
+                    onlineData.remove(node);
+                }
             }
         }
 
         if(user.player != null && user.player.size() != 0){
             for(int i = 0 ;i < user.player.size();i++){
-                if(!SaveDataItem(data.player.get(i),user.player.get(i)))return false;//一个个保存
+                node = onlineData.searchNode(onlineData.Root,user.player.get(i).getName());//找到节点
+                ((OnlineData)(node.vaule)).cache --;
+                if(IsDeadNode(node)){
+                    SaveDataProcessor((DataProcessor) (((OnlineData) (node.vaule)).data),user.player.get(i));//保存起来
+                    onlineData.remove(node);
+                }
             }
+        }
+
+        return returnJson;
+    }
+    //清除Leave用户栈
+    static public void ClearLeave(){
+        while(!Leave.empty()){//栈非空,一个个清除数据
+            onlineUser.remove(Leave.pop());
+        }
+    }
+
+
+    //读取数据
+    //获取用户信息
+    static private UserFile ReadUserFile(File file){
+        UserFile userFile;
+        try {
+            ObjectInputStream ois = new ObjectInputStream(new FileInputStream(UserManager.GetUserFile(file)));
+            userFile = (UserFile) ois.readObject();
+            ois.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            userFile = null;
+        }
+        return userFile;
+    }
+
+    //读取一个Data
+    static private DataProcessor ReadDataProcessor(File file){
+        DataProcessor dataProcessor = new DataProcessor();
+        dataProcessor.name = file.getName();//获得name
+
+        File tempFile = FileManager.NextFile(file,"DataItem");
+        try {
+            ObjectInputStream ois = new ObjectInputStream(new FileInputStream(tempFile));
+            dataProcessor.dataItem = (DataItem) ois.readObject();
+            ois.close();
+        } catch (Exception e) {
+            dataProcessor.dataItem = new DataItem();
+            System.out.println("File is empty,Creat new DataItem");
+        }
+
+        tempFile = FileManager.NextFile(file,"DataMap");
+        try {
+            ObjectInputStream ois = new ObjectInputStream(new FileInputStream(tempFile));
+            dataProcessor.dataMap = (DataMap) ois.readObject();
+            ois.close();
+        } catch (Exception e) {
+            dataProcessor.dataMap = new DataMap();
+            System.out.println("File is empty,Creat new DataMap");
+        }
+        tempFile = FileManager.NextFile(file,"DataRBTree");
+        try {
+            ObjectInputStream ois = new ObjectInputStream(new FileInputStream(tempFile));
+            dataProcessor.dataRBTree = (DataRBTree)ois.readObject();
+            ois.close();
+        } catch (Exception e) {
+            System.out.println("File is empty,Creat new DataRBTree");
+        }
+        return dataProcessor;
+    }
+
+    //保存用户数据
+
+    static private boolean SaveUser(UserFile user){
+        //存储用户信息
+        try {
+            FileOutputStream fileOut = new FileOutputStream(UserManager.GetUserFile(user.file));
+            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+            out.writeObject(user);
+            out.close();
+            fileOut.close();
+        }catch (Exception e){
+            return false;
         }
         return true;
     }
+
     //依次存储DataProcess
-    private static boolean SaveDataItem(DataProcessor data, File file){
+    private static boolean SaveDataProcessor(DataProcessor data, File file){
         File tempFile = FileManager.NextFile(file,"DataItem");
         System.out.println("保存到"+tempFile.getAbsolutePath());
         try {
@@ -170,5 +301,20 @@ public class OnlineManager {
         }
 
         return true;
+    }
+
+
+    private static boolean IsDeadNode(RBTNode node){
+        if(((OnlineData) (node.vaule)).data instanceof UserFile){
+            if((new Date()).getTime() - ((OnlineData) (node.vaule)).cache > LeaveTime){
+                return true;
+            }
+        }else{
+            //给组织的cache指标是相关性
+            if(((OnlineData) (node.vaule)).cache <= 0){
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -33,47 +33,30 @@ public class UserManager {
     public static File GetImageFile(File file){//用户的照片信息
         return new File("D:\\SCMSFILE\\FileManager\\ImageFile"+'/'+file.getName()+".png");
     }
-
     //    登录服务 -- 比对用户名和密码,成功返回用户数据
     public static ReturnUserData CheckLogin(GetUserData user, HttpServletRequest request){
         ReturnUserData returnUserData = new ReturnUserData("","",""); //初始化内容
-        OnlineData online = OnlineManager.PiggySearch(user.getUsername());
-        UserFile userFile = null;
-        File file = null;
-        if(online != null){
-            //在在线树里面找到了该数据
-            userFile = online.user;
-        }else{
-            UserRBTree.Init(); //读取二叉树
-            file = UserRBTree.searchFile(user.getUsername());//读取user位置
-            if(file == null) {
+        UserFile userFile = OnlineManager.GetUserData(user.getUsername());
+        if(userFile == null) {
                 returnUserData.res = false;
                 returnUserData.state = "用户不存在";
                 return returnUserData;
-            }//返回null代表登录失败
-            else{
-                //找到用户文件
-                userFile = GetUser(file);
-            }
-        }
+        }//返回null代表登录失败
         returnUserData = GetUserData(userFile,user.getPassword());//在用户文件里面查找比对信息
 
-        if(returnUserData.state == "登录成功" && online == null){
-            returnUserData.res = true;
-            //添加在线树
-            OnlineManager.AddOnline(userFile);
+        if(returnUserData.state == "登录成功"){
             // 颁发签证
             HttpSession session = request.getSession();
             session.setMaxInactiveInterval(VisitTime);  //设置持续session时长为12个小时
-            session.setAttribute("User",file);//存放的是file指针
+            session.setAttribute("User",userFile.file);//存放的是file指针
             System.out.println("签证设置成功");
         }
+
         return returnUserData;
     }
 
     //    注册服务 -- 注册创建一个文件,并且存储起来,后面也可以直接设置成登录
     public static ReturnUserData Register(GetUserData user){
-        UserRBTree.Init();//读取用户树
         if(UserRBTree.searchFile(user.getUsername())==null){
             File file = UserRBTree.AddItem(user.getUsername());//获得File文件,创建文件,写入文件树,写入UserFile数据
             //拿到数据文件指针,然后放到文件里面去
@@ -92,7 +75,8 @@ public class UserManager {
             return returnUserData;
         }
     }
-//    找到文件中的内容返回
+
+    //    找到文件中的内容返回
     private static ReturnUserData GetUserData(UserFile userFile,String password){
         // 序列化 - 转换结构
         ReturnUserData res = new ReturnUserData("游客","","");
@@ -183,6 +167,11 @@ public class UserManager {
         }
         return userFile;
     }
+    //返回根据long找到的user
+    static public UserFile GetUser(Long user){
+        File file = UserRBTree.searchFile(user);//读取user位置
+        return GetUser(file);
+    }
     //  和register配套的保存数据
     static public boolean SaveUser(File file,UserFile user){
         try {
@@ -219,18 +208,14 @@ public class UserManager {
         returnJson.res = true;
         try {
             for (Long user : username){
-                //依次寻找目的用户
-                File userPath = UserRBTree.searchFile(user);
-                if (userPath == null){
+                //依次寻找目的用户,首先探寻在线树中有没有目标
+                UserFile userFile = OnlineManager.GetUserData(user);
+                if (userFile == null) {
                     returnJson.res = false;
                     returnJson.state = "用户不存在";
                     break;
-                }else{
-                    //取出来,修改userFile,放进去
-                    UserFile userFile = GetUser(userPath);
-                    userFile.notice.add(notice);
-                    SaveUser(userPath,userFile);
                 }
+                userFile.notice.add(notice);
             }
         }catch (Exception e) {
             returnJson.res = false;
@@ -238,7 +223,13 @@ public class UserManager {
         }
         return returnJson;
     }
+
     //修改用户文件,添加组织,接收一个Get,修改文件,给出文件,修改后面看看是不是要放到后面
 
     //添加组织删除组织
+
+    //添加组织需要注意的一点是,在线树更新后对应的服务器数据需要更新!!!
+    static public ReturnJson AddOrg(String org){
+        return  new ReturnJson(true,"");
+    }
 }
