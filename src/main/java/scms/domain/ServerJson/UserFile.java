@@ -2,6 +2,7 @@ package scms.domain.ServerJson;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /***
@@ -15,7 +16,8 @@ public class UserFile implements Serializable {
         this.username = username;
         this.netname = netname;
         this.password = password;
-        PersonalWord = personalWord;
+        this.PersonalWord = personalWord;
+        this.notice = new ArrayList<>();//创建对象
     }
 
     public long username;//账号
@@ -29,4 +31,7 @@ public class UserFile implements Serializable {
 
     public List<File> player;//使用者,只读权限
 
+    public List<NoticeData> notice; //通知
+
+    public File file;//文件位置
 }

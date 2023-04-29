@@ -1,5 +1,7 @@
 package scms.domain.ReturnJson;
 
+import scms.domain.ServerJson.NoticeData;
+
 import java.util.List;
 
 /***
@@ -9,9 +11,9 @@ import java.util.List;
  */
 public class ReturnUserData extends ReturnJson{
     public ReturnUserData(String netname, String personalWord,String state) {
+        super(true,state);
         this.netname = netname;
-        PersonalWord = personalWord;
-        super.state = state;
+        this.PersonalWord = personalWord;
     }
     public String netname;
 
@@ -19,5 +21,6 @@ public class ReturnUserData extends ReturnJson{
 
     public List<String> owner;
     public List<String> player;
+    public List<NoticeData> tips;
 
 }

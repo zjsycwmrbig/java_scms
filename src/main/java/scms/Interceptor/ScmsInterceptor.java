@@ -13,7 +13,6 @@ import scms.domain.ServerJson.UserFile;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -35,10 +34,8 @@ public class ScmsInterceptor implements HandlerInterceptor {
 //            存在签证
             file = UserManager.GetUser(filePoint);
             BridgeData.setRequestInfo(file);
-
         }
         //这里之后需要拦截不存在的请求，应该返回false
-        System.out.println("preHandle Method");
         return true; //返回true表示请求放行
     }
 
@@ -46,24 +43,24 @@ public class ScmsInterceptor implements HandlerInterceptor {
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
         //在请求处理之后进行处理，注意不要有两次请求
         //System.out.print(request.getHeader("content-type")); //输出请求的各种信息，需对应请求格式，感觉日志只需要方法名称
-        System.out.println("postHandle Method");
-        HandlerMethod handlerMethod = (HandlerMethod) handler;
-        System.out.println("调用的方法名为" + handlerMethod.getMethod().getName()); //输出方法的名称
-        //根据请求得到学生文件路径
-        UserFile userFile = BridgeData.getRequestInfo();
-        if(userFile == null) return;//注册的时候没有userFile
-        File UserPath = UserRBTree.searchFile(userFile.username);
-        String LogPath = UserPath.getAbsolutePath().concat("Log.txt");
-        //根据请求得到一行的日志字符串，格式为 xxxx年xx月xx日 xx时xx分xx秒 用户调用的方法名为 xxxxxx
-        LocalDateTime localDateTime = LocalDateTime.now();
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy年MM月dd日 HH时mm分ss秒");
-        String timeString =dateTimeFormatter.format(localDateTime);
-        String logString = timeString.concat(" 用户调用的方法名为 "+handlerMethod.getMethod().getName());
-        //FileWriter文件流，向日志文件中添加字符串
-        FileWriter fileWriter = new FileWriter(LogPath,true);
-        fileWriter.write(logString);
-        fileWriter.close();
-        System.out.println("添加日志信息成功");
+//        System.out.println("postHandle Method");
+//        HandlerMethod handlerMethod = (HandlerMethod) handler;
+//        System.out.println("调用的方法名为" + handlerMethod.getMethod().getName()); //输出方法的名称
+//        //根据请求得到学生文件路径
+//        UserFile userFile = BridgeData.getRequestInfo();
+//        if(userFile == null) return;//注册的时候没有userFile
+//        File UserPath = UserRBTree.searchFile(userFile.username);
+//        String LogPath = UserPath.getAbsolutePath().concat("Log.txt");
+//        //根据请求得到一行的日志字符串，格式为 xxxx年xx月xx日 xx时xx分xx秒 用户调用的方法名为 xxxxxx
+//        LocalDateTime localDateTime = LocalDateTime.now();
+//        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy年MM月dd日 HH时mm分ss秒");
+//        String timeString =dateTimeFormatter.format(localDateTime);
+//        String logString = timeString.concat(" 用户调用的方法名为 "+handlerMethod.getMethod().getName());
+//        //FileWriter文件流，向日志文件中添加字符串
+//        FileWriter fileWriter = new FileWriter(LogPath,true);
+//        fileWriter.write(logString);
+//        fileWriter.close();
+//        System.out.println("添加日志信息成功");
     }
 
     @Override

@@ -12,6 +12,7 @@ import java.util.ArrayList;
  */
 public class ReturnEventData extends ReturnJson{
     public ReturnEventData() {
+        super(true,"");
         this.events = new ArrayList<>();this.routines = new ArrayList<>();
     }
 

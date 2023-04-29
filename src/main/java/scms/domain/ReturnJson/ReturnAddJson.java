@@ -11,4 +11,8 @@ import java.util.List;
  */
 public class ReturnAddJson extends ReturnJson{
     public List<ClashData> clashList;
+
+    public ReturnAddJson(boolean res, String state) {
+        super(res, state);
+    }
 }

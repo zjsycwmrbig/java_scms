@@ -22,21 +22,27 @@ import java.util.*;
  * @function 处理多个DataProcess
  */
 public class DataManager {
-    public static final int ADD = 1;
-    public static final int REMOVE = 1;
-    public static final int QUERYBYTIME = 1;
-    public static final int QUERYBYKEY = 2;
 
-    public static final int CLASH = 3;
     public UserFile user;
 //    给出该用户需要的处理器集合
     public List<DataProcessor> owner;
     public List<DataProcessor> player;
 
-    public List<File> changeStack;//改动栈,改动的才保存
-
     public DataManager() {
+        //只有自己才能操作自己的Data
         user = BridgeData.getRequestInfo();
+        //先查在线树,后自己从内存里拿
+        OnlineData onlineData = null;
+        if(user!=null) onlineData = OnlineManager.GetData(user.username);
+        if(onlineData != null) {
+            this.owner = onlineData.data.owner;
+            this.player = onlineData.data.player;
+        }else{
+            assert user != null;
+            GetData(user);//根据user获取数据
+        }
+    }
+    private void GetData(UserFile user){
         owner = new ArrayList<>();
         if(user.owner!=null){
             for(int i = 0;i < user.owner.size();i++){
@@ -50,28 +56,12 @@ public class DataManager {
             }
         }
     }
+    public DataManager(UserFile User){ //有参构造
+        user = User;
+        GetData(User);
+    }
 
-//    public boolean Init(){//给出data的文件指针，找到位置
-//        user = BridgeData.getRequestInfo();
-//        owner = new HashMap<>();
-//        if(user.owner!=null){
-//            for(int i = 0;i < user.owner.size();i++){
-//                owner.put(user.owner.get(i),Fill(user.owner.get(i)));
-//            }
-//        }
-//        player = new HashMap<>();
-//        if(user.owner!=null){
-//            for(int i = 0;i < user.player.size();i++){
-//                owner.put(user.player.get(i),Fill(user.player.get(i)));
-//            }
-//        }
-//        if(owner == null) return false;
-//
-//        return true;
-//    }
-//  反序列化DataProcessor
-//    dataProcessor填充方法
-//    填充序列化的方法
+
     private DataProcessor Fill(File file){
 //        给出的是file目录,我们要的是下面的文件
         DataProcessor dataProcessor = new DataProcessor();
@@ -128,18 +118,19 @@ public class DataManager {
     }
 //    增
 //    添加一个数据,校验一个
-    public ReturnAddJson AddItem(int i, ClassData item){
-        DataProcessor data = owner.get(i);
-        ReturnAddJson returnAddJson = ClashCheck(i,item);
+    public ReturnAddJson AddItem(ClassData item){
+        int index = item.type;//得到type,代表是那一份数据
+        DataProcessor data = owner.get(index);
+        ReturnAddJson returnAddJson = ClashCheck(item);
         if(returnAddJson.res){
             data.AddItem(item);
         }
         return returnAddJson;
     }
 //  按照owner中数据页的序号找到data的页面
-    private ReturnAddJson ClashCheck(int i,ClassData item){
+    private ReturnAddJson ClashCheck(ClassData item){
+        int i = item.type;
         // pre.先比较本人和这个时间的冲突
-
         // 1.得到所有用户数据文件
         List<Long> users = owner.get(i).dataItem.users;
         // 2.依次取出其中的dataRBtree
@@ -148,11 +139,13 @@ public class DataManager {
             usersFile.add(UserRBTree.searchFile(users.get(j)));
         }
         // 3.依次比对每个用户和数据,给出数据返回,包括是否比对成功,每个用户的情况
-        ReturnAddJson returnAddJson = new ReturnAddJson();
+        ReturnAddJson returnAddJson = new ReturnAddJson(true,"");
         returnAddJson.res =true;
         returnAddJson.clashList = new ArrayList<>();//新建一个
         ClashData temp = ClashCheck(usersFile.get(0),item,1);
+
         returnAddJson.clashList.add(temp); //先查找本人的行程
+
         if(temp.clashNum != 0) returnAddJson.res = false;
         for(int j = 1;j < usersFile.size();j++){
             temp = ClashCheck(usersFile.get(j),item,0);
@@ -319,63 +312,60 @@ public class DataManager {
         return  returnQueryData;
     }
 
-
-
-
 //  存储该用户文件,按照等级存储
-    public boolean Save(){
-        if(owner != null && owner.size() != 0){
-            for(int i = 0;i < owner.size();i++){
-                if(!SaveItem(owner.get(i),user.owner.get(i))) return false;//一个个保存
-            }
-        }
-
-        if(player != null && player.size() != 0){
-            for(int i = 0 ;i < player.size();i++){
-                if(!SaveItem(player.get(i),user.player.get(i)))return false;//一个个保存
-            }
-        }
-        return true;
-    }
+//    public boolean Save(){
+//        if(owner != null && owner.size() != 0){
+//            for(int i = 0;i < owner.size();i++){
+//                if(!SaveItem(owner.get(i),user.owner.get(i))) return false;//一个个保存
+//            }
+//        }
+//
+//        if(player != null && player.size() != 0){
+//            for(int i = 0 ;i < player.size();i++){
+//                if(!SaveItem(player.get(i),user.player.get(i)))return false;//一个个保存
+//            }
+//        }
+//        return true;
+//    }
 //  分文件存储
 //  --后期直接记录存储位置,按需存储,比如改动了一个文件就暂存起来
-    private  boolean SaveItem(DataProcessor data,File file){
-        File tempFile = FileManager.NextFile(file,"DataItem");
-        try {
-            FileOutputStream fileOut1 = new FileOutputStream(tempFile);
-            ObjectOutputStream out1 = new ObjectOutputStream(fileOut1);
-            out1.writeObject(data.dataItem);
-            out1.close();
-            fileOut1.close();
-        } catch (IOException i) {
-            i.printStackTrace();
-            return false;
-        }
-
-        tempFile = FileManager.NextFile(file,"DataMap");
-        try {
-            FileOutputStream fileOut2 = new FileOutputStream(tempFile);
-            ObjectOutputStream out2 = new ObjectOutputStream(fileOut2);
-            out2.writeObject(data.dataMap);
-            out2.close();
-            fileOut2.close();
-        } catch (IOException i) {
-            i.printStackTrace();
-            return false;
-        }
-
-        tempFile = FileManager.NextFile(file,"DataRBTree");
-        try {
-            FileOutputStream fileOut3 = new FileOutputStream(tempFile);
-            ObjectOutputStream out3 = new ObjectOutputStream(fileOut3);
-            out3.writeObject(data.dataRBTree);
-            out3.close();
-            fileOut3.close();
-        } catch (IOException i) {
-            i.printStackTrace();
-            return false;
-        }
-
-        return true;
-    }
+//    private  boolean SaveItem(DataProcessor data,File file){
+//        File tempFile = FileManager.NextFile(file,"DataItem");
+//        try {
+//            FileOutputStream fileOut1 = new FileOutputStream(tempFile);
+//            ObjectOutputStream out1 = new ObjectOutputStream(fileOut1);
+//            out1.writeObject(data.dataItem);
+//            out1.close();
+//            fileOut1.close();
+//        } catch (IOException i) {
+//            i.printStackTrace();
+//            return false;
+//        }
+//
+//        tempFile = FileManager.NextFile(file,"DataMap");
+//        try {
+//            FileOutputStream fileOut2 = new FileOutputStream(tempFile);
+//            ObjectOutputStream out2 = new ObjectOutputStream(fileOut2);
+//            out2.writeObject(data.dataMap);
+//            out2.close();
+//            fileOut2.close();
+//        } catch (IOException i) {
+//            i.printStackTrace();
+//            return false;
+//        }
+//
+//        tempFile = FileManager.NextFile(file,"DataRBTree");
+//        try {
+//            FileOutputStream fileOut3 = new FileOutputStream(tempFile);
+//            ObjectOutputStream out3 = new ObjectOutputStream(fileOut3);
+//            out3.writeObject(data.dataRBTree);
+//            out3.close();
+//            fileOut3.close();
+//        } catch (IOException i) {
+//            i.printStackTrace();
+//            return false;
+//        }
+//
+//        return true;
+//    }
 }

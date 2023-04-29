@@ -14,7 +14,6 @@ public class BridgeData {
     private static ThreadLocal<UserFile> requestInfoThreadLocal = new ThreadLocal<>();
 
     public static void setRequestInfo(UserFile requestInfo) {
-
         requestInfoThreadLocal.set(requestInfo);
     }
 

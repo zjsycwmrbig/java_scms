@@ -6,12 +6,17 @@ import scms.Dao.DataItem;
 import scms.Dao.UserRBTree;
 import scms.Interceptor.BridgeData;
 import scms.Interceptor.FileManager;
+import scms.domain.ReturnJson.ReturnAddJson;
+import scms.domain.ReturnJson.ReturnJson;
 import scms.domain.ReturnJson.ReturnUserData;
 import scms.domain.GetJson.GetUserData;
+import scms.domain.ServerJson.NoticeData;
+import scms.domain.ServerJson.OnlineData;
 import scms.domain.ServerJson.UserFile;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
 
 /***
  * @author Administrator
@@ -20,7 +25,6 @@ import java.util.ArrayList;
  */
 public class UserManager {
     static int VisitTime = 12*60*60;//12小时
-//    static String userimage = "userimage.png"; //允许查看
     static String userdata = "userdata.scms";
     //  给出用户目录,给出用户文件
     public static File GetUserFile(File file) {
@@ -29,29 +33,45 @@ public class UserManager {
     public static File GetImageFile(File file){//用户的照片信息
         return new File("D:\\SCMSFILE\\FileManager\\ImageFile"+'/'+file.getName()+".png");
     }
-//    登录服务 -- 比对用户名和密码,成功返回用户数据
+
+    //    登录服务 -- 比对用户名和密码,成功返回用户数据
     public static ReturnUserData CheckLogin(GetUserData user, HttpServletRequest request){
-        UserRBTree.Init(); //读取二叉树
         ReturnUserData returnUserData = new ReturnUserData("","",""); //初始化内容
-        File file = UserRBTree.searchFile(user.getUsername());
-        if(file == null) {
-            returnUserData.res = false;
-            returnUserData.state = "用户不存在";
-        }//返回null代表登录失败
-        else{
-            //找到用户文件
-            returnUserData = GetUserData(file,user.getPassword());//在用户文件里面查找比对信息
-            if(returnUserData.state == "登录成功"){
-                returnUserData.res = true;
-                // 颁发签证
-                HttpSession session = request.getSession();
-                session.setMaxInactiveInterval(VisitTime);  //设置持续session时长为12个小时
-                session.setAttribute("User",file);
+        OnlineData online = OnlineManager.PiggySearch(user.getUsername());
+        UserFile userFile = null;
+        File file = null;
+        if(online != null){
+            //在在线树里面找到了该数据
+            userFile = online.user;
+        }else{
+            UserRBTree.Init(); //读取二叉树
+            file = UserRBTree.searchFile(user.getUsername());//读取user位置
+            if(file == null) {
+                returnUserData.res = false;
+                returnUserData.state = "用户不存在";
+                return returnUserData;
+            }//返回null代表登录失败
+            else{
+                //找到用户文件
+                userFile = GetUser(file);
             }
+        }
+        returnUserData = GetUserData(userFile,user.getPassword());//在用户文件里面查找比对信息
+
+        if(returnUserData.state == "登录成功" && online == null){
+            returnUserData.res = true;
+            //添加在线树
+            OnlineManager.AddOnline(userFile);
+            // 颁发签证
+            HttpSession session = request.getSession();
+            session.setMaxInactiveInterval(VisitTime);  //设置持续session时长为12个小时
+            session.setAttribute("User",file);//存放的是file指针
+            System.out.println("签证设置成功");
         }
         return returnUserData;
     }
-//    注册服务 -- 注册创建一个文件,并且存储起来
+
+    //    注册服务 -- 注册创建一个文件,并且存储起来,后面也可以直接设置成登录
     public static ReturnUserData Register(GetUserData user){
         UserRBTree.Init();//读取用户树
         if(UserRBTree.searchFile(user.getUsername())==null){
@@ -73,10 +93,9 @@ public class UserManager {
         }
     }
 //    找到文件中的内容返回
-    private static ReturnUserData GetUserData(File file,String password){
+    private static ReturnUserData GetUserData(UserFile userFile,String password){
         // 序列化 - 转换结构
         ReturnUserData res = new ReturnUserData("游客","","");
-        UserFile userFile = GetUser(file);
         if(userFile == null) {
             res.state = "服务器数据出错,请稍后再试";
         } //序列化失败返回null
@@ -89,6 +108,7 @@ public class UserManager {
                 res.netname = userFile.netname;
                 res.PersonalWord = userFile.PersonalWord;
                 res.owner = new ArrayList<>();
+                //根据登录的信息添加一些前端需要的数据
                 if(userFile.owner != null){
                     for(int i = 0;i < userFile.owner.size();i++){
                         res.owner.add(((File)userFile.owner.get(i)).getName());
@@ -100,6 +120,7 @@ public class UserManager {
                         res.player.add(userFile.player.get(i).getName());//把名字传过去
                     }
                 }
+                res.tips = userFile.notice;
             }
         }
         return res;
@@ -110,10 +131,12 @@ public class UserManager {
         ReturnUserData returnUserData = new ReturnUserData(user.getNetname(),user.getPersonalword(),"");
         //把user数据放到userFile中
         UserFile filedata = new UserFile(user.getUsername(),user.getNetname(),user.getPassword(),user.getPersonalword());
-//        添加本身这个组织
+//      添加用户数据文件指向
+        filedata.file = file;
+//      添加本身这个组织
         filedata.owner = new ArrayList<>();
 //      构建组织文件
-        File dataFile = DatabaseManager.AddData(String.valueOf(user.getUsername()));//获得一个指向组织的File文件;
+        File dataFile = DatapageManager.AddData(String.valueOf(user.getUsername()));//获得一个指向组织的File文件;
         filedata.owner.add(dataFile);
 
 //      新建数据文件中红黑树指向用户文件
@@ -155,9 +178,23 @@ public class UserManager {
             userFile = (UserFile) ois.readObject();
             ois.close();
         } catch (Exception e) {
+            e.printStackTrace();
             userFile = null;
         }
         return userFile;
+    }
+    //  和register配套的保存数据
+    static public boolean SaveUser(File file,UserFile user){
+        try {
+            FileOutputStream fileOut = new FileOutputStream(GetUserFile(file));
+            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+            out.writeObject(user);
+            out.close();
+            fileOut.close();
+            return true;
+        }catch (Exception e){
+            return false;
+        }
     }
     // 写入头像图片,返回头像的路径
     static public String SaveImage(byte[] bytes){
@@ -176,8 +213,32 @@ public class UserManager {
 
     //日志系统
 
+    //通知信息添加
+    static public ReturnJson AddNotice(List<Long> username, NoticeData notice){
+        ReturnJson returnJson = new ReturnAddJson(true,"");
+        returnJson.res = true;
+        try {
+            for (Long user : username){
+                //依次寻找目的用户
+                File userPath = UserRBTree.searchFile(user);
+                if (userPath == null){
+                    returnJson.res = false;
+                    returnJson.state = "用户不存在";
+                    break;
+                }else{
+                    //取出来,修改userFile,放进去
+                    UserFile userFile = GetUser(userPath);
+                    userFile.notice.add(notice);
+                    SaveUser(userPath,userFile);
+                }
+            }
+        }catch (Exception e) {
+            returnJson.res = false;
+            returnJson.state = "捕获异常";
+        }
+        return returnJson;
+    }
+    //修改用户文件,添加组织,接收一个Get,修改文件,给出文件,修改后面看看是不是要放到后面
 
-    //    修改用户文件,添加组织,接收一个Get,修改文件,给出文件,修改后面看看是不是要放到后面
-
-    //    添加组织删除组织
+    //添加组织删除组织
 }

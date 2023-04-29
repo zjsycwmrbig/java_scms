@@ -6,7 +6,12 @@ package scms.domain.ReturnJson;
  * @function
  */
 public class ReturnJson {
-//    返回的父类
+    public ReturnJson(boolean res, String state) {
+        this.res = res;
+        this.state = state;
+    }
+
+    //    返回的父类
     public boolean res;//请求结果,明显一点
     public String state;//请求状态字符串
 }

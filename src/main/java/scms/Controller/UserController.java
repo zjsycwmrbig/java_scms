@@ -5,8 +5,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import scms.Interceptor.BridgeData;
+import scms.Service.OnlineManager;
 import scms.Service.UserManager;
 import scms.domain.GetJson.GetUserData;
+import scms.domain.ReturnJson.ReturnJson;
 import scms.domain.ReturnJson.ReturnUserData;
 
 import java.io.IOException;
@@ -27,16 +30,9 @@ public class UserController {
     public ReturnUserData CreatUser(@RequestBody GetUserData user) throws IOException {
         return UserManager.Register(user);
     }
-
-//    加入组织
-    @RequestMapping("/joingroup")
-    public ReturnUserData JoinGroup(@RequestBody GetUserData user){
-        return UserManager.Register(user);
-    }
-
-//    创建组织
-    @RequestMapping("/creatgroup")
-    public ReturnUserData CreatGroup(@RequestBody GetUserData user){
-        return UserManager.Register(user);
+//    登出请求
+    @RequestMapping("/logout")
+    public ReturnJson LogOut(){
+        return OnlineManager.RemoveOnline(BridgeData.getRequestInfo().username);
     }
 }

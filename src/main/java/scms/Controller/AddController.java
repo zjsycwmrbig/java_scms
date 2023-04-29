@@ -23,7 +23,7 @@ public class AddController {
 //增加课程数据,请求通过post/put传输一个对象
     @RequestMapping("/item")
     public ReturnAddJson AddItem(@RequestBody ClassData item){
-        return addService.AddItem(item,0);//这里往哪里加入,看index
+        return addService.AddItem(item);//这里往哪里加入,看index
     }
 
 }
