@@ -25,7 +25,7 @@ public class SpringMvcConfig implements WebMvcConfigurer {
         registry.addInterceptor(scmsInterceptor).addPathPatterns("/add/*"); //对请求路径进行标识
         registry.addInterceptor(scmsInterceptor).addPathPatterns("/user/*");
         registry.addInterceptor(scmsInterceptor).addPathPatterns("/query/*");
+        registry.addInterceptor(scmsInterceptor).addPathPatterns("/navigate/*");
         registry.addInterceptor(scmsInterceptor).addPathPatterns("/static/*");
     }
-
 }

@@ -50,9 +50,9 @@ public class ScmsInterceptor implements HandlerInterceptor {
         //根据请求得到学生文件路径
         UserFile userFile = BridgeData.getRequestInfo();
         if(userFile == null) return;//注册的时候没有userFile
-        File UserPath = UserRBTree.searchFile(userFile.username);
+        File UserPath = UserRBTree.searchFile(userFile.username); ////待改动，先通过OnlineTree查找，再使用UserRBTree查找？？？？
         String LogPath = UserPath.getAbsolutePath().concat("\\Log.txt");
-
+        //这里要增加管理员改课程表时候的日志。应该要@Auto
         //根据请求得到一行的日志字符串，格式为 xxxx年xx月xx日 xx时xx分xx秒 “用户名” “操作”
         LocalDateTime localDateTime = LocalDateTime.now();
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy年MM月dd日 HH时mm分ss秒");
