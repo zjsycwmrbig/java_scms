@@ -9,14 +9,14 @@ import java.util.List;
  */
 public class SortFast {
     //静态方法，Comparator需要在调用该方法的地方针对T创建一个内部类
-    public static <T> void fun(List<T> list, Comparator<? super T> c){
+    public static <T> void fun(List<T> list, Comparator<T> c){
         int length = list.size();
         int lowPointer = 0;
         int highPointer = length - 1;
         SortFast.fun(list,c,lowPointer,highPointer);
     }
 
-    public static <T> void fun(List<T> list, Comparator<? super T> c ,int lowPointer, int highPointer){
+    public static <T> void fun(List<T> list, Comparator<T> c ,int lowPointer, int highPointer){
         int low = lowPointer;
         int high = highPointer;
         if(lowPointer >= highPointer){
