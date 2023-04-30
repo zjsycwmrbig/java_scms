@@ -33,6 +33,6 @@ public class UserController {
 //    登出请求
     @RequestMapping("/logout")
     public ReturnJson LogOut(){
-        return OnlineManager.RemoveOnline(BridgeData.getRequestInfo().username);
+        return OnlineManager.RemoveOnline(BridgeData.getRequestInfo());
     }
 }

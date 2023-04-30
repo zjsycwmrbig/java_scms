@@ -31,30 +31,30 @@ public class OnlineManager {
     static Stack<RBTNode> Leave = new Stack<>();//离去的用户和数据
 
     //返回在在线树里面找到的用户数据,找不到就返回在系统中找到的数据,最后是null代表没有
-    static UserFile GetUserData(Long user){
+    static public UserFile GetUserData(Long user,Long cache){
         OnlineData<UserFile> res = PiggySearch(user);
         if(res != null) return res.data;
         else {
             //没有 必须从文件里读取
             UserFile userFile = ReadUserFile(UserRBTree.searchFile(user));
-            AddOnlineUser(userFile);
+            AddOnlineUser(userFile,cache);
             return userFile;
         }
     }
 
     //返回在online里面找到的Processor
-    static DataProcessor GetEventData(String org){
+    static public DataProcessor GetEventData(String org,Long cache){
         OnlineData<DataProcessor> res = PiggySearch(org);
         if(res != null) return res.data;
         else {
-            System.out.println(DatabaseRBTree.searchFile(org).getAbsoluteFile());
+            //通过这个函数调用的
             DataProcessor dataProcessor = ReadDataProcessor(DatabaseRBTree.searchFile(org));
-            AddOnlineData(dataProcessor);
+            AddOnlineData(dataProcessor,cache);
             return dataProcessor;
         }
     }
-    // 特殊的search
 
+    // 特殊的search
     static public OnlineData PiggySearch(Long user){
         RBTNode node = PiggySearch(onlineUser.Root,user);
         if(node != null) return (OnlineData) (node.vaule);
@@ -65,8 +65,6 @@ public class OnlineManager {
         RBTNode node = PiggySearch(onlineData.Root,org);
         if(node != null) return (OnlineData) (node.vaule);
         else return null;
-
-
     }
     //泛型寻找
     static RBTNode PiggySearch(RBTNode x,Object key){
@@ -92,7 +90,7 @@ public class OnlineManager {
         }
     }
 
-    static private void AddOnlineDataList(OnlineData data){
+    static private void AddOnline(OnlineData data){
         if(data == null) return;
         if(data.data instanceof UserFile) onlineUser.insert(data,((UserFile) data.data).username);
         else onlineData.insert(data,((DataProcessor)(data.data)).name);
@@ -106,39 +104,52 @@ public class OnlineManager {
         //只是把所有的datalist加入在线树
         if(user.owner != null && user.owner.size() != 0){
             for(int i = 0;i < user.owner.size();i++){
-                AddOnlineData(ReadDataProcessor(user.owner.get(i)));
+                AddOnlineData(ReadDataProcessor(user.owner.get(i)),1L);
             }
         }
 
         if(user.player != null &&user.player.size() != 0){
             for(int i = 0 ;i < user.player.size();i++){
-                AddOnlineData(ReadDataProcessor(user.player.get(i)));
+                AddOnlineData(ReadDataProcessor(user.player.get(i)),1L);
             }
         }
         //一个一个的加入,主要在登录的时候使用这个
     }
 
-    static public void AddOnlineUser(UserFile user){
-        if(PiggySearch(user.username)==null){
+    static public void AddOnlineUser(UserFile user,Long cache){
+        if(PiggySearch(user.username)==null){//如果在线树里面没有给用户再添加
             OnlineData onlineData = new OnlineData();
             onlineData.data = user;
-            onlineData.cache = (new Date()).getTime();
-            AddOnlineDataList(onlineData); //添加用户在线信息
+            if(cache == 0){
+                onlineData.cache = 0L;
+            }else{
+                onlineData.cache = (new Date()).getTime();
+            }
+            AddOnline(onlineData); //添加用户在线信息
+        }
+    }
+    // 向cache中添加已经存在的数据
+    static  public void AddOnlineData(DataProcessor data,Long cache){
+        RBTNode node = PiggySearch(onlineData.Root,data.name);
+        if(node == null){
+            OnlineData onlineData = new OnlineData();
+            onlineData.data = data;
+            onlineData.cache = cache;
+            AddOnline(onlineData); //添加数据cache信息
+        }else{
+            //不是空,那就是需要加一
+            ((OnlineData)(node.vaule)).cache += cache;//加1
         }
     }
 
-    static  public void AddOnlineData(DataProcessor data){
-        RBTNode node = PiggySearch(onlineData.Root,data.name);
-        if(node ==null){
-            OnlineData onlineData = new OnlineData();
-            onlineData.data = data;
-            onlineData.cache = 1L;
-            AddOnlineDataList(onlineData);//添加数据cache信息
-        }else{
-            //不是空,那就是需要加一
-            ((OnlineData)(node.vaule)).cache ++;//加1
-        }
+    // 向cache中添加不存在的数据
+    static public void NewOnlineData(DataProcessor data,Long cache){
+        OnlineData onlineData = new OnlineData();
+        onlineData.data = data;
+        onlineData.cache = cache;
+        AddOnline(onlineData);//添加数据cache信息
     }
+
 
     //删除用户树,指定一个清除,捎带删除相关的组织数据
     static public ReturnJson RemoveOnline(Long username){
@@ -264,7 +275,6 @@ public class OnlineManager {
     //依次存储DataProcess
     private static boolean SaveDataProcessor(DataProcessor data, File file){
         File tempFile = FileManager.NextFile(file,"DataItem");
-        System.out.println("保存到"+tempFile.getAbsolutePath());
         try {
             FileOutputStream fileOut1 = new FileOutputStream(tempFile);
             ObjectOutputStream out1 = new ObjectOutputStream(fileOut1);

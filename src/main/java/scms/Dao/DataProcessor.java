@@ -36,6 +36,15 @@ public class DataProcessor implements Serializable {
         dataRBTree = new DataRBTree();
     }
 
+    public DataProcessor(Long user,String Name){
+        //带着初始人的构造函数
+        name = Name;
+        dataItem = new DataItem();
+        dataItem.users.add(user);
+        dataMap = new DataMap();
+        dataRBTree = new DataRBTree();
+    }
+
     //  增 - 增加一个数据条/增加多个数据条/
     public boolean AddItem(ClassData item){
         //依次更新三树

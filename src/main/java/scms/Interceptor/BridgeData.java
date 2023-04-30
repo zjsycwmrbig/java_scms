@@ -11,13 +11,13 @@ import scms.domain.ServerJson.UserFile;
 
 @Component
 public class BridgeData {
-    private static ThreadLocal<UserFile> requestInfoThreadLocal = new ThreadLocal<>();
+    private static ThreadLocal<Long> requestInfoThreadLocal = new ThreadLocal<>();
 
-    public static void setRequestInfo(UserFile requestInfo) {
+    public static void setRequestInfo(Long requestInfo) {
         requestInfoThreadLocal.set(requestInfo);
     }
 
-    public static UserFile getRequestInfo() {
+    public static Long getRequestInfo() {
         return requestInfoThreadLocal.get();
     }
 

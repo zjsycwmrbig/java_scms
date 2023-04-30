@@ -1,8 +1,10 @@
 package scms.domain.GetMapJson;
 
 import scms.Interceptor.BridgeData;
+import scms.Service.OnlineManager;
 import scms.domain.GetJson.GetOrgJionData;
 import scms.domain.ServerJson.NoticeData;
+import scms.domain.ServerJson.UserFile;
 
 import java.io.*;
 import java.util.Date;
@@ -49,14 +51,17 @@ public class NoticeMaker {
     //指定提示语
     static public NoticeData JoinOrg(String tips,String org){
         //返回noticeData
-        return new NoticeData((new Date()).getTime(),BridgeData.getRequestInfo().username,BridgeData.getRequestInfo().netname,INVITEJION,tips,GetDataJson(new GetOrgJionData(org)));
+        UserFile user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),0L);//1代表不是临时数据
+        return new NoticeData((new Date()).getTime(),user.username,user.netname,INVITEJION,tips,GetDataJson(new GetOrgJionData(org)));
     }
     //默认提示语 xx提醒你加入xx
     static public NoticeData JoinOrg(String org){
-        return new NoticeData((new Date()).getTime(),BridgeData.getRequestInfo().username,BridgeData.getRequestInfo().netname,INVITEJION,BridgeData.getRequestInfo().netname +  "邀请您加入" + org,GetDataJson(new GetOrgJionData(org)));
+        UserFile user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),0L);
+        return new NoticeData((new Date()).getTime(),user.username,user.netname,INVITEJION,user.netname +  "邀请您加入" + org,GetDataJson(new GetOrgJionData(org)));
     }
     //直接是通知,没有其他的东西
     static public NoticeData NoticeTip(String tips){
-        return new NoticeData((new Date()).getTime(),BridgeData.getRequestInfo().username,BridgeData.getRequestInfo().netname,NOTICETIP,tips,null);
+        UserFile user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),0L);
+        return new NoticeData((new Date()).getTime(),user.username,user.netname,NOTICETIP,tips,null);
     }
 }

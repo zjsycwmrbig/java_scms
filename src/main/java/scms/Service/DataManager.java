@@ -30,19 +30,23 @@ public class DataManager {
 
     public DataManager() {
         //只有自己才能操作自己的Data
-        user = BridgeData.getRequestInfo();
+        user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);
         //依次填充数据
         owner = new ArrayList<>();
         if(user.owner!=null){
             for(int i = 0;i < user.owner.size();i++){
-                owner.add(OnlineManager.GetEventData(user.owner.get(i).getName()));
+                owner.add(OnlineManager.GetEventData(user.owner.get(i).getName(),0L));
             }
         }
         player = new ArrayList<>();
         if(user.player!=null){
             for(int i = 0;i < user.player.size();i++){
-                owner.add(OnlineManager.GetEventData(user.player.get(i).getName()));
+                owner.add(OnlineManager.GetEventData(user.player.get(i).getName(),0L));
             }
+        }
+        System.out.println("填充了" + owner.size() + "条owner数据");
+        for(int i = 0;i < owner.size();i++){
+            System.out.println(owner.get(i).dataItem.users.toString());
         }
     }
     private void GetData(UserFile user){
@@ -126,55 +130,55 @@ public class DataManager {
     private ReturnAddJson ClashCheck(ClassData item){
         int i = item.type;
         // pre.先比较本人和这个时间的冲突
+
         // 1.得到所有用户数据文件
+
         List<Long> users = owner.get(i).dataItem.users;
-        // 2.依次取出其中的dataRBtree
-        List<File> usersFile = new ArrayList<>();
-        for(int j = 0;j < users.size();j++){
-            usersFile.add(UserRBTree.searchFile(users.get(j)));
-        }
+        System.out.println(users.toString());
         // 3.依次比对每个用户和数据,给出数据返回,包括是否比对成功,每个用户的情况
         ReturnAddJson returnAddJson = new ReturnAddJson(true,"");
         returnAddJson.res =true;
         returnAddJson.clashList = new ArrayList<>();//新建一个
-        ClashData temp = ClashCheck(usersFile.get(0),item,1);
+
+        ClashData temp = ClashCheck(users.get(0),item,1); //比对本人这一页
 
         returnAddJson.clashList.add(temp); //先查找本人的行程
 
         if(temp.clashNum != 0) returnAddJson.res = false;
-        for(int j = 1;j < usersFile.size();j++){
-            temp = ClashCheck(usersFile.get(j),item,0);
+        for(int j = 1;j < users.size();j++){
+            temp = ClashCheck(users.get(j),item,0);
             returnAddJson.clashList.add(temp);
             if (temp.clashNum != 0) returnAddJson.res = false;
         }
         return returnAddJson;
     }
 
-    //    对一个用户的数据进行比对
-    private ClashData ClashCheck(File user,ClassData item,int FillData){
+    // 对一个用户的数据进行比对
+    private ClashData ClashCheck(Long user,ClassData item,int FillData){
         ClashData clashData = new ClashData();
         if(FillData == 1) clashData.list = new ArrayList<>();
-        clashData.type = FillData;//给出type
+        clashData.type = FillData; //给出type
         // 1.获得user文件下的所有二叉树文件
         List<DataRBTree> list = new ArrayList<>();
         List<String> name = new ArrayList<>();
-        UserFile userFile;
-            //读取userFile文件
-        userFile = UserManager.GetUser(user);//得到userFile文件
+        UserFile userFile = OnlineManager.GetUserData(user,0L);
+
+        // 读取userFile文件
         if(userFile == null){
             clashData.type = -1;//标记出错
             return clashData;
         }
         clashData.netName = userFile.netname;//给出名字
-            //读取owner和player,给出数据数目
 
+        //读取owner和player,给出数据数目
         for(int i = 0;i < userFile.owner.size();i++){
-            list.add(GetDatarbtree(FileManager.NextFile(userFile.owner.get(i),"DataRBTree")));//拿到owner中的所有数据
+            list.add(OnlineManager.GetEventData(userFile.owner.get(i).getName(),0L).dataRBTree);//拿到owner中的所有数据
             name.add(userFile.owner.get(i).getName());
         }
+
         if(userFile.player != null){
             for(int i = 0;i < userFile.player.size();i++){
-                list.add(GetDatarbtree(FileManager.NextFile(userFile.player.get(i),"DataRBTree")));//拿到owner中的所有数据
+                list.add(OnlineManager.GetEventData(userFile.player.get(i).getName(),0L).dataRBTree);//拿到owner中的所有数据 FileManager.NextFile(userFile.player.get(i),"DataRBTree")  GetDatarbtree()
                 name.add(userFile.owner.get(i).getName());
             }
         }
@@ -200,6 +204,7 @@ public class DataManager {
                     }
                 }
             }
+
             if(item.circle == 0) break; //单次跳出
         }
         return clashData;
@@ -210,7 +215,7 @@ public class DataManager {
     //查询当前一周的数据,并且按照规定好的数据格式返回
     public ReturnEventData QueryWeek(Date date){
         //获得user认证
-        user = BridgeData.getRequestInfo();
+        user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);
         Calendar now = Calendar.getInstance();
         now.setTime(date);//设置时间
 
@@ -220,14 +225,14 @@ public class DataManager {
         now.set(Calendar.SECOND, 0);
         now.set(Calendar.MILLISECOND, 0);
 
-        int dayOfWeek = now.get(Calendar.DAY_OF_WEEK);
+        int dayOfWeek = (now.get(Calendar.DAY_OF_WEEK) + 5)%7;
+
         // 计算本周的周一和周末的日期
-        now.add(Calendar.DATE, -dayOfWeek + 2); // 本周的周一
+        now.add(Calendar.DATE, -dayOfWeek); // 本周的周一
         long monday = now.getTime().getTime();
+
         now.add(Calendar.DATE, 7); // 下周的周一
         long sunday = now.getTime().getTime();
-        System.out.println(new Date(monday));
-        System.out.println(new Date(sunday));
         ReturnEventData returnEventData = new ReturnEventData();
 //        新建一套体系
         ArrayList<EventDataByTime> eventDataByTimes = new ArrayList<>();
@@ -270,7 +275,7 @@ public class DataManager {
     }
     //待实现
     public ReturnEventData QueryAll(){
-        user = BridgeData.getRequestInfo();
+        user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);
         return new ReturnEventData();
     }
     //多关键字查询
@@ -307,60 +312,4 @@ public class DataManager {
         return  returnQueryData;
     }
 
-//  存储该用户文件,按照等级存储
-//    public boolean Save(){
-//        if(owner != null && owner.size() != 0){
-//            for(int i = 0;i < owner.size();i++){
-//                if(!SaveItem(owner.get(i),user.owner.get(i))) return false;//一个个保存
-//            }
-//        }
-//
-//        if(player != null && player.size() != 0){
-//            for(int i = 0 ;i < player.size();i++){
-//                if(!SaveItem(player.get(i),user.player.get(i)))return false;//一个个保存
-//            }
-//        }
-//        return true;
-//    }
-//  分文件存储
-//  --后期直接记录存储位置,按需存储,比如改动了一个文件就暂存起来
-//    private  boolean SaveItem(DataProcessor data,File file){
-//        File tempFile = FileManager.NextFile(file,"DataItem");
-//        try {
-//            FileOutputStream fileOut1 = new FileOutputStream(tempFile);
-//            ObjectOutputStream out1 = new ObjectOutputStream(fileOut1);
-//            out1.writeObject(data.dataItem);
-//            out1.close();
-//            fileOut1.close();
-//        } catch (IOException i) {
-//            i.printStackTrace();
-//            return false;
-//        }
-//
-//        tempFile = FileManager.NextFile(file,"DataMap");
-//        try {
-//            FileOutputStream fileOut2 = new FileOutputStream(tempFile);
-//            ObjectOutputStream out2 = new ObjectOutputStream(fileOut2);
-//            out2.writeObject(data.dataMap);
-//            out2.close();
-//            fileOut2.close();
-//        } catch (IOException i) {
-//            i.printStackTrace();
-//            return false;
-//        }
-//
-//        tempFile = FileManager.NextFile(file,"DataRBTree");
-//        try {
-//            FileOutputStream fileOut3 = new FileOutputStream(tempFile);
-//            ObjectOutputStream out3 = new ObjectOutputStream(fileOut3);
-//            out3.writeObject(data.dataRBTree);
-//            out3.close();
-//            fileOut3.close();
-//        } catch (IOException i) {
-//            i.printStackTrace();
-//            return false;
-//        }
-//
-//        return true;
-//    }
 }

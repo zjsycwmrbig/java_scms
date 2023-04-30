@@ -25,14 +25,8 @@ public class AddService extends scms.Service.Service {
     UserFile user;
     //  新添加的节点
     public ReturnAddJson AddItem(ClassData item){
-        user = BridgeData.getRequestInfo();
         dataManager = new DataManager();
         ReturnAddJson returnAddJson = dataManager.AddItem(item);
-
-        //        添加到本人数据
-        //        if(returnAddJson.res && dataManager.Save()) {
-        //            dataManager.GetDataProcessor(0).print();
-        //        }
         return returnAddJson;
     }
 }

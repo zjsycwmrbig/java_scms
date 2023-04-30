@@ -85,6 +85,7 @@ public  class FileManager {
 //  返回一个Data文件指针,修改Data文件
     public static File AddData(String name){
         File file = NewFile(datafile,name);//获得应该的文件
+        if(file.exists()) return null;//如果存在就返回null值
         file.mkdirs();
         try{
             NextFile(file,"DataMap").createNewFile();

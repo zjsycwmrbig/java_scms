@@ -69,7 +69,8 @@ public class NoticeController {
     @RequestMapping("/Polling")
     public List<NoticeData> NoticePolling(){
         //只能从在线树中获得,并且必然不是null
-        OnlineData onlineData = OnlineManager.PiggySearch(BridgeData.getRequestInfo().username);
+        OnlineData onlineData = OnlineManager.PiggySearch(BridgeData.getRequestInfo());
+
         return ((UserFile)(onlineData.data)).notice;//返回数据
     }
 }

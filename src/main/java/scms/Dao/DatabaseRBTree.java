@@ -57,7 +57,8 @@ public class DatabaseRBTree {
 
         //  添加学号为key的文件
         public static File AddItem(String key){
-            File file = FileManager.AddData(key); // 添加一个文件
+            File file = FileManager.AddData(key);  // 新建一个文件,但是是白板文件这里没有标识,需要自动标识一下
+
             rbTree.insert(new RBTNode(file,key,BLACK,null,null,null));
             return file;
         }

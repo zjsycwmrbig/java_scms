@@ -36,7 +36,7 @@ public class UserManager {
     //    登录服务 -- 比对用户名和密码,成功返回用户数据
     public static ReturnUserData CheckLogin(GetUserData user, HttpServletRequest request){
         ReturnUserData returnUserData = new ReturnUserData("","",""); //初始化内容
-        UserFile userFile = OnlineManager.GetUserData(user.getUsername());
+        UserFile userFile = OnlineManager.GetUserData(user.getUsername(),0L); //得到用户数据
         if(userFile == null) {
                 returnUserData.res = false;
                 returnUserData.state = "用户不存在";
@@ -45,10 +45,14 @@ public class UserManager {
         returnUserData = GetUserData(userFile,user.getPassword());//在用户文件里面查找比对信息
 
         if(returnUserData.state == "登录成功"){
+            //添加数据
+            OnlineManager.AddOnlineUser(userFile,1L);
+
+            OnlineManager.AddOnlineDataList(userFile);//填入数据list
             // 颁发签证
             HttpSession session = request.getSession();
             session.setMaxInactiveInterval(VisitTime);  //设置持续session时长为12个小时
-            session.setAttribute("User",userFile.file);//存放的是file指针
+            session.setAttribute("User",user.getUsername());//存放的是file指针
             System.out.println("签证设置成功");
         }
 
@@ -187,7 +191,7 @@ public class UserManager {
     }
     // 写入头像图片,返回头像的路径
     static public String SaveImage(byte[] bytes){
-        UserFile user = BridgeData.getRequestInfo();
+        UserFile user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);
         File file = UserRBTree.searchFile(user.username);
         try {
             FileOutputStream outputStream = new FileOutputStream(GetImageFile(file));
@@ -209,7 +213,7 @@ public class UserManager {
         try {
             for (Long user : username){
                 //依次寻找目的用户,首先探寻在线树中有没有目标
-                UserFile userFile = OnlineManager.GetUserData(user);
+                UserFile userFile = OnlineManager.GetUserData(user,0L);
                 if (userFile == null) {
                     returnJson.res = false;
                     returnJson.state = "用户不存在";
