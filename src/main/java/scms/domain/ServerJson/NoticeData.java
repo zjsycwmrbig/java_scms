@@ -25,4 +25,5 @@ public class NoticeData implements Serializable{
     public String noticeTip;//通知提示,一句话
     public String requestData;//请求数据,通常序列化和反序列化实现
 
+    public boolean isIgnore;//是否需要继续提醒?
 }

@@ -8,10 +8,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import scms.Dao.DataProcessor;
 import scms.Dao.DatabaseRBTree;
 import scms.Interceptor.BridgeData;
+import scms.Service.DataManager;
 import scms.Service.OnlineManager;
 import scms.Service.UserManager;
 import scms.domain.GetJson.GetOrgInviteData;
-import scms.domain.GetJson.GetOrgJionData;
 import scms.domain.GetMapJson.NoticeMaker;
 import scms.domain.ReturnJson.ReturnAddJson;
 import scms.domain.ReturnJson.ReturnJson;
@@ -57,14 +57,25 @@ public class OrgController {
             UserFile user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);//用户添加组织信息
             user.owner.add(file);
         }
-
-
         return  returnJson;
     }
-
-    @RequestMapping("/jion")
-    public ReturnJson OrgJion(@RequestBody GetOrgJionData data){
+    //接收org名称
+    // -1. 组织不存在
+    // -2. 组织中存在冲突
+    @RequestMapping("/join")
+    public ReturnJson OrgJoin(@RequestParam String org){
         //加入某个组织,默认已经通过拦截
-        return new ReturnAddJson(true,"");
+        ReturnJson res =  new ReturnAddJson(true,"加入成功");
+        DataManager dataManager = new DataManager();
+        DataProcessor Org = OnlineManager.GetEventData(org,0L);
+        if(Org == null){
+            res.res = false;res.state = "组织不存在";
+        }else{
+            res = dataManager.AddOrg(Org);//先获得组织文件
+            if(res.res){
+                OnlineManager.GetEventData(org,1L);
+            }
+        }
+        return res;
     }
 }

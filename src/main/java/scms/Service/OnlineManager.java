@@ -8,7 +8,9 @@ import scms.domain.ServerJson.RBTNode;
 import scms.domain.ServerJson.UserFile;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Stack;
 
 /***
@@ -100,11 +102,14 @@ public class OnlineManager {
     // ---重点是不能添加重复!!!
 
     //添加一整套数据到在线树,一般是
-    static public void AddOnlineDataList(UserFile user){
+    static public List<List<Long>> AddOnlineDataList(UserFile user){
+        List<List<Long>> list = new ArrayList<>();
         //只是把所有的datalist加入在线树
         if(user.owner != null && user.owner.size() != 0){
             for(int i = 0;i < user.owner.size();i++){
-                AddOnlineData(ReadDataProcessor(user.owner.get(i)),1L);
+                DataProcessor dataProcessor = ReadDataProcessor(user.owner.get(i));
+                list.add(dataProcessor.dataItem.users);
+                AddOnlineData(dataProcessor,1L);
             }
         }
 
@@ -114,6 +119,7 @@ public class OnlineManager {
             }
         }
         //一个一个的加入,主要在登录的时候使用这个
+        return list;
     }
 
     static public void AddOnlineUser(UserFile user,Long cache){
@@ -152,6 +158,7 @@ public class OnlineManager {
 
 
     //删除用户树,指定一个清除,捎带删除相关的组织数据
+    //根据username移除节点
     static public ReturnJson RemoveOnline(Long username){
         ReturnJson returnJson = new ReturnJson(true,"登出成功");
 
@@ -204,6 +211,33 @@ public class OnlineManager {
             onlineUser.remove(Leave.pop());
         }
     }
+
+    //清除所有用户,数据
+    static public void Clear(){
+        ClearUser(onlineUser.Root);//删除用户节点
+        ClearData(onlineData.Root);
+    }
+
+    private static void ClearUser(RBTNode x){
+        if(x == null) return;
+        ClearUser(x.left);
+        RemoveOnline(((UserFile)(((OnlineData)(x.vaule)).data)).username);//这里可以判断下是不是存在再删除
+        ClearUser(x.right);
+    }
+
+    private static void ClearData(RBTNode x){
+        if(x == null) return;
+        ClearData(x.left);
+        // remove数据节点
+        DataProcessor dataProcessor = ((DataProcessor)(((OnlineData)(x.vaule)).data));
+        File filePath = DatabaseRBTree.searchFile(dataProcessor.name);
+        SaveDataProcessor(dataProcessor,filePath);
+        onlineData.remove(x);
+        ClearData(x.right);
+    }
+
+    //
+
 
 
     //读取数据
@@ -312,7 +346,6 @@ public class OnlineManager {
 
         return true;
     }
-
 
     private static boolean IsDeadNode(RBTNode node){
         if(((OnlineData) (node.vaule)).data instanceof UserFile){

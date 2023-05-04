@@ -126,7 +126,64 @@ public class DataManager {
         }
         return returnAddJson;
     }
+
+//    增加一个dataProcessor
+    public ReturnAddJson AddOrg(DataProcessor data){
+        ReturnAddJson returnAddJson = new ReturnAddJson(true,"");
+        returnAddJson.res =true;
+        returnAddJson.clashList = new ArrayList<>();//新建一个
+        //获得name和list
+        List<DataRBTree> list = new ArrayList<>();
+        List<String> name = new ArrayList<>();
+        UserFile userFile = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);
+        File file = DatabaseRBTree.searchFile(data.name);
+        if(userFile.owner.contains(file) ||userFile.player!=null&& userFile.player.contains(file)){
+            returnAddJson.res = false;
+            returnAddJson.state = "已加入该组织,请勿重复加入";
+            return returnAddJson;
+        }
+        //读取owner和player,给出数据数目
+        for(int i = 0;i < userFile.owner.size();i++){
+            list.add(OnlineManager.GetEventData(userFile.owner.get(i).getName(),0L).dataRBTree);//拿到owner中的所有数据
+            name.add(userFile.owner.get(i).getName());
+        }
+
+        if(userFile.player != null){
+            for(int i = 0;i < userFile.player.size();i++){
+                list.add(OnlineManager.GetEventData(userFile.player.get(i).getName(),0L).dataRBTree);//拿到owner中的所有数据 FileManager.NextFile(userFile.player.get(i),"DataRBTree")  GetDatarbtree()
+                name.add(userFile.owner.get(i).getName());
+            }
+        }
+        //依次获得每个数据的比对结果,二叉树中序遍历
+        List<ClassData> itemList = GetAll(data);
+        for(int i = 0;i < itemList.size();i++){
+            ClashData temp = ClashCheck(itemList.get(i),name,list);
+            returnAddJson.clashList.add(temp);
+            if (temp.clashNum != 0) returnAddJson.res = false;
+        }
+        //没有冲突,添加到用户上面
+        if(returnAddJson.res){
+            if(userFile.player == null) userFile.player = new ArrayList<>();
+            userFile.player.add(file);//添加到用户上面
+        }
+        return returnAddJson;
+    }
+    //中序遍历所有数据,返回一个list
+    private List<ClassData> GetAll(DataProcessor data){
+        List<ClassData> list = new ArrayList<>();
+        Inorder(data.dataItem.itemRbtree.Root,list);
+
+        return list;
+    }
+    private void Inorder(RBTNode x,List<ClassData> list){
+        if(x == null) return;
+        Inorder(x.left,list);
+        list.add((ClassData) (x.vaule));
+        Inorder(x.right,list);
+    }
+
 //  按照owner中数据页的序号找到data的页面
+//  主要是添加到本地的数据
     private ReturnAddJson ClashCheck(ClassData item){
         int i = item.type;
         // pre.先比较本人和这个时间的冲突
@@ -153,7 +210,28 @@ public class DataManager {
         return returnAddJson;
     }
 
-    // 对一个用户的数据进行比对
+    // 对一个用户的数据进行比对,返回ClashData
+    private ClashData ClashCheck(ClassData item,List<String> name,List<DataRBTree> list){
+        ClashData clashData = new ClashData();
+        for (long end = item.begin + item.length;end  <= item.end ;end += item.circle * 86400000L){
+            // 依次比对每个时间节点,把begin这个数值放到二叉树中找,看看返回的neibor
+            for(int i = 0;i < list.size();i++){
+                // 对于其他用户直接查看有无冲突就好,复杂度是logn
+                    list.get(i).Between(end-item.length,end);//得到数据在stack里面
+                    List<ClashRBTNode> stack = list.get(i).stack;
+                    for(int j = 0;j < stack.size();j++){
+                        clashData.list.add(new ClashItem(name.get(i),(Long)stack.get(j).key,(Long)stack.get(j).vaule,Math.max(((Long)stack.get(j).key-end),((Long)stack.get(j).key-(Long)stack.get(j).end))));
+                    }
+                    clashData.clashNum += stack.size();
+                    // 组织名称
+            }
+
+            if(item.circle == 0) break; //单次跳出
+        }
+        return clashData;
+    }
+
+
     private ClashData ClashCheck(Long user,ClassData item,int FillData){
         ClashData clashData = new ClashData();
         if(FillData == 1) clashData.list = new ArrayList<>();

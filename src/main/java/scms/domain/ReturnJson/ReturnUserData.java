@@ -23,4 +23,6 @@ public class ReturnUserData extends ReturnJson{
     public List<String> player;
     public List<NoticeData> tips;
 
+    public List<List<Long>> dataUser;
+
 }

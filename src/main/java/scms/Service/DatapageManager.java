@@ -14,7 +14,7 @@ public class DatapageManager {
     //添加一个名字是name的数据,并且返回文件的指针
     public static File AddData(String name){
         File file = DatabaseRBTree.AddItem(name);
-        DatabaseRBTree.sava();
+
         return file;
     }
 

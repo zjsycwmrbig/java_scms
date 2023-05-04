@@ -48,7 +48,7 @@ public class UserManager {
             //添加数据
             OnlineManager.AddOnlineUser(userFile,1L);
 
-            OnlineManager.AddOnlineDataList(userFile);//填入数据list
+            returnUserData.dataUser = OnlineManager.AddOnlineDataList(userFile);//填入数据list,返回数据用户组
             // 颁发签证
             HttpSession session = request.getSession();
             session.setMaxInactiveInterval(VisitTime);  //设置持续session时长为12个小时
@@ -67,7 +67,6 @@ public class UserManager {
             ReturnUserData returnUserData = SetUserData(file,user); //这里面负责创建data文件,写入到file文件里面去
             if(returnUserData.state == "注册成功"){
                 returnUserData.res = true;
-                UserRBTree.sava();
             }else{
                 file.delete();
             }
@@ -228,6 +227,29 @@ public class UserManager {
         return returnJson;
     }
 
+    //通知信息删除
+    static public ReturnJson RemoveNotice(NoticeData notice){
+        ReturnJson res = new ReturnJson(true,"");
+        UserFile user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);
+        res.res = user.notice.remove(notice);
+        return res;
+    }
+
+    //通知信息忽略
+    static public ReturnJson IgnoreNotice(NoticeData notice){
+        ReturnJson res = new ReturnJson(true,"");
+        UserFile user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);
+        boolean flag = false;
+        for(NoticeData i: user.notice){
+            if(i == notice && !i.isIgnore){
+                i.isIgnore = true;
+                flag = true;
+                break;
+            }
+        }
+        if (!flag) res.res = false;
+        return res;
+    }
     //修改用户文件,添加组织,接收一个Get,修改文件,给出文件,修改后面看看是不是要放到后面
 
     //添加组织删除组织

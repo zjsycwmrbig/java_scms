@@ -7,7 +7,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 /***
  * @author Administrator
  * @date 2023/4/1 18:24
- * @function 正则匹配返回用户头像
+ * @function 正则匹配返回用户头像,映射资源
  */
 
 @Configuration

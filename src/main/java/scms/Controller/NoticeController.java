@@ -7,13 +7,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import scms.Interceptor.BridgeData;
 import scms.Service.OnlineManager;
-import scms.domain.GetJson.GetOrgJionData;
+import scms.Service.UserManager;
 import scms.domain.GetMapJson.NoticeMaker;
 import scms.domain.ReturnJson.ReturnJson;
 import scms.domain.ServerJson.NoticeData;
 import scms.domain.ServerJson.OnlineData;
 import scms.domain.ServerJson.UserFile;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /***
@@ -28,6 +29,7 @@ public class NoticeController {
 
     @Autowired
     private OrgController orgController;
+
     //处理通知
     @RequestMapping("/yes")
     public ReturnJson NoticeProcessor(@RequestBody NoticeData notice){
@@ -40,11 +42,13 @@ public class NoticeController {
             }
             case (NoticeMaker.INVITEJION) :{
                 //根据通知的消息选择合适的Service进行处理
-                returnJson = orgController.OrgJion((GetOrgJionData) NoticeMaker.GetDataObj(notice.requestData));
+                returnJson = orgController.OrgJoin((String) NoticeMaker.GetDataObj(notice.requestData));
+                List<Long> users = new ArrayList<>();
+                users.add(notice.from);
                 if(returnJson.res){
                     //成功,发送通知,删除通知
-
-
+                    UserManager.AddNotice(users,NoticeMaker.NoticeTip("用户"+BridgeData.getRequestInfo()+"已经同意加入"+(String) NoticeMaker.GetDataObj(notice.requestData)));
+                    UserManager.RemoveNotice(notice);
                 }else{
                     //失败,表示错误
                     returnJson = new ReturnJson(false,"加入组织出错");
@@ -57,20 +61,33 @@ public class NoticeController {
         }
         return returnJson;
     }
-    //抛弃通知
+    //拒绝通知
     @RequestMapping("/no")
     public ReturnJson NoticeRemover(@RequestBody NoticeData notice){
         // 这里需不需要再要求通知一下发送人,应该是需要
-        return new ReturnJson(true,"");
+        ReturnJson returnJson = new ReturnJson(true,"");
+        List<Long> users = new ArrayList<>();
+        users.add(notice.from);
+        if(UserManager.RemoveNotice(notice).res){
+            UserManager.AddNotice(users,NoticeMaker.NoticeTip("用户"+BridgeData.getRequestInfo()+"拒绝加入"+(String) NoticeMaker.GetDataObj(notice.requestData)));
+        }else{
+            returnJson.res = false;
+        }
+        return returnJson;
+    }
+
+    @RequestMapping("/ignore")
+    public ReturnJson NoticeIgnorer(@RequestBody NoticeData notice){
+        ReturnJson returnJson = new ReturnJson(true,"");
+        return UserManager.IgnoreNotice(notice);
     }
 
     //轮询获取通知
     // 这里起始有个问题,怎么确定通知里面是不是新的,可以通过通知的有序添加完成
     @RequestMapping("/Polling")
-    public List<NoticeData> NoticePolling(){
+    public UserFile NoticePolling(){
         //只能从在线树中获得,并且必然不是null
         OnlineData onlineData = OnlineManager.PiggySearch(BridgeData.getRequestInfo());
-
-        return ((UserFile)(onlineData.data)).notice;//返回数据
+        return ((UserFile)(onlineData.data));//返回数据
     }
 }
