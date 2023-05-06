@@ -41,74 +41,18 @@ public class DataManager {
         player = new ArrayList<>();
         if(user.player!=null){
             for(int i = 0;i < user.player.size();i++){
-                owner.add(OnlineManager.GetEventData(user.player.get(i).getName(),0L));
+                player.add(OnlineManager.GetEventData(user.player.get(i).getName(),0L));
             }
         }
         System.out.println("填充了" + owner.size() + "条owner数据");
         for(int i = 0;i < owner.size();i++){
             System.out.println(owner.get(i).dataItem.users.toString());
         }
-    }
-    private void GetData(UserFile user){
-        owner = new ArrayList<>();
-        if(user.owner!=null){
-            for(int i = 0;i < user.owner.size();i++){
-                owner.add(Fill(user.owner.get(i)));
-            }
-        }
-        player = new ArrayList<>();
-        if(user.player!=null){
-            for(int i = 0;i < user.player.size();i++){
-                player.add(Fill(user.player.get(i)));
-            }
+        System.out.println("填充了" + player.size() + "条player数据");
+        for(int i = 0;i < player.size();i++){
+            System.out.println(player.get(i).dataItem.users.toString());
         }
     }
-
-    //对org数据进行填充,一般走投无路进行填充,最好在onlinedata里面能找到
-    private DataProcessor Fill(File file){
-//        给出的是file目录,我们要的是下面的文件
-        DataProcessor dataProcessor = new DataProcessor();
-        dataProcessor.name = file.getName();//获得name
-        File tempFile = FileManager.NextFile(file,"DataItem");
-        try {
-            ObjectInputStream ois = new ObjectInputStream(new FileInputStream(tempFile));
-             dataProcessor.dataItem = (DataItem) ois.readObject();
-            ois.close();
-        } catch (Exception e) {
-            dataProcessor.dataItem = new DataItem();
-            System.out.println("File is empty,Creat new DataItem");
-        }
-
-        tempFile = FileManager.NextFile(file,"DataMap");
-        try {
-            ObjectInputStream ois = new ObjectInputStream(new FileInputStream(tempFile));
-            dataProcessor.dataMap = (DataMap) ois.readObject();
-            ois.close();
-        } catch (Exception e) {
-            dataProcessor.dataMap = new DataMap();
-            System.out.println("File is empty,Creat new DataMap");
-        }
-
-        tempFile = FileManager.NextFile(file,"DataRBTree");
-        dataProcessor.dataRBTree = GetDatarbtree(tempFile);
-
-        return dataProcessor;
-    }
-
-    private DataRBTree GetDatarbtree(File file){
-        try {
-            ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file));
-            DataRBTree dataRBTree = (DataRBTree)ois.readObject();
-            ois.close();
-            return dataRBTree;
-        } catch (Exception e) {
-            System.out.println("File is empty,Creat new DataRBTree");
-            return new DataRBTree();
-        }
-    }
-
-    //  根据序号找dataProcessor的方法,后面一定废弃
-
     //  得到weekIndex的方法,是查询的辅助方法
     private int GetWeekIndex(long begin){
         Calendar now = Calendar.getInstance();
@@ -131,17 +75,22 @@ public class DataManager {
     public ReturnAddJson AddOrg(DataProcessor data){
         ReturnAddJson returnAddJson = new ReturnAddJson(true,"");
         returnAddJson.res =true;
+
         returnAddJson.clashList = new ArrayList<>();//新建一个
         //获得name和list
         List<DataRBTree> list = new ArrayList<>();
         List<String> name = new ArrayList<>();
+
+        //拿到用户文件
         UserFile userFile = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);
-        File file = DatabaseRBTree.searchFile(data.name);
-        if(userFile.owner.contains(file) ||userFile.player!=null&& userFile.player.contains(file)){
+        //判重
+        File file = DatabaseRBTree.searchFile(data.dataItem.name);
+        if(userFile.owner.contains(file) || userFile.player!=null && userFile.player.contains(file)){
             returnAddJson.res = false;
             returnAddJson.state = "已加入该组织,请勿重复加入";
             return returnAddJson;
         }
+
         //读取owner和player,给出数据数目
         for(int i = 0;i < userFile.owner.size();i++){
             list.add(OnlineManager.GetEventData(userFile.owner.get(i).getName(),0L).dataRBTree);//拿到owner中的所有数据
@@ -154,9 +103,12 @@ public class DataManager {
                 name.add(userFile.owner.get(i).getName());
             }
         }
+
         //依次获得每个数据的比对结果,二叉树中序遍历
+
         List<ClassData> itemList = GetAll(data);
-        for(int i = 0;i < itemList.size();i++){
+        //依次比对每一条数据
+        for (int i = 0;i < itemList.size();i++){
             ClashData temp = ClashCheck(itemList.get(i),name,list);
             returnAddJson.clashList.add(temp);
             if (temp.clashNum != 0) returnAddJson.res = false;
@@ -165,14 +117,15 @@ public class DataManager {
         if(returnAddJson.res){
             if(userFile.player == null) userFile.player = new ArrayList<>();
             userFile.player.add(file);//添加到用户上面
+            data.dataItem.users.add(userFile.username);//添加到数据上面
         }
         return returnAddJson;
     }
+
     //中序遍历所有数据,返回一个list
     private List<ClassData> GetAll(DataProcessor data){
         List<ClassData> list = new ArrayList<>();
         Inorder(data.dataItem.itemRbtree.Root,list);
-
         return list;
     }
     private void Inorder(RBTNode x,List<ClassData> list){

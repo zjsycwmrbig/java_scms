@@ -37,6 +37,7 @@ public class OnlineManager {
         OnlineData<UserFile> res = PiggySearch(user);
         if(res != null) return res.data;
         else {
+            if(UserRBTree.searchFile(user)==null) return null;
             //没有 必须从文件里读取
             UserFile userFile = ReadUserFile(UserRBTree.searchFile(user));
             AddOnlineUser(userFile,cache);
@@ -49,6 +50,7 @@ public class OnlineManager {
         OnlineData<DataProcessor> res = PiggySearch(org);
         if(res != null) return res.data;
         else {
+            if(DatabaseRBTree.searchFile(org)==null) return null;
             //通过这个函数调用的
             DataProcessor dataProcessor = ReadDataProcessor(DatabaseRBTree.searchFile(org));
             AddOnlineData(dataProcessor,cache);
@@ -95,7 +97,7 @@ public class OnlineManager {
     static private void AddOnline(OnlineData data){
         if(data == null) return;
         if(data.data instanceof UserFile) onlineUser.insert(data,((UserFile) data.data).username);
-        else onlineData.insert(data,((DataProcessor)(data.data)).name);
+        else onlineData.insert(data,((DataProcessor)(data.data)).dataItem.name);
     }
 
     //添加用户或者数据到在线树
@@ -107,15 +109,14 @@ public class OnlineManager {
         //只是把所有的datalist加入在线树
         if(user.owner != null && user.owner.size() != 0){
             for(int i = 0;i < user.owner.size();i++){
-                DataProcessor dataProcessor = ReadDataProcessor(user.owner.get(i));
+                DataProcessor dataProcessor = GetEventData(user.owner.get(i).getName(),1L);
                 list.add(dataProcessor.dataItem.users);
-                AddOnlineData(dataProcessor,1L);
             }
         }
 
         if(user.player != null &&user.player.size() != 0){
             for(int i = 0 ;i < user.player.size();i++){
-                AddOnlineData(ReadDataProcessor(user.player.get(i)),1L);
+                GetEventData(user.player.get(i).getName(),1L);
             }
         }
         //一个一个的加入,主要在登录的时候使用这个
@@ -136,7 +137,7 @@ public class OnlineManager {
     }
     // 向cache中添加已经存在的数据
     static  public void AddOnlineData(DataProcessor data,Long cache){
-        RBTNode node = PiggySearch(onlineData.Root,data.name);
+        RBTNode node = PiggySearch(onlineData.Root,data.dataItem.name);
         if(node == null){
             OnlineData onlineData = new OnlineData();
             onlineData.data = data;
@@ -163,7 +164,7 @@ public class OnlineManager {
         ReturnJson returnJson = new ReturnJson(true,"登出成功");
 
         RBTNode node = onlineUser.searchNode(onlineUser.Root,username);//查询用户节点
-
+        UserFile user = (UserFile) (((OnlineData) (node.vaule)).data);
         if(node != null) {
             try {
                 SaveUser((UserFile) (((OnlineData) (node.vaule)).data));
@@ -179,14 +180,15 @@ public class OnlineManager {
             return returnJson;
         }
         //移除data
-        UserFile user = (UserFile) (((OnlineData) (node.vaule)).data);
+
 
         if(user.owner != null && user.owner.size() != 0){
             for(int i = 0;i < user.owner.size();i++){
                 node = onlineData.searchNode(onlineData.Root,user.owner.get(i).getName());//找到节点
+                if(node == null) continue;
                 ((OnlineData)(node.vaule)).cache --;
                 if(IsDeadNode(node)){
-                    SaveDataProcessor((DataProcessor) (((OnlineData) (node.vaule)).data),user.owner.get(i));//保存起来
+                    SaveDataProcessor((DataProcessor) (((OnlineData) (node.vaule)).data));//保存起来
                     onlineData.remove(node);
                 }
             }
@@ -194,10 +196,12 @@ public class OnlineManager {
 
         if(user.player != null && user.player.size() != 0){
             for(int i = 0 ;i < user.player.size();i++){
+
                 node = onlineData.searchNode(onlineData.Root,user.player.get(i).getName());//找到节点
+                if(node==null) continue;
                 ((OnlineData)(node.vaule)).cache --;
                 if(IsDeadNode(node)){
-                    SaveDataProcessor((DataProcessor) (((OnlineData) (node.vaule)).data),user.player.get(i));//保存起来
+                    SaveDataProcessor((DataProcessor) (((OnlineData) (node.vaule)).data));//保存起来
                     onlineData.remove(node);
                 }
             }
@@ -230,8 +234,7 @@ public class OnlineManager {
         ClearData(x.left);
         // remove数据节点
         DataProcessor dataProcessor = ((DataProcessor)(((OnlineData)(x.vaule)).data));
-        File filePath = DatabaseRBTree.searchFile(dataProcessor.name);
-        SaveDataProcessor(dataProcessor,filePath);
+        SaveDataProcessor(dataProcessor);
         onlineData.remove(x);
         ClearData(x.right);
     }
@@ -258,7 +261,6 @@ public class OnlineManager {
     //读取一个Data
     static private DataProcessor ReadDataProcessor(File file){
         DataProcessor dataProcessor = new DataProcessor();
-        dataProcessor.name = file.getName();//获得name
 
         File tempFile = FileManager.NextFile(file,"DataItem");
         try {
@@ -307,7 +309,8 @@ public class OnlineManager {
     }
 
     //依次存储DataProcess
-    private static boolean SaveDataProcessor(DataProcessor data, File file){
+    private static boolean SaveDataProcessor(DataProcessor data){
+        File file = data.dataItem.filePath;
         File tempFile = FileManager.NextFile(file,"DataItem");
         try {
             FileOutputStream fileOut1 = new FileOutputStream(tempFile);

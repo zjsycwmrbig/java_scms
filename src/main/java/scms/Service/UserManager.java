@@ -3,6 +3,8 @@ package scms.Service;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import scms.Dao.DataItem;
+import scms.Dao.DataProcessor;
+import scms.Dao.DatabaseRBTree;
 import scms.Dao.UserRBTree;
 import scms.Interceptor.BridgeData;
 import scms.Interceptor.FileManager;
@@ -36,6 +38,7 @@ public class UserManager {
     //    登录服务 -- 比对用户名和密码,成功返回用户数据
     public static ReturnUserData CheckLogin(GetUserData user, HttpServletRequest request){
         ReturnUserData returnUserData = new ReturnUserData("","",""); //初始化内容
+
         UserFile userFile = OnlineManager.GetUserData(user.getUsername(),0L); //得到用户数据
         if(userFile == null) {
                 returnUserData.res = false;
@@ -61,8 +64,8 @@ public class UserManager {
 
     //    注册服务 -- 注册创建一个文件,并且存储起来,后面也可以直接设置成登录
     public static ReturnUserData Register(GetUserData user){
-        if(UserRBTree.searchFile(user.getUsername())==null){
-            File file = UserRBTree.AddItem(user.getUsername());//获得File文件,创建文件,写入文件树,写入UserFile数据
+        if(OnlineManager.GetUserData(user.getUsername(),0L) == null){
+            File file = UserRBTree.AddItem(user.getUsername()); //获得File文件,创建文件,写入文件树,写入UserFile数据
             //拿到数据文件指针,然后放到文件里面去
             ReturnUserData returnUserData = SetUserData(file,user); //这里面负责创建data文件,写入到file文件里面去
             if(returnUserData.state == "注册成功"){
@@ -115,78 +118,24 @@ public class UserManager {
 
     //    写入初始文件,包括网名,组织名称,返回returnUserData
     private static ReturnUserData SetUserData(File file,GetUserData user){
-        ReturnUserData returnUserData = new ReturnUserData(user.getNetname(),user.getPersonalword(),"");
+        ReturnUserData returnUserData = new ReturnUserData(user.getNetname(),user.getPersonalword(),"注册成功");
         //把user数据放到userFile中
-        UserFile filedata = new UserFile(user.getUsername(),user.getNetname(),user.getPassword(),user.getPersonalword());
+        UserFile fileData = new UserFile(user.getUsername(),user.getNetname(),user.getPassword(),user.getPersonalword());
 //      添加用户数据文件指向
-        filedata.file = file;
+        fileData.file = file;
 //      添加本身这个组织
-        filedata.owner = new ArrayList<>();
+        fileData.owner = new ArrayList<>();
 //      构建组织文件
-        File dataFile = DatapageManager.AddData(String.valueOf(user.getUsername()));//获得一个指向组织的File文件;
-        filedata.owner.add(dataFile);
-
+        File dataFile = DatapageManager.AddData(user.getUsername() + "的个人空间");//获得一个指向组织的File文件;
+        fileData.owner.add(dataFile);
 //      新建数据文件中红黑树指向用户文件
-        DataItem dataItem = new DataItem();
-        dataItem.users.add(user.getUsername());
-//      写入到数据文件
-        File dataItemFile = FileManager.NextFile(dataFile,"DataItem");
-        try {
-            FileOutputStream fileOut = new FileOutputStream(dataItemFile);
-            ObjectOutputStream out = new ObjectOutputStream(fileOut);
-            out.writeObject(dataItem);
-            out.close();
-            fileOut.close();
-        } catch (IOException i) {
-            returnUserData.state = "注册失败";
-            returnUserData.res = false;
-        }
-//      写入用户文件
+        DataProcessor dataProcessor = new DataProcessor(user.getUsername(),user.getUsername() + "的个人空间",dataFile);
 
-        try {
-            FileOutputStream fileOut = new FileOutputStream(GetUserFile(file));
-            ObjectOutputStream out = new ObjectOutputStream(fileOut);
-            out.writeObject(filedata);
-            out.close();
-            fileOut.close();
-            returnUserData.state = "注册成功";
-        }catch (Exception e){
-            returnUserData.state = "注册失败";
-            returnUserData.res = false;
-        }
+        OnlineManager.AddOnlineUser(fileData,0L);//添加缓存
+        OnlineManager.AddOnlineData(dataProcessor,0L);//添加数据
+
+        System.out.println("注册成功");
         return returnUserData;
-    }
-
-    //  根据file找到UserFile
-    static public UserFile GetUser(File file){
-        UserFile userFile = null;
-        try {
-            ObjectInputStream ois = new ObjectInputStream(new FileInputStream(GetUserFile(file)));
-            userFile = (UserFile) ois.readObject();
-            ois.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            userFile = null;
-        }
-        return userFile;
-    }
-    //返回根据long找到的user
-    static public UserFile GetUser(Long user){
-        File file = UserRBTree.searchFile(user);//读取user位置
-        return GetUser(file);
-    }
-    //  和register配套的保存数据
-    static public boolean SaveUser(File file,UserFile user){
-        try {
-            FileOutputStream fileOut = new FileOutputStream(GetUserFile(file));
-            ObjectOutputStream out = new ObjectOutputStream(fileOut);
-            out.writeObject(user);
-            out.close();
-            fileOut.close();
-            return true;
-        }catch (Exception e){
-            return false;
-        }
     }
     // 写入头像图片,返回头像的路径
     static public String SaveImage(byte[] bytes){
@@ -255,7 +204,5 @@ public class UserManager {
     //添加组织删除组织
 
     //添加组织需要注意的一点是,在线树更新后对应的服务器数据需要更新!!!
-    static public ReturnJson AddOrg(String org){
-        return  new ReturnJson(true,"");
-    }
+
 }

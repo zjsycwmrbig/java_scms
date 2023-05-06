@@ -52,13 +52,14 @@ public class OrgController {
             returnJson.res = false;
             returnJson.state = "组织已存在";
         }else{
-            DataProcessor dataProcessor = new DataProcessor(BridgeData.getRequestInfo(),org);
-            OnlineManager.NewOnlineData(dataProcessor,1L);
+            DataProcessor dataProcessor = new DataProcessor(BridgeData.getRequestInfo(),org,file);
+            OnlineManager.NewOnlineData(dataProcessor,1L);//直接新建一个
             UserFile user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);//用户添加组织信息
             user.owner.add(file);
         }
         return  returnJson;
     }
+
     //接收org名称
     // -1. 组织不存在
     // -2. 组织中存在冲突
@@ -71,9 +72,9 @@ public class OrgController {
         if(Org == null){
             res.res = false;res.state = "组织不存在";
         }else{
-            res = dataManager.AddOrg(Org);//先获得组织文件
+            res = dataManager.AddOrg(Org); //先获得组织冲突文件,如果成功在这里就添加到用户和组织信息里面做双向连接
             if(res.res){
-                OnlineManager.GetEventData(org,1L);
+                OnlineManager.GetEventData(org,1L);//给这份文件添加权重
             }
         }
         return res;

@@ -29,18 +29,18 @@ public class DataProcessor implements Serializable {
     @Autowired
     public DataRBTree dataRBTree;//这个后面应该是多个DataRBTree
 
-    public String name; //该组织的名字
     public DataProcessor() {
         dataItem = new DataItem();
         dataMap = new DataMap();
         dataRBTree = new DataRBTree();
     }
 
-    public DataProcessor(Long user,String Name){
+    public DataProcessor(Long user,String Name,File file){
         //带着初始人的构造函数
-        name = Name;
         dataItem = new DataItem();
         dataItem.users.add(user);
+        dataItem.filePath = file;
+        dataItem.name = Name;
         dataMap = new DataMap();
         dataRBTree = new DataRBTree();
     }
