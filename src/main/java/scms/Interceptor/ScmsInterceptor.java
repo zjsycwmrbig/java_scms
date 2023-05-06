@@ -1,12 +1,21 @@
 package scms.Interceptor;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.core.MethodParameter;
+import org.springframework.http.MediaType;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.server.ServerHttpRequest;
+import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 import scms.Dao.UserRBTree;
 import scms.Service.OnlineManager;
 import scms.Service.UserManager;
@@ -49,7 +58,29 @@ public class ScmsInterceptor implements HandlerInterceptor {
         HandlerMethod handlerMethod = (HandlerMethod) handler;
 
         System.out.println("调用的方法名为" + handlerMethod.getMethod().getName()); //输出方法的名称
+        //这里用response对返回进行判断
+        //response无法调用getWriter方法,提示getOutputStream() has already been called for this response
+        //可能现在只能研究下getOutputStream这个方法怎么得到Json了
+        /*ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = objectMapper.readTree(response.getOutputStream().toString());
+        JsonNode dataNode = jsonNode.get("data");
 
+        OutputStream outputStream = response.getOutputStream();
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toString().getBytes());
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        int len = 0;
+        while ((len = inputStream.read(buffer)) != -1) {
+            byteArrayOutputStream.write(buffer, 0, len);
+        }
+        String responseString = byteArrayOutputStream.toString();
+        System.out.println(responseString);
+        String jsonString = new String(buffer,StandardCharsets.UTF_8);
+        //试着将byte[]数组转换为json对象 */
+        if(CustomResponseBodyAdvice.returnMark == 0) {
+            System.out.println("方法调用失败");
+            return;
+        }
         //根据请求得到学生文件路径
         if(BridgeData.getRequestInfo() == null) return;//如果还没有签证的请求作为废请求,拦截处理
         UserFile userFile = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);
@@ -81,3 +112,36 @@ public class ScmsInterceptor implements HandlerInterceptor {
         BridgeData.clear();
     }
 }
+
+@ControllerAdvice
+@Component
+class CustomResponseBodyAdvice implements ResponseBodyAdvice<Object> {
+    static int returnMark = 0; //为零表示失败
+    @Override
+    public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
+        return true; // 支持所有类型的返回值
+    }
+
+    @Override
+    public Object beforeBodyWrite (Object body, MethodParameter returnType, MediaType selectedContentType,
+                                   Class<? extends HttpMessageConverter<?>> selectedConverterType,
+                                   ServerHttpRequest request, ServerHttpResponse response) {
+        if (selectedContentType != null && selectedContentType.includes(MediaType.APPLICATION_JSON)) {
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode jsonNode = objectMapper.valueToTree(body);
+            if(jsonNode == null || !jsonNode.has("res"))
+                return body;
+            if(jsonNode.get("res").asBoolean())
+                returnMark = 1;
+            else
+                returnMark = 0;
+
+            return jsonNode;
+        }
+        return body;
+    }
+}
+/*在上面的代码中，我们创建了一个名为CustomResponseBodyAdvice的ResponseBodyAdvice实现类，并将其标记为@ControllerAdvice，
+这意味着它将适用于所有控制器。我们实现了supports和beforeBodyWrite两个方法，supports方法返回true，
+表示该拦截器支持所有类型的返回值。在beforeBodyWrite方法中，我们首先检查响应类型是否为json，
+然后使用ObjectMapper将响应内容转换为JsonNode对象，然后使用get("res")方法获取返回值。最后，我们原封不动地将JsonNode对象返回。*/
