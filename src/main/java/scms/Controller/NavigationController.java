@@ -16,9 +16,9 @@ import java.util.LinkedList;
 @RestController
 @RequestMapping("/navigate")
 public class NavigationController {
-    Vertex[] vertexes = null; //共有126个顶点，但第一个顶点在json文件中编号为1，所以数组0号不用
-    @RequestMapping("/readMap")
-    public void readMap() throws IOException {
+    static Vertex[] vertexes = null; //共有126个顶点，但第一个顶点在json文件中编号为1，所以数组0号不用
+    public static void readMap() throws IOException {
+        /*
         //从边的json中读取
         ObjectMapper Json = new ObjectMapper();
         Road[] roads = Json.readValue(new File("C:\\Users\\wwhb\\Desktop\\Edges.json"),Road[].class);
@@ -51,10 +51,12 @@ public class NavigationController {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        //序列化和反序列化应该拆开到不同代码地方吧？？？？？？？
+        */
+
         //注意反序列化之前Vertex类和Node类都必须已经加载
         try {
-            FileInputStream fileInputStream = new FileInputStream("C:\\Users\\wwhb\\Desktop\\edges.ser"); //文件位置可能需要更改
+            //FileInputStream fileInputStream = new FileInputStream("C:\\Users\\wwhb\\Desktop\\edges.ser"); //文件位置可能需要更改
+            FileInputStream fileInputStream = new FileInputStream("D:\\SCMSFILE\\MapData.scms");
             ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
             vertexes = (Vertex[]) objectInputStream.readObject();
             objectInputStream.close();
@@ -75,7 +77,7 @@ public class NavigationController {
         }*///输出每条边，以对照是否反序列化正确，后续可以删掉。。。。。
     }
     @RequestMapping("/oneTarget")
-    public String getShortedPath(int startNumber,int endNumber,int mode){
+    public static String getShortedPath(int startNumber,int endNumber,int mode){
         //使用迪杰斯特拉算法得到最短路径
         //mode == 1 返回最短路径， mode == 2 时返回最短路径的长度
         if(startNumber == endNumber){
@@ -137,7 +139,7 @@ public class NavigationController {
             return String.valueOf(distanceToAll[endNumber]);
         }
     }
-    public String getPathWithMoreTargets(int startNumber,int[] targetNumbers){
+    /*public static String getPathWithMoreTargets(int startNumber,int[] targetNumbers){
         String path = "";
         CrossLinkedListVertex[] necessaryVertexes = new CrossLinkedListVertex[targetNumbers.length + 1];
         necessaryVertexes[0] = new CrossLinkedListVertex();
@@ -365,9 +367,9 @@ public class NavigationController {
             this.lowerBound = lowerBound;
         }
     }
-
+*/
     @RequestMapping("/moreTargets")
-    public String getPathWithMoreTargetsUsingARA(int startNumber,int[] targetNumbers){
+    public static String getPathWithMoreTargetsUsingARA(int startNumber,int[] targetNumbers){
         String path = "";
         ARAVertex[] araVertices = new ARAVertex[targetNumbers.length +1]; //ARA算法使用的顶点也都是必经点
         araVertices[0] = new ARAVertex(startNumber);
@@ -449,11 +451,10 @@ public class NavigationController {
         System.out.println("必经点的顺序（下标表示）"+bestPathString);
         System.out.println("必经点的顺序为" + path);
         String realPath = necessaryPathToRealPath(path);
-        return realPath;
+        return realPath; //更改成返回一个list数组即可？？？？？？？？
     }
 
-
-    public int[] antFindPath(ARAVertex[] araVertices,double[] pathLength,int antNumber){
+    public static int[] antFindPath(ARAVertex[] araVertices,double[] pathLength,int antNumber){
         //蚂蚁根据公式不断找寻一段路径
         int[] path = new int[araVertices.length];
         for (int i = 0; i < path.length; i++) {
@@ -475,7 +476,7 @@ public class NavigationController {
         }//使用轮盘赌+蚁群算法公式得到路径
         return path;
     }
-    public int roulette(ARAVertex[] araVertices,int currentVertex,int[] path,double[] pathLength,int antNumber) {
+    public static int roulette(ARAVertex[] araVertices,int currentVertex,int[] path,double[] pathLength,int antNumber) {
         double probability = 0;
         double molecule = 0; //公式的分子
         double denominator = 0; //公式的分母
@@ -509,7 +510,7 @@ public class NavigationController {
         pathLength[antNumber] = pathLength[antNumber] + tempNode.distance;
         return random;
     }
-    public boolean isInPath(int x , int[] path){
+    public static boolean isInPath(int x , int[] path){
         for (int i = 0; i < path.length; i++) {
             if (x == path[i])
                 return true;
@@ -517,7 +518,7 @@ public class NavigationController {
         return false;
     }
 
-    public String necessaryPathToRealPath(String necessaryPath){
+    public static String necessaryPathToRealPath(String necessaryPath){
         String path = "";
         //由必经点路径得到实际路径，其实就是多次调用getShortedPath并整理
         String[] strings = necessaryPath.split("->");
