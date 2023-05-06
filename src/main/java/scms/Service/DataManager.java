@@ -229,9 +229,13 @@ public class DataManager {
                 }else{//不是主导用户直接记录一共有多少冲突就好
                     list.get(i).searchNeibor(end);
                     ClashRBTNode form = list.get(i).stack.get(0);
-                    // 出现冲突
-                    if((Long)(form.end) >= end - item.length){
-                        clashData.clashNum++;
+                    if(form == null){
+                        continue;//说明没有冲突
+                    }else{
+                        // 出现冲突
+                        if((Long)(form.end) >= end - item.length){
+                            clashData.clashNum++;
+                        }
                     }
                 }
             }
