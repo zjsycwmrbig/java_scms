@@ -9,8 +9,16 @@ public class FunctionMatch {
         switch (name){
             case "CreatUser": return "注册";
             case "CheckLogin": return "登录";
-            case "CreateGroup": return "创建组织";
-            case "JoinGroup": return "加入组织";
+            case "LogOut":return "退出";
+            case "AddItem": return "添加课表信息";
+            case "NoticeProcessor": return "同意通知";
+            case "NoticeRemover":return "拒绝通知";
+            case "NoticeIgnorer":return "忽略通知";
+            case "NoticePolling":return "轮询获取通知";
+            case "OrgCreate": return "创建组织";
+            case "OrgJoin": return "加入组织";
+            case "OrgInvite":return "邀请他人加入组织";
+            case "OrgDelete":return "删除组织";
             case "oneTarget": return "找寻一个目标点的最短路径";
             case "moreTargets": return "找寻多个目标点的最短路径";
             case "QueryNow": return "查询当前课表";

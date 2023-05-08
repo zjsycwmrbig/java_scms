@@ -22,7 +22,9 @@ import scms.Service.UserManager;
 import scms.domain.ServerJson.UserFile;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.io.ObjectOutputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -54,14 +56,22 @@ public class ScmsInterceptor implements HandlerInterceptor {
 //        在请求处理之后进行处理，注意不要有两次请求
         System.out.print(request.getHeader("content-type")); //输出请求的各种信息，需对应请求格式，感觉日志只需要方法名称
 
+        System.out.println(request.getMethod());
+
+        //采用这个变量是下下策，因为axios会发送两次请求，但又和网上说的第一次请求的Method为OPTIONS不同，所以先这样，以后再改进。
+        /*CustomResponseBodyAdvice.hasCalled = (CustomResponseBodyAdvice.hasCalled + 1 ) % 2;
+        if(CustomResponseBodyAdvice.hasCalled == 1)
+            return;*/
+        //创建组织的时候又没有两次相同的请求了？？？？？？？真的难蚌
+
         System.out.println("postHandle Method");
         HandlerMethod handlerMethod = (HandlerMethod) handler;
 
         System.out.println("调用的方法名为" + handlerMethod.getMethod().getName()); //输出方法的名称
-        //这里用response对返回进行判断
-        //response无法调用getWriter方法,提示getOutputStream() has already been called for this response
-        //可能现在只能研究下getOutputStream这个方法怎么得到Json了
-        /*ObjectMapper objectMapper = new ObjectMapper();
+
+        /*这里用response对返回进行判断
+        response无法调用getWriter方法,提示getOutputStream() has already been called for this response，所以尝试用outputStream
+        ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonNode = objectMapper.readTree(response.getOutputStream().toString());
         JsonNode dataNode = jsonNode.get("data");
 
@@ -76,7 +86,7 @@ public class ScmsInterceptor implements HandlerInterceptor {
         String responseString = byteArrayOutputStream.toString();
         System.out.println(responseString);
         String jsonString = new String(buffer,StandardCharsets.UTF_8);
-        //试着将byte[]数组转换为json对象 */
+         */
         if(CustomResponseBodyAdvice.returnMark == 0) {
             System.out.println("方法调用失败");
             return;
@@ -85,23 +95,36 @@ public class ScmsInterceptor implements HandlerInterceptor {
         if(BridgeData.getRequestInfo() == null) return;//如果还没有签证的请求作为废请求,拦截处理
         UserFile userFile = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);
         if(userFile == null) return;//注册的时候没有userFile
+        File UserPath = userFile.file;
+        String LogPath = UserPath.getAbsolutePath().concat("\\log.scms"); //这个文件注册的时候就会创建
 
-        File UserPath = userFile.file; ////待改动，先通过OnlineTree查找，再使用UserRBTree查找？？？？
-        String LogPath = UserPath.getAbsolutePath().concat("\\Log.txt");
+        //这里要增加管理员改课程表时候的日志。应该要@AutoWired 吧？？？？？？？
 
-        //这里要增加管理员改课程表时候的日志。应该要@Auto
-        //根据请求得到一行的日志字符串，格式为 xxxx年xx月xx日 xx时xx分xx秒 “用户名” “操作”
+        //根据请求得到一行的日志对象
         LocalDateTime localDateTime = LocalDateTime.now();
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy年MM月dd日 HH时mm分ss秒");
         String timeString =dateTimeFormatter.format(localDateTime);
 
         ////先根据方法名，用静态方法getFunctionString得到对应操作字符串。后续如果要改成用请求名或者请求名+方法名搭配着用的话，在getFunctionString中修改
-        String logString = timeString.concat(" " + userFile.username + " "+ FunctionMatch.getFunctionString(handlerMethod.getMethod().getName()) + "\n");
+        //String logString = timeString.concat(" " + userFile.username + " "+ FunctionMatch.getFunctionString(handlerMethod.getMethod().getName()) + "\n");
 
-        //FileWriter文件流，向日志文件中添加字符串
+        /*Log log = new Log(timeString, userFile.username,FunctionMatch.getFunctionString(handlerMethod.getMethod().getName()) );
+
+        //FileWriter文件流，向日志文件中添加一个list，list中存放日志类，一次往里面写一个日志对象？？？？？？？？
         FileWriter fileWriter = new FileWriter(LogPath,true);
         fileWriter.write(logString);
-        fileWriter.close();
+        fileWriter.close();//
+
+
+        FileOutputStream fileOutputStream = new FileOutputStream(LogPath,true);
+        ObjectOutputStream outputStream = new ObjectOutputStream(fileOutputStream);
+        outputStream.writeObject(log);
+        outputStream.close();
+        fileOutputStream.close();*/
+
+        LogList logList = new LogList(LogPath);
+        logList.write(timeString,userFile.username,FunctionMatch.getFunctionString(handlerMethod.getMethod().getName()));
+        //logList.read();
         System.out.println("添加日志信息成功");
     }
 
@@ -116,6 +139,7 @@ public class ScmsInterceptor implements HandlerInterceptor {
 @ControllerAdvice
 @Component
 class CustomResponseBodyAdvice implements ResponseBodyAdvice<Object> {
+    static int hasCalled = 1; //一次操作会有两次请求，所以每有一次请求就将该值+1mod2，只有为1时才能记录进日志
     static int returnMark = 0; //为零表示失败
     @Override
     public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
