@@ -62,7 +62,6 @@ public class LogList {
             System.out.println(e);
         }
     }//先将文件反序列化到list中，再添加一个Log对象到list，再将list序列化到文件中
-    //不采用序列化一个新的Log对象到文件中，是因为若这样，只能反序列化第一个引用类型，即只能获取文件中的第一个Log对象，暂未解决
 
 }
 
