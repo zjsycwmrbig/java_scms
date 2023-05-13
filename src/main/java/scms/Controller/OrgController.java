@@ -19,6 +19,7 @@ import scms.domain.ServerJson.NoticeData;
 import scms.domain.ServerJson.UserFile;
 
 import java.io.File;
+import java.util.List;
 
 /***
  * @author Administrator
@@ -77,6 +78,28 @@ public class OrgController {
                 OnlineManager.GetEventData(org,1L);//给这份文件添加权重
             }
         }
+        return res;
+    }
+
+    @RequestMapping("/delete")
+    public ReturnJson OrgDelete(@RequestParam String org){
+        //删除某个组织
+        ReturnJson res = new ReturnJson(true,"组织删除成功");
+        DataProcessor Org = OnlineManager.GetEventData(org,0L);
+        List<Long> userAll = Org.dataItem.users; //得到组织中所有用户的信息
+        for (int i = 0; i < userAll.size(); i++) {
+            UserFile tempUserFile = OnlineManager.GetUserData(userAll.get(i),0L);
+            if(tempUserFile != null) {
+                for (int j = 0; j < tempUserFile.player.size(); j++) {
+                    File temp = tempUserFile.player.get(j);
+                    if (temp.getName().equals(org)) {
+                        temp.delete();
+                    }
+                }
+            }
+        } //删除组织中每个用户的组织文件
+        OnlineManager.RemoveOrg(org);//从在线树中删除组织
+        DatabaseRBTree.Remove(org); //删除组织文件
         return res;
     }
 }
