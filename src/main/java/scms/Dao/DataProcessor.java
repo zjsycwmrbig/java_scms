@@ -66,6 +66,7 @@ public class DataProcessor implements Serializable {
         dataRBTree.Between(begin,end);
         for(int i = 0; i < dataRBTree.stack.size(); i++){
             ClashRBTNode item = dataRBTree.stack.get(i);
+            if(item == null)break;
             ClassData data = dataItem.SearchItem((Long) item.vaule);
             //这里有bug,验证dataItem非空,验证键值没错,下一步验证search逻辑,好像是叶子节点读取错误,搜索不到,是二叉树构建出现错误!!!
             if(data == null){

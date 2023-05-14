@@ -38,7 +38,6 @@ public class OrgController {
         }else{
              notice = NoticeMaker.JoinOrg(data.org);
         }
-
         return UserManager.AddNotice(data.userlist,notice);
     }
     //接收org名称
@@ -53,9 +52,11 @@ public class OrgController {
             returnJson.state = "组织已存在";
         }else{
             DataProcessor dataProcessor = new DataProcessor(BridgeData.getRequestInfo(),org,file);
+            // 更新一个type
             OnlineManager.NewOnlineData(dataProcessor,1L);//直接新建一个
             UserFile user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);//用户添加组织信息
             user.owner.add(file);
+            dataProcessor.dataItem.type = user.owner.size()-1;
         }
         return  returnJson;
     }
@@ -72,7 +73,13 @@ public class OrgController {
         if(Org == null){
             res.res = false;res.state = "组织不存在";
         }else{
-            res = dataManager.AddOrg(Org); //先获得组织冲突文件,如果成功在这里就添加到用户和组织信息里面做双向连接
+            //判断该组织是否为私人组织
+            if(Org.dataItem.type == 0){
+                res.res = false;
+                res.state = "组织为私人组织,不可加入";
+            }else{
+                res = dataManager.AddOrg(Org); //先获得组织冲突文件,如果成功在这里就添加到用户和组织信息里面做双向连接
+            }
             if(res.res){
                 OnlineManager.GetEventData(org,1L);//给这份文件添加权重
             }

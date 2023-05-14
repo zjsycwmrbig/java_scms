@@ -95,6 +95,7 @@ public class UserManager {
             } //密码失败返回null
             else{
                 res.state = "登录成功";
+                res.username = userFile.username;
                 res.netname = userFile.netname;
                 res.PersonalWord = userFile.PersonalWord;
                 res.owner = new ArrayList<>();
@@ -130,6 +131,7 @@ public class UserManager {
         fileData.owner.add(dataFile);
 //      新建数据文件中红黑树指向用户文件
         DataProcessor dataProcessor = new DataProcessor(user.getUsername(),user.getUsername() + "的个人空间",dataFile);
+        dataProcessor.dataItem.type = 0;//更新type的值
 
         OnlineManager.AddOnlineUser(fileData,0L);//添加缓存
         OnlineManager.AddOnlineData(dataProcessor,0L);//添加数据
@@ -140,11 +142,12 @@ public class UserManager {
     // 写入头像图片,返回头像的路径
     static public String SaveImage(byte[] bytes){
         UserFile user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);
-        File file = UserRBTree.searchFile(user.username);
+        File file = user.file;
         try {
             FileOutputStream outputStream = new FileOutputStream(GetImageFile(file));
             outputStream.write(bytes);
             outputStream.close();//写入成功
+            user.hasImage = true;
             return "OK";
         }catch (Exception e){
             e.printStackTrace();

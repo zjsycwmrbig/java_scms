@@ -18,6 +18,7 @@ public class UserFile implements Serializable {
         this.password = password;
         this.PersonalWord = personalWord;
         this.notice = new ArrayList<>();//创建对象
+        this.hasImage = false;
     }
 
     public long username;//账号
@@ -34,4 +35,6 @@ public class UserFile implements Serializable {
     public List<NoticeData> notice; //通知
 
     public File file;//文件位置
+
+    public boolean hasImage;//是否有头像
 }

@@ -16,7 +16,8 @@ public class EventItem implements Comparable<EventItem>{
         this.length = length;
         this.location = location;
     }
-    public int type;//给出类型
+    public int type;//给出类型，0，正数，负数
+    public String group;
     public String title;
     public int location;
     public long begin;

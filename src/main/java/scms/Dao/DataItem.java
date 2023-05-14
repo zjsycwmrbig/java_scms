@@ -21,7 +21,7 @@ public class DataItem implements Serializable {
     private static final boolean BLACK = true;
     public List<Long> users; //用户组
     public String name;//数据名
-
+    public int type;//组织类型
     public File filePath;//数据路径
     public RBTree<ClassData,Long> itemRbtree; //用classdata当做vaule,Long值当做key,Long直接记录Begin就好
 //  增删改查

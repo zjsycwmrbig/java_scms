@@ -12,6 +12,9 @@ import java.io.Serializable;
  */
 @Component
 public class ClassData implements Serializable {
+    //指明是哪个组织的数据
+    public String group;
+    //数据和用户之间的关系
     public int type;
 //    映射到hash表上的title
 //    更改:因为class分开存储,title重复减少,直接存储在这里面

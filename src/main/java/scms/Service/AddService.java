@@ -20,7 +20,6 @@ import java.util.ArrayList;
 //判断这个数据可不可以加，包含排序,查找冲突等算法
 @Service
 public class AddService extends scms.Service.Service {
-    // 可以使用Canlendar来判断
     DataManager dataManager;
     UserFile user;
     //  新添加的节点
