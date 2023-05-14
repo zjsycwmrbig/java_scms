@@ -15,6 +15,7 @@ public class ReturnUserData extends ReturnJson{
         this.netname = netname;
         this.PersonalWord = personalWord;
     }
+    public long username;
     public String netname;
 
     public String PersonalWord;

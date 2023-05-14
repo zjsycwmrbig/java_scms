@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.springframework.web.multipart.MultipartFile;
 import scms.Interceptor.BridgeData;
 import scms.Service.OnlineManager;
 import scms.Service.UserManager;
@@ -35,4 +36,16 @@ public class UserController {
     public ReturnJson LogOut(){
         return OnlineManager.RemoveOnline(BridgeData.getRequestInfo());
     }
+
+    @RequestMapping("/upload")
+    public String UploadImage(@RequestBody MultipartFile file){
+        try {
+            // 处理文件上传操作
+            byte[] bytes = file.getBytes(); //拿到文件
+            return UserManager.SaveImage(bytes);
+        } catch (Exception e) {
+            return "Error uploading file.";
+        }
+    }
+
 }

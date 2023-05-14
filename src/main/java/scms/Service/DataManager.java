@@ -3,7 +3,6 @@ package scms.Service;
 import scms.Dao.*;
 
 import scms.Interceptor.BridgeData;
-import scms.Interceptor.FileManager;
 import scms.domain.GetJson.ClassData;
 
 import scms.domain.ReturnJson.ReturnAddJson;
@@ -64,6 +63,7 @@ public class DataManager {
     public ReturnAddJson AddItem(ClassData item){
         int index = item.type;//得到type,代表是那一份数据
         DataProcessor data = owner.get(index);
+        item.group = data.dataItem.name;//给出组名，不在前端给
         ReturnAddJson returnAddJson = ClashCheck(item);
         if(returnAddJson.res){
             data.AddItem(item);
@@ -267,7 +267,7 @@ public class DataManager {
         long monday = now.getTime().getTime();
 
         now.add(Calendar.DATE, 7); // 下周的周一
-        long sunday = now.getTime().getTime();
+        long sunday = now.getTime().getTime() -1 ;
         ReturnEventData returnEventData = new ReturnEventData();
 //        新建一套体系
         ArrayList<EventDataByTime> eventDataByTimes = new ArrayList<>();
@@ -278,24 +278,22 @@ public class DataManager {
         if(owner != null){
             for(int i = 0;i < owner.size();i++){
                 List<EventItem> list = owner.get(i).QueryBetween(monday,sunday);
-                EventDataByType eventDataByType = new EventDataByType(user.owner.get(i).getName(),0,list);
-                returnEventData.events.add(eventDataByType);
                 for(int j = 0;j < list.size();j++){
                     EventItem item = list.get(j);
                     item.type = i;//给出i
+                    item.group = owner.get(i).dataItem.name;
                     eventDataByTimes.get(GetWeekIndex(list.get(j).begin)).list.add(item);
                 }
             }
         }
 
         if(player != null){
-            for(int i = 0;i < player.size();i++){
+            for(int i = 1;i <= player.size();i++){
                 List<EventItem> list = player.get(i).QueryBetween(monday,sunday);
-                EventDataByType eventDataByType = new EventDataByType(user.player.get(i).getName(),1,list);
-                returnEventData.events.add(eventDataByType);
                 for(int j = 0;j < list.size();j++){
                     EventItem item = list.get(j);
                     item.type = -i;//给出i
+                    item.group = player.get(i).dataItem.name;
                     eventDataByTimes.get(GetWeekIndex(list.get(j).begin)).list.add(item);
                 }
             }
