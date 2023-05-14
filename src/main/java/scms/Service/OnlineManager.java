@@ -209,6 +209,16 @@ public class OnlineManager {
 
         return returnJson;
     }
+
+    static public void RemoveOrg(String org){
+       RBTNode node = onlineData.searchNode(onlineData.Root,org);
+       if(node == null)
+           System.out.println("在线树中没有组织");
+       else
+           onlineData.remove(node);
+    }
+
+
     //清除Leave用户栈
     static public void ClearLeave(){
         while(!Leave.empty()){//栈非空,一个个清除数据
