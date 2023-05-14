@@ -302,7 +302,8 @@ public class DataManager {
         }
 //      排序对结果排序
         for(int i = 0;i < eventDataByTimes.size();i++){
-            Collections.sort(eventDataByTimes.get(i).list);
+            SortFast.fun(eventDataByTimes.get(i).list,null); //这个比较器传null不知道行不行
+            //Collections.sort(eventDataByTimes.get(i).list);
         }
 
         returnEventData.routines = eventDataByTimes;
@@ -342,7 +343,8 @@ public class DataManager {
             }
         }
         //排序
-        Collections.sort(returnQueryData.list,new compareQuery());
+        SortFast.fun(returnQueryData.list,new compareQuery());
+        //Collections.sort(returnQueryData.list,new compareQuery());
         //填充
         return  returnQueryData;
     }

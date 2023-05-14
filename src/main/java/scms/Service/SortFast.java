@@ -22,13 +22,12 @@ public class SortFast {
         if(lowPointer >= highPointer){
             return;
         }
-        int length = list.size();
         T key = list.get(lowPointer);
         while(lowPointer < highPointer){
             while(true) {
                 if(highPointer <= lowPointer)
                     break;
-                if (c.compare(key, list.get(highPointer)) > 0) { //排序结果以实验为准
+                if (c.compare(key, list.get(highPointer)) > 0) { //排序结果应该是从小到大，以结果为准
                     list.set(lowPointer, list.get(highPointer));
                     break;
                 } else {
