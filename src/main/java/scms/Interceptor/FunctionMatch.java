@@ -7,8 +7,8 @@ package scms.Interceptor;
 public class FunctionMatch {
     public static String getFunctionString(String name){
         switch (name){
-            case "CreatUser": return "注册";
-            case "CheckLogin": return "登录";
+            case "CreatUser": return "注册成功";
+            case "CheckLogin": return "登录成功";
             case "LogOut":return "退出";
             case "AddItem": return "添加课表信息";
             case "NoticeProcessor": return "同意通知";
@@ -24,7 +24,7 @@ public class FunctionMatch {
             case "QueryNow": return "查询当前课表";
             case "QueryAll":return "查询所有课表";
             case "QueryKey":return "查询单节课";
-        }
-        return "找不到对应操作名称";
+        }//返回的值对应接口
+        return name; //找不到就原样返回，如没有调用接口的需要记录的方法
     }
 }

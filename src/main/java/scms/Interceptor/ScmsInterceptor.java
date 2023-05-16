@@ -42,7 +42,6 @@ public class ScmsInterceptor implements HandlerInterceptor {
         // 1.为线程添加数据,这里添加File类好像不太合适
         HttpSession session = request.getSession();
         Long user = (Long) session.getAttribute("User");
-
         if(user != null){
             // 2.存在签证
             BridgeData.setRequestInfo(user);
@@ -53,6 +52,7 @@ public class ScmsInterceptor implements HandlerInterceptor {
 
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+
         System.out.print(request.getHeader("content-type")); //输出请求的各种信息，需对应请求格式，感觉日志只需要方法名称
         System.out.println(request.getMethod());
 
@@ -122,9 +122,10 @@ public class ScmsInterceptor implements HandlerInterceptor {
         fileOutputStream.close();*/
 
         LogList logList = new LogList(LogPath);
-        logList.write(timeString,userFile.username,FunctionMatch.getFunctionString(handlerMethod.getMethod().getName()));
+        //logList.write(timeString,userFile.username,FunctionMatch.getFunctionString(handlerMethod.getMethod().getName()));
         //logList.read();
         System.out.println("添加日志信息成功");
+
     }
 
     @Override

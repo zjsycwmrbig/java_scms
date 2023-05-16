@@ -18,7 +18,7 @@ import java.util.LinkedList;
 public class NavigationController {
     static Vertex[] vertexes = null; //共有126个顶点，但第一个顶点在json文件中编号为1，所以数组0号不用
     public static void readMap() throws IOException {
-        /*
+        /*之前进行序列化的代码，只需使用一次
         //从边的json中读取
         ObjectMapper Json = new ObjectMapper();
         Road[] roads = Json.readValue(new File("C:\\Users\\wwhb\\Desktop\\Edges.json"),Road[].class);
@@ -139,7 +139,9 @@ public class NavigationController {
             return String.valueOf(distanceToAll[endNumber]);
         }
     }
-    /*public static String getPathWithMoreTargets(int startNumber,int[] targetNumbers){
+
+    /*本来使用分支限界法的代码
+    public static String getPathWithMoreTargets(int startNumber,int[] targetNumbers){
         String path = "";
         CrossLinkedListVertex[] necessaryVertexes = new CrossLinkedListVertex[targetNumbers.length + 1];
         necessaryVertexes[0] = new CrossLinkedListVertex();
@@ -451,7 +453,7 @@ public class NavigationController {
         System.out.println("必经点的顺序（下标表示）"+bestPathString);
         System.out.println("必经点的顺序为" + path);
         String realPath = necessaryPathToRealPath(path);
-        return realPath; //更改成返回一个list数组即可？？？？？？？？
+        return realPath;
     }
 
     public static int[] antFindPath(ARAVertex[] araVertices,double[] pathLength,int antNumber){
@@ -601,7 +603,6 @@ class CrossLinkedListVertex{
     public void setId(int id) {
         this.id = id;
     }
-    //加点getter、setter？？？
 }
 
 class CrossLinkedListNode{
@@ -611,7 +612,7 @@ class CrossLinkedListNode{
     public CrossLinkedListNode nextSameTailOut = null;
     public double distance;
     //public boolean visited = false; 记录该边是否被访问过，但好像用不上
-    //加点getter、setter？？？
+
     public CrossLinkedListNode(int tailVertex, int headVertex, double distance) {
         this.tailVertex = tailVertex;
         this.headVertex = headVertex;
@@ -652,8 +653,8 @@ class ARALinkedListNode{
     }
 }
 
+/*用于序列化，只需使用一次
 class Road implements Serializable {
-    //用于json
     private int Eid;
     private int From;
     private int To;
@@ -690,4 +691,4 @@ class Road implements Serializable {
     public void setType(int type) {
         Type = type;
     }
-}
+}*/

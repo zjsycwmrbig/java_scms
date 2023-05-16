@@ -7,11 +7,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import org.springframework.web.multipart.MultipartFile;
 import scms.Interceptor.BridgeData;
+import scms.Interceptor.WriteLog;
 import scms.Service.OnlineManager;
 import scms.Service.UserManager;
 import scms.domain.GetJson.GetUserData;
 import scms.domain.ReturnJson.ReturnJson;
 import scms.domain.ReturnJson.ReturnUserData;
+import scms.domain.ServerJson.UserFile;
 
 import java.io.IOException;
 
@@ -22,19 +24,27 @@ public class UserController {
 //    这里最好返回数字,这样前端更好维护,并且通信成本更低
     @RequestMapping("/login")
     public ReturnUserData CheckLogin(@RequestBody GetUserData user, HttpServletRequest request) throws IOException {
-
-        return UserManager.CheckLogin(user,request);
+        ReturnUserData returnUserData = UserManager.CheckLogin(user,request);
+        UserFile userFile = OnlineManager.GetUserData(user.getUsername(),0L);
+        WriteLog.writeUserLog(userFile,returnUserData,"CheckLogin");
+        return returnUserData;
     }
 
 //    注册请求
     @RequestMapping("/register")
     public ReturnUserData CreatUser(@RequestBody GetUserData user) throws IOException {
-        return UserManager.Register(user);
+        ReturnUserData returnUserData = UserManager.Register(user);
+        UserFile userFile = OnlineManager.GetUserData(user.getUsername(),0L);
+        WriteLog.writeUserLog(userFile,returnUserData,"CreatUser");
+        return returnUserData;
     }
 //    登出请求
     @RequestMapping("/logout")
     public ReturnJson LogOut(){
-        return OnlineManager.RemoveOnline(BridgeData.getRequestInfo());
+        UserFile userFile = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);
+        ReturnJson returnJson = OnlineManager.RemoveOnline(BridgeData.getRequestInfo());
+        WriteLog.writeUserLog(userFile,returnJson,"LogOut"); //要用Bridge获取一下用户，但是是GetUserData类吗
+        return returnJson;
     }
 
     @RequestMapping("/upload")
