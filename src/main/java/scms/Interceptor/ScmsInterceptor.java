@@ -53,19 +53,18 @@ public class ScmsInterceptor implements HandlerInterceptor {
 
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
-//        在请求处理之后进行处理，注意不要有两次请求
         System.out.print(request.getHeader("content-type")); //输出请求的各种信息，需对应请求格式，感觉日志只需要方法名称
-
         System.out.println(request.getMethod());
 
-        //采用这个变量是下下策，因为axios会发送两次请求，但又和网上说的第一次请求的Method为OPTIONS不同，所以先这样，以后再改进。
-        /*CustomResponseBodyAdvice.hasCalled = (CustomResponseBodyAdvice.hasCalled + 1 ) % 2;
-        if(CustomResponseBodyAdvice.hasCalled == 1)
-            return;*/
-        //创建组织的时候又没有两次相同的请求了？？？？？？？真的难蚌
+        System.out.println(request.getRequestURL());
 
         System.out.println("postHandle Method");
-        HandlerMethod handlerMethod = (HandlerMethod) handler;
+        HandlerMethod handlerMethod = null;
+        try {
+            handlerMethod = (HandlerMethod) handler;
+        } catch (ClassCastException e) {
+            return; //无法转换，说明没有调用方法，可以直接返回，不需要记录在日志中
+        }
 
         System.out.println("调用的方法名为" + handlerMethod.getMethod().getName()); //输出方法的名称
 
@@ -152,6 +151,7 @@ class CustomResponseBodyAdvice implements ResponseBodyAdvice<Object> {
                                    ServerHttpRequest request, ServerHttpResponse response) {
         if (selectedContentType != null && selectedContentType.includes(MediaType.APPLICATION_JSON)) {
             ObjectMapper objectMapper = new ObjectMapper();
+
             JsonNode jsonNode = objectMapper.valueToTree(body);
             if(jsonNode == null || !jsonNode.has("res"))
                 return body;
