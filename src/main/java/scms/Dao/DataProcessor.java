@@ -63,7 +63,8 @@ public class DataProcessor implements Serializable {
     // 删
     public boolean DeleteItem(ClassData item){
         //三树中都要删除
-        dataItem.RemoveItem(item.begin);
+        if(!dataItem.RemoveItem(item.begin))
+            return false;
         dataRBTree.remove(item.begin);
         dataMap.RemoveMap(item.title);
         return true;

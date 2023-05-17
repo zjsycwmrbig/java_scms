@@ -10,7 +10,8 @@ public class FunctionMatch {
             case "CreatUser": return "注册成功";
             case "CheckLogin": return "登录成功";
             case "LogOut":return "退出";
-            case "AddItem": return "添加课表信息";
+            case "AddItem": return "添加数据信息";
+            case "DeleteItem":return "删除数据信息";
             case "NoticeProcessor": return "同意通知";
             case "NoticeRemover":return "拒绝通知";
             case "NoticeIgnorer":return "忽略通知";

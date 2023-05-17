@@ -25,6 +25,7 @@ public class AddController {
     @RequestMapping("/item")
     public ReturnAddJson AddItem(@RequestBody ClassData item){
         ReturnAddJson returnAddJson = addService.AddItem(item);
+        //本来应该在这里调用日志函数，但是DataManager中才对item的组织进行剖析，所以将调用放在了DataManager的AddItem中
         return returnAddJson;//这里往哪里加入,看index
     }
 

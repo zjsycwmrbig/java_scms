@@ -3,6 +3,7 @@ package scms.Service;
 import scms.Dao.*;
 
 import scms.Interceptor.BridgeData;
+import scms.Interceptor.WriteLog;
 import scms.domain.GetJson.ClassData;
 
 import scms.domain.ReturnJson.ReturnAddJson;
@@ -69,6 +70,15 @@ public class DataManager {
         if(returnAddJson.res){
             data.AddItem(item);
         }
+        DataProcessor group = OnlineManager.GetEventData(item.group, 0L);
+        if(group != null){
+            List<Long> users = group.dataItem.users;
+            UserFile userFile;
+            for (Long aLong : users) {
+                userFile = OnlineManager.GetUserData(aLong, 0L);
+                WriteLog.writeAddLog(userFile,returnAddJson,item.title,"AddItem");
+            }
+        }
         return returnAddJson;
     }
 
@@ -76,7 +86,23 @@ public class DataManager {
         ReturnJson returnJson = new ReturnJson(true,"");
         int index = item.type;
         DataProcessor data = owner.get(index);
-        data.DeleteItem(item);
+        boolean isOK = data.DeleteItem(item);
+        if(isOK){
+            returnJson.state = "删除成功";
+        }
+        else {
+            returnJson.res = false;
+            returnJson.state ="删除失败";
+        }
+        DataProcessor group = OnlineManager.GetEventData(data.dataItem.name, 0L);
+        if(group != null){
+            List<Long> users = group.dataItem.users;
+            UserFile userFile;
+            for (Long aLong : users) {
+                userFile = OnlineManager.GetUserData(aLong, 0L);
+                WriteLog.writeDeleteLog(userFile,returnJson,"DeleteItem");
+            }
+        }
         return returnJson;
     }
 
@@ -314,12 +340,15 @@ public class DataManager {
         }
 
         returnEventData.routines = eventDataByTimes;
+        WriteLog.writeQueryLog(user,returnEventData.res,"QueryNow",null);
         return returnEventData;
     }
     //待实现
     public ReturnEventData QueryAll(){
         user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);
-        return new ReturnEventData();
+        ReturnEventData returnEventData = new ReturnEventData();
+        WriteLog.writeQueryLog(user, returnEventData.res,"QueryAll",null);
+        return returnEventData;
     }
     //多关键字查询
     public ReturnQueryData QueryMulti(String key){
@@ -353,6 +382,11 @@ public class DataManager {
         SortFast.fun(returnQueryData.list,new compareQuery());
         //Collections.sort(returnQueryData.list,new compareQuery());
         //填充
+        UserFile userFile = OnlineManager.GetUserData(BridgeData.getRequestInfo(),0L);
+        boolean res =true;
+        if(returnQueryData.list.isEmpty())
+            res = false;
+        WriteLog.writeQueryLog(userFile,res,"QueryKey",key);
         return  returnQueryData;
     }
 

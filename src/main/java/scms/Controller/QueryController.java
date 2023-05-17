@@ -23,11 +23,13 @@ public class QueryController {
         //处理星期数据
         Date date = new Date(datetime);
         DataManager dataManager = new DataManager();//新建一个data
+        //日志记录放在了QueryWeek中
         return dataManager.QueryWeek(date);
     }
     @RequestMapping("/all")
     public ReturnEventData QueryAll(){
         DataManager dataManager = new DataManager();
+        //日志记录放在了QueryAll中
         return dataManager.QueryAll();
     }
 
@@ -35,6 +37,7 @@ public class QueryController {
     public ReturnQueryData QueryKey(@RequestParam("key") String key,@RequestParam("searchmode") int searchmode){
         System.out.println(searchmode);
         DataManager dataManager = new DataManager();
+        //日志记录放在了QueryMulti中
         return dataManager.QueryMulti(key);
     }
 }
