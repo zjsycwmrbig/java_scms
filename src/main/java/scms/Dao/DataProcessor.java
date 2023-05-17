@@ -60,6 +60,15 @@ public class DataProcessor implements Serializable {
         dataMap.AddMap(item.title,item.begin);
         return true;
     }
+    // 删
+    public boolean DeleteItem(ClassData item){
+        //三树中都要删除
+        dataItem.RemoveItem(item.begin);
+        dataRBTree.remove(item.begin);
+        dataMap.RemoveMap(item.title);
+        return true;
+    }
+
 //  查找
     public List<EventItem> QueryBetween(long begin, long end){
         List<EventItem> list = new ArrayList<>();//返回的数据

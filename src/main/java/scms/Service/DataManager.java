@@ -7,6 +7,7 @@ import scms.domain.GetJson.ClassData;
 
 import scms.domain.ReturnJson.ReturnAddJson;
 import scms.domain.ReturnJson.ReturnEventData;
+import scms.domain.ReturnJson.ReturnJson;
 import scms.domain.ReturnJson.ReturnQueryData;
 import scms.domain.ServerJson.*;
 
@@ -69,6 +70,14 @@ public class DataManager {
             data.AddItem(item);
         }
         return returnAddJson;
+    }
+
+    public ReturnJson deleteItem(ClassData item){
+        ReturnJson returnJson = new ReturnJson(true,"");
+        int index = item.type;
+        DataProcessor data = owner.get(index);
+        data.DeleteItem(item);
+        return returnJson;
     }
 
 //    增加一个dataProcessor

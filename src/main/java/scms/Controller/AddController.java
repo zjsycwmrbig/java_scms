@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 import scms.Service.AddService;
 import scms.domain.ReturnJson.ReturnAddJson;
 import scms.domain.GetJson.ClassData;
+import scms.domain.ReturnJson.ReturnJson;
 
 /***
  * @author Administrator
@@ -23,7 +24,8 @@ public class AddController {
 //增加课程数据,请求通过post/put传输一个对象
     @RequestMapping("/item")
     public ReturnAddJson AddItem(@RequestBody ClassData item){
-        return addService.AddItem(item);//这里往哪里加入,看index
+        ReturnAddJson returnAddJson = addService.AddItem(item);
+        return returnAddJson;//这里往哪里加入,看index
     }
 
 }

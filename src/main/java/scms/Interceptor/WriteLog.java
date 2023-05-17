@@ -15,6 +15,7 @@ import java.time.format.DateTimeFormatter;
  * 2023-05-16 16:53
  */
 public class WriteLog {
+    //todo:重复的代码可以抽取出来 ； 感觉取不同的名字太丑了，试试重载吧
     public static void writeOrgLog(UserFile userFile,ReturnJson returnJson,String org,String methodName){
         if(!returnJson.res)
             return;

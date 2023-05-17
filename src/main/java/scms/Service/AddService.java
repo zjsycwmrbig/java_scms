@@ -21,7 +21,6 @@ import java.util.ArrayList;
 @Service
 public class AddService extends scms.Service.Service {
     DataManager dataManager;
-    UserFile user;
     //  新添加的节点
     public ReturnAddJson AddItem(ClassData item){
         dataManager = new DataManager();
