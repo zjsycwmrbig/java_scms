@@ -76,7 +76,8 @@ public class DataManager {
             UserFile userFile;
             for (Long aLong : users) {
                 userFile = OnlineManager.GetUserData(aLong, 0L);
-                WriteLog.writeAddLog(userFile,returnAddJson,item.title,"AddItem");
+                //WriteLog.writeAddLog(userFile,returnAddJson.res,item.title,"AddItem");
+                WriteLog.writeLog(userFile,returnAddJson.res,"AddItem",item.title);
             }
         }
         return returnAddJson;
@@ -100,7 +101,8 @@ public class DataManager {
             UserFile userFile;
             for (Long aLong : users) {
                 userFile = OnlineManager.GetUserData(aLong, 0L);
-                WriteLog.writeDeleteLog(userFile,returnJson,"DeleteItem");
+                //WriteLog.writeDeleteLog(userFile,returnJson.res,"DeleteItem");
+                WriteLog.writeLog(userFile,returnJson.res,"DeleteItem",item.title);
             }
         }
         return returnJson;
@@ -340,14 +342,16 @@ public class DataManager {
         }
 
         returnEventData.routines = eventDataByTimes;
-        WriteLog.writeQueryLog(user,returnEventData.res,"QueryNow",null);
+        //WriteLog.writeQueryLog(user,returnEventData.res,"QueryNow",null);
+        WriteLog.writeLog(user,returnEventData.res,"QueryNow",null);
         return returnEventData;
     }
     //待实现
     public ReturnEventData QueryAll(){
         user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);
         ReturnEventData returnEventData = new ReturnEventData();
-        WriteLog.writeQueryLog(user, returnEventData.res,"QueryAll",null);
+        //WriteLog.writeQueryLog(user, returnEventData.res,"QueryAll",null);
+        WriteLog.writeLog(user, returnEventData.res,"QueryAll",null);
         return returnEventData;
     }
     //多关键字查询
@@ -386,7 +390,8 @@ public class DataManager {
         boolean res =true;
         if(returnQueryData.list.isEmpty())
             res = false;
-        WriteLog.writeQueryLog(userFile,res,"QueryKey",key);
+        //WriteLog.writeQueryLog(userFile,res,"QueryKey",key);
+        WriteLog.writeLog(userFile,res,"QueryKey",key);
         return  returnQueryData;
     }
 

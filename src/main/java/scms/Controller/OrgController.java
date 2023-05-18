@@ -42,11 +42,13 @@ public class OrgController {
         }
         ReturnJson returnJson = UserManager.AddNotice(data.userlist,notice);
         UserFile userFile = OnlineManager.GetUserData(BridgeData.getRequestInfo(),0L);
-        WriteLog.writeOrgLog(userFile,returnJson,data.org,"OrgInvite");
+        //WriteLog.writeOrgLog(userFile,returnJson.res,data.org,"OrgInvite");
+        WriteLog.writeLog(userFile,returnJson.res,"OrgInvite",data.org);
         for (int i = 0; i < data.userlist.size(); i++) {
             userFile = OnlineManager.GetUserData(data.userlist.get(i), 0L);
             if (userFile != null) {
-                WriteLog.writeOrgLog(userFile,returnJson,data.org,"被邀请进入组织");
+                //WriteLog.writeOrgLog(userFile,returnJson.res,data.org,"被邀请进入组织");
+                WriteLog.writeLog(userFile,returnJson.res,"被邀请进入组织",data.org);
             }
         }//被邀请的人也要在日志中记录
         return returnJson;
@@ -68,7 +70,8 @@ public class OrgController {
             UserFile user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);//用户添加组织信息
             user.owner.add(file);
             dataProcessor.dataItem.type = user.owner.size()-1;
-            WriteLog.writeOrgLog(user,returnJson,org,"OrgCreate"); //添加日志
+            //WriteLog.writeOrgLog(user,returnJson.res,org,"OrgCreate"); //添加日志
+            WriteLog.writeLog(user,returnJson.res,"OrgCreate",org);
         }
         return  returnJson;
     }
@@ -97,7 +100,8 @@ public class OrgController {
             }
         }
         UserFile userFile = OnlineManager.GetUserData(BridgeData.getRequestInfo(),0L);
-        WriteLog.writeOrgLog(userFile,res,org,"OrgJoin");
+        //WriteLog.writeOrgLog(userFile,res.res,org,"OrgJoin");
+        WriteLog.writeLog(userFile, res.res, "OrgJoin",org);
         return res;
     }
 
@@ -122,7 +126,8 @@ public class OrgController {
                             temp.delete();
                         }
                     }
-                    WriteLog.writeOrgLog(tempUserFile,res,org,"OrgDelete"); //每个组织内的用户都需要记录日志
+                    //WriteLog.writeOrgLog(tempUserFile,res.res,org,"OrgDelete"); //每个组织内的用户都需要记录日志
+                    WriteLog.writeLog(tempUserFile, res.res,"OrgDelete",org);
                 }
             } //删除组织中每个用户的组织文件
             OnlineManager.RemoveOrg(org);//从在线树中删除组织

@@ -26,7 +26,7 @@ public class UserController {
     public ReturnUserData CheckLogin(@RequestBody GetUserData user, HttpServletRequest request) throws IOException {
         ReturnUserData returnUserData = UserManager.CheckLogin(user,request);
         UserFile userFile = OnlineManager.GetUserData(user.getUsername(),0L);
-        WriteLog.writeUserLog(userFile,returnUserData,"CheckLogin");
+        WriteLog.writeUserLog(userFile,returnUserData.res,"CheckLogin");
         return returnUserData;
     }
 
@@ -35,15 +35,15 @@ public class UserController {
     public ReturnUserData CreatUser(@RequestBody GetUserData user) throws IOException {
         ReturnUserData returnUserData = UserManager.Register(user);
         UserFile userFile = OnlineManager.GetUserData(user.getUsername(),0L);
-        WriteLog.writeUserLog(userFile,returnUserData,"CreatUser");
+        WriteLog.writeUserLog(userFile,returnUserData.res,"CreatUser");
         return returnUserData;
     }
 //    登出请求
     @RequestMapping("/logout")
     public ReturnJson LogOut(){
-        UserFile userFile = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);
+        UserFile userFile = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);//要用Bridge获取一下用户，但是是GetUserData类吗
         ReturnJson returnJson = OnlineManager.RemoveOnline(BridgeData.getRequestInfo());
-        WriteLog.writeUserLog(userFile,returnJson,"LogOut"); //要用Bridge获取一下用户，但是是GetUserData类吗
+        WriteLog.writeUserLog(userFile,returnJson.res,"LogOut");
         return returnJson;
     }
 
