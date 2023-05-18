@@ -343,7 +343,7 @@ public class DataManager {
 
         returnEventData.routines = eventDataByTimes;
         //WriteLog.writeQueryLog(user,returnEventData.res,"QueryNow",null);
-        WriteLog.writeLog(user,returnEventData.res,"QueryNow",null);
+        WriteLog.writeLog(user,returnEventData.res,"QueryNow","");
         return returnEventData;
     }
     //待实现
@@ -351,7 +351,7 @@ public class DataManager {
         user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);
         ReturnEventData returnEventData = new ReturnEventData();
         //WriteLog.writeQueryLog(user, returnEventData.res,"QueryAll",null);
-        WriteLog.writeLog(user, returnEventData.res,"QueryAll",null);
+        WriteLog.writeLog(user, returnEventData.res,"QueryAll","");
         return returnEventData;
     }
     //多关键字查询
