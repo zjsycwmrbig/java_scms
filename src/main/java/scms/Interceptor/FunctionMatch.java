@@ -20,8 +20,7 @@ public class FunctionMatch {
             case "OrgJoin": return "加入组织";
             case "OrgInvite":return "邀请他人加入组织";
             case "OrgDelete":return "删除组织";
-            case "oneTarget": return "找寻一个目标点的最短路径";
-            case "moreTargets": return "找寻多个目标点的最短路径";
+            case "Targets": return "找寻最短路径为";
             case "QueryNow": return "查询当前课表";
             case "QueryAll":return "查询所有课表";
             case "QueryKey":return "查询单节课";

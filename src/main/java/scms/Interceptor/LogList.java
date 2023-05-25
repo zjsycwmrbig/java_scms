@@ -21,7 +21,7 @@ public class LogList {
     public void read() {
         try {
             FileInputStream fileInputStream = new FileInputStream(Path);
-            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream); //这边出错了
+            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
             list = (ArrayList<Log>) objectInputStream.readObject();
             fileInputStream.close();
             objectInputStream.close();
@@ -65,14 +65,3 @@ public class LogList {
 
 }
 
-class Log implements Serializable {
-    String localDateTime; //传的是格式化后的时间，所以是String
-    long userName;
-    String operate;
-
-    public Log(String localDateTime, long userName, String operate) {
-        this.localDateTime = localDateTime;
-        this.userName = userName;
-        this.operate = operate;
-    }
-}
