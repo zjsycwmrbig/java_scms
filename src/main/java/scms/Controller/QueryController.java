@@ -1,9 +1,14 @@
 package scms.Controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import scms.Interceptor.BridgeData;
 import scms.Service.DataManager;
+import scms.Service.OnlineManager;
+import scms.domain.ReturnJson.Return;
 import scms.domain.ReturnJson.ReturnEventData;
 import scms.domain.ReturnJson.ReturnQueryData;
+import scms.domain.ServerJson.ClashTime;
+import scms.domain.ServerJson.UserFile;
 
 import java.util.Date;
 
@@ -23,6 +28,7 @@ public class QueryController {
         //处理星期数据
         Date date = new Date(datetime);
         DataManager dataManager = new DataManager();//新建一个data
+
         //日志记录放在了QueryWeek中
         return dataManager.QueryWeek(date);
     }
@@ -39,5 +45,11 @@ public class QueryController {
         DataManager dataManager = new DataManager();
         //日志记录放在了QueryMulti中
         return dataManager.QueryMulti(key);
+    }
+
+    @RequestMapping("/freetime")
+    public Return<ClashTime> QueryFreeTime(@RequestParam("indexID") int indexID,@RequestParam("date") long date,@RequestParam("length") int length){
+        // 查询本人indexID 对应的数据页在现有的用户数据下,在date后length天内,存在的空闲时间
+        return new DataManager().QueryFreeTime(indexID,date,length);
     }
 }

@@ -1,7 +1,5 @@
 package scms.domain.ServerJson;
 
-import scms.domain.GetJson.ClassData;
-
 import java.util.List;
 
 /***
@@ -14,7 +12,7 @@ public class ClashData {
         this.clashNum = 0;
     }
 
-    public int type; //是否是本人冲突
+    public int isOwner; //是否是本人冲突
     public String netName;//和谁有冲突
     public int clashNum; //冲突数量
 

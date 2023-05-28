@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import scms.Dao.DataProcessor;
-import scms.Dao.DatabaseRBTree;
+import scms.Dao.DatabaseManager;
 import scms.Interceptor.BridgeData;
 import scms.Interceptor.WriteLog;
 import scms.Service.DataManager;
@@ -20,7 +20,6 @@ import scms.domain.ServerJson.NoticeData;
 import scms.domain.ServerJson.UserFile;
 
 import java.io.File;
-import java.lang.reflect.WildcardType;
 import java.util.List;
 
 /***
@@ -42,7 +41,7 @@ public class OrgController {
         }
         ReturnJson returnJson = UserManager.AddNotice(data.userlist,notice);
         UserFile userFile = OnlineManager.GetUserData(BridgeData.getRequestInfo(),0L);
-        //WriteLog.writeOrgLog(userFile,returnJson.res,data.org,"OrgInvite");
+
         WriteLog.writeLog(userFile,returnJson.res,"OrgInvite",data.org);
         for (int i = 0; i < data.userlist.size(); i++) {
             userFile = OnlineManager.GetUserData(data.userlist.get(i), 0L);
@@ -59,17 +58,32 @@ public class OrgController {
     @RequestMapping("create")
     public ReturnJson OrgCreate(@RequestParam String org){
         ReturnJson returnJson = new ReturnJson(true,"组织创建成功");
-        File file = DatabaseRBTree.AddItem(org); //新建一个组织文件
+        File file = DatabaseManager.AddItem(org); //新建一个组织文件
+        if (file == null){
+            returnJson.res = false;
+            returnJson.state = "组织已存在";
+            return returnJson;
+        }
+
+        System.out.println("在创建组织中,首先创建文件" + file.getAbsolutePath() + " " + file.getName());
+        System.out.println("---");
+        System.out.println(DatabaseManager.searchFile(org).getAbsolutePath());
         if(file == null){
             returnJson.res = false;
             returnJson.state = "组织已存在";
         }else{
+            UserFile user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),0L);//用户添加组织信息
+            user.owner.add(file); //添加组织信息
             DataProcessor dataProcessor = new DataProcessor(BridgeData.getRequestInfo(),org,file);
-            // 更新一个type
-            OnlineManager.NewOnlineData(dataProcessor,1L);//直接新建一个
-            UserFile user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);//用户添加组织信息
-            user.owner.add(file);
+            System.out.println("创建一个dataProcessor");
+            dataProcessor.print();
+            // indexID
             dataProcessor.dataItem.type = user.owner.size()-1;
+            // 更新一个type
+            System.out.println("添加组织信息");
+            OnlineManager.NewOnlineData(dataProcessor,1L);//直接新建一个
+
+            System.out.println();
             //WriteLog.writeOrgLog(user,returnJson.res,org,"OrgCreate"); //添加日志
             WriteLog.writeLog(user,returnJson.res,"OrgCreate",org);
         }
@@ -131,7 +145,7 @@ public class OrgController {
                 }
             } //删除组织中每个用户的组织文件
             OnlineManager.RemoveOrg(org);//从在线树中删除组织
-            DatabaseRBTree.Remove(org); //删除组织文件
+            DatabaseManager.Remove(org); //删除组织文件
         }
         return res;
     }

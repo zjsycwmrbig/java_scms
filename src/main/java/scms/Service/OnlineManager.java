@@ -48,11 +48,24 @@ public class OnlineManager {
     //返回在online里面找到的Processor
     static public DataProcessor GetEventData(String org,Long cache){
         OnlineData<DataProcessor> res = PiggySearch(org);
+
         if(res != null) return res.data;
         else {
-            if(DatabaseRBTree.searchFile(org)==null) return null;
-            //通过这个函数调用的
-            DataProcessor dataProcessor = ReadDataProcessor(DatabaseRBTree.searchFile(org));
+            System.out.println("在online里面找不到目的数据");
+            if(DatabaseManager.searchFile(org)==null) return null;
+
+            DataProcessor dataProcessor = ReadDataProcessor(DatabaseManager.searchFile(org));
+            AddOnlineData(dataProcessor,cache);
+            return dataProcessor;
+        }
+    }
+    // 新增从File找到Processor
+    static public DataProcessor GetEventData(File file,Long cache){
+        OnlineData<DataProcessor> res = PiggySearch(file.getName());
+        if (res != null) return res.data;
+        else {
+            System.out.println("在online里面找不到目的数据");
+            DataProcessor dataProcessor = ReadDataProcessor(file);
             AddOnlineData(dataProcessor,cache);
             return dataProcessor;
         }
@@ -109,6 +122,8 @@ public class OnlineManager {
         //只是把所有的datalist加入在线树
         if(user.owner != null && user.owner.size() != 0){
             for(int i = 0;i < user.owner.size();i++){
+//                System.out.println("DEBUG");
+//                System.out.println(user.owner.get(i).getName());
                 DataProcessor dataProcessor = GetEventData(user.owner.get(i).getName(),1L);
                 list.add(dataProcessor.dataItem.users);
             }
@@ -249,10 +264,6 @@ public class OnlineManager {
         ClearData(x.right);
     }
 
-    //
-
-
-
     //读取数据
     //获取用户信息
     static private UserFile ReadUserFile(File file){
@@ -303,7 +314,6 @@ public class OnlineManager {
     }
 
     //保存用户数据
-
     static private boolean SaveUser(UserFile user){
         //存储用户信息
         try {
@@ -360,6 +370,7 @@ public class OnlineManager {
         return true;
     }
 
+    // 判断是否是死结点
     private static boolean IsDeadNode(RBTNode node){
         if(((OnlineData) (node.vaule)).data instanceof UserFile){
             if((new Date()).getTime() - ((OnlineData) (node.vaule)).cache > LeaveTime){

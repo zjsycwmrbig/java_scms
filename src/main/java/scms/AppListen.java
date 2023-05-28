@@ -2,7 +2,7 @@ package scms;
 
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.annotation.Configuration;
-import scms.Dao.DatabaseRBTree;
+import scms.Dao.DatabaseManager;
 import scms.Dao.UserRBTree;
 import scms.Service.OnlineManager;
 
@@ -19,7 +19,7 @@ public class AppListen implements DisposableBean{
         System.out.println("缓存树数据保存");
         UserRBTree.sava();
         System.out.println("用户树数据保存");
-        DatabaseRBTree.sava();
+        DatabaseManager.sava();
         System.out.println("数据库树数据保存");
     }
 }

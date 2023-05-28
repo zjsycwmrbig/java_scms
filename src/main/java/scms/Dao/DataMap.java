@@ -57,8 +57,16 @@ public class DataMap implements Serializable {
         }
     }
 //    删
-    public  void RemoveMap(String key){
-//        mapRbtree.remove(mapRbtree.searchNode(mapRbtree.Root,key));
+    public void RemoveMap(Character key,long id){
+        RBTNode node = mapRbtree.searchNode(mapRbtree.Root,key);
+        if (node == null) return;
+        MapList List = (MapList) node.vaule;
+        for(MapItem item : List.mapList){
+            if(item.id == id){
+                List.mapList.remove(item);
+                break;
+            }
+        }
     }
 
 //    查

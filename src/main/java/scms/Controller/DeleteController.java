@@ -4,7 +4,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import scms.Service.DataManager;
-import scms.domain.GetJson.ClassData;
+import scms.domain.GetJson.GetEventData;
 import scms.domain.ReturnJson.ReturnJson;
 
 /**
@@ -16,7 +16,7 @@ import scms.domain.ReturnJson.ReturnJson;
 public class DeleteController {
 
     @RequestMapping("/item")
-    public ReturnJson DeleteItem(@RequestBody ClassData item){
+    public ReturnJson DeleteItem(@RequestBody GetEventData item){
         DataManager dataManager = new DataManager();
         ReturnJson returnJson = dataManager.deleteItem(item);
         //本来应该在这里调用日志函数，但是DataManager中才对item的组织进行剖析，所以将调用放在了DataManager的DeleteItem中

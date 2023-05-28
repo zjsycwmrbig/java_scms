@@ -1,7 +1,7 @@
 package scms.Dao;
 
 import org.springframework.stereotype.Repository;
-import scms.domain.GetJson.ClassData;
+import scms.domain.GetJson.GetEventData;
 
 /***
  * @author Administrator
@@ -11,7 +11,7 @@ import scms.domain.GetJson.ClassData;
 //往
     @Repository
 public class AddDao extends Dao{
-    public boolean put(ClassData item,String className,String userName){
+    public boolean put(GetEventData item, String className, String userName){
         return true;
     }
 }

@@ -1,6 +1,6 @@
 package scms.Service;
 
-import scms.domain.GetJson.ClassData;
+import scms.domain.GetJson.GetEventData;
 
 /***
  * @author zjs
@@ -11,7 +11,7 @@ import scms.domain.GetJson.ClassData;
 @org.springframework.stereotype.Service
 public class Service {
 //    在list中保证item前面的都是比item小的事件
-    public int BinarySearch(ClassData[] list,ClassData item){
+    public int BinarySearch(GetEventData[] list, GetEventData item){
         int left = 0;
         int right = list.length - 1;//最右边的编号
         int mid;

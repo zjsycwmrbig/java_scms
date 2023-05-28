@@ -28,7 +28,7 @@ public class ClashRBTree<T,U> implements Serializable {
         }else if (node.key instanceof String){
             return ((String)(node.key)).compareTo((String)x.key);
         }else{
-            return 1;
+            return ((Integer)(node.key)).compareTo((Integer) x.key);
         }
     }
     //  面向外部的比较范式函数
@@ -38,7 +38,7 @@ public class ClashRBTree<T,U> implements Serializable {
         }else if(x instanceof String){
             return ((String)(node.key)).compareTo((String)x);
         }else{
-            return 1;
+            return ((Integer)(node.key)).compareTo((Integer) x);
         }
     }
 
@@ -47,9 +47,9 @@ public class ClashRBTree<T,U> implements Serializable {
         if (x==null)
             return null;
         int cmp = Compare(x,key);
-        if (cmp == 1)
+        if (cmp > 0)
             return searchNode(x.left, key);
-        else if (cmp == -1)
+        else if (cmp < 0)
             return searchNode(x.right, key);
         else
             return x;
@@ -67,7 +67,7 @@ public class ClashRBTree<T,U> implements Serializable {
         while (x != null) {
             y = x;
             cmp = compare(node,x);
-            if (cmp == 0)
+            if (cmp <= 0)
                 x = x.left;
             else
                 x = x.right;
@@ -76,7 +76,7 @@ public class ClashRBTree<T,U> implements Serializable {
         node.parent = y;
         if (y!=null) {
             cmp = compare(node,y);
-            if (cmp == 0)
+            if (cmp <= 0)
                 y.left = node;
             else
                 y.right = node;

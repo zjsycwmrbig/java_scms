@@ -1,15 +1,8 @@
 package scms.Service;
 
-import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Service;
-import scms.Dao.DataProcessor;
-import scms.Interceptor.BridgeData;
 import scms.domain.ReturnJson.ReturnAddJson;
-import scms.domain.ServerJson.ClashErrorData;
-import scms.domain.GetJson.ClassData;
-import scms.domain.ServerJson.UserFile;
-
-import java.util.ArrayList;
+import scms.domain.GetJson.GetEventData;
 
 /***
  * @author zjs
@@ -22,7 +15,7 @@ import java.util.ArrayList;
 public class AddService extends scms.Service.Service {
     DataManager dataManager;
     //  新添加的节点
-    public ReturnAddJson AddItem(ClassData item){
+    public ReturnAddJson AddItem(GetEventData item){
         dataManager = new DataManager();
         ReturnAddJson returnAddJson = dataManager.AddItem(item);
         return returnAddJson;

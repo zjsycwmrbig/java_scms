@@ -1,9 +1,6 @@
 package scms.domain.ServerJson;
 
-import scms.domain.GetJson.ClassData;
-
-import java.beans.Transient;
-import java.io.Serializable;
+import scms.domain.GetJson.GetEventData;
 
 /***
  * @author Administrator
@@ -11,11 +8,11 @@ import java.io.Serializable;
  * @function 返回的数据
  */
 public class QueryEventItem {
-    public QueryEventItem(ClassData item, int score) {
+    public QueryEventItem(GetEventData item, int score) {
         this.item = item;
         this.score = score;
     }
 
-    public ClassData item;
+    public GetEventData item;
     public int score;
 }

@@ -1,6 +1,6 @@
 package scms.domain.ServerJson;
 
-import scms.domain.GetJson.ClassData;
+import scms.domain.GetJson.GetEventData;
 
 /***
  * @author zjs
@@ -14,6 +14,6 @@ public class ClashErrorData extends ErrorData{
     }
 
     public int circle;//多少个周期后出现错误
-    public ClassData item;//和哪一个事件出现冲突
+    public GetEventData item;//和哪一个事件出现冲突
 
 }

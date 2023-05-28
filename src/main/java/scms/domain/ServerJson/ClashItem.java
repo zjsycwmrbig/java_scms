@@ -6,16 +6,17 @@ package scms.domain.ServerJson;
  * @function
  */
 public class ClashItem {
-    public String name;//冲突的组织名称
+    public String group;//冲突的组织名称
     public long time;//冲突起始点
-    public long id;//冲突数据id
-
+    public int type;//事项类型
     public long clashDeg;//冲突程度
+    public String title;//冲突类型
 
-    public ClashItem(String name, long time, long id, long clashDeg) {
-        this.name = name;
+    public ClashItem(String group, long time, int type, long clashDeg, String title) {
+        this.group = group;
         this.time = time;
-        this.id = id;
+        this.type = type;
         this.clashDeg = clashDeg;
+        this.title = title;
     }
 }

@@ -35,13 +35,14 @@ public class UserController {
     public ReturnUserData CreatUser(@RequestBody GetUserData user) throws IOException {
         ReturnUserData returnUserData = UserManager.Register(user);
         UserFile userFile = OnlineManager.GetUserData(user.getUsername(),0L);
+        System.out.println(userFile.file);
         WriteLog.writeUserLog(userFile,returnUserData.res,"CreatUser");
         return returnUserData;
     }
 //    登出请求
     @RequestMapping("/logout")
     public ReturnJson LogOut(){
-        UserFile userFile = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);//要用Bridge获取一下用户，但是是GetUserData类吗
+        UserFile userFile = OnlineManager.GetUserData(BridgeData.getRequestInfo(),0L);//要用Bridge获取一下用户，但是是GetUserData类吗
         ReturnJson returnJson = OnlineManager.RemoveOnline(BridgeData.getRequestInfo());
         WriteLog.writeUserLog(userFile,returnJson.res,"LogOut");
         return returnJson;

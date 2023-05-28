@@ -2,18 +2,15 @@ package scms.Service;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import scms.Dao.DataItem;
 import scms.Dao.DataProcessor;
-import scms.Dao.DatabaseRBTree;
+import scms.Dao.DatabaseManager;
 import scms.Dao.UserRBTree;
 import scms.Interceptor.BridgeData;
-import scms.Interceptor.FileManager;
 import scms.domain.ReturnJson.ReturnAddJson;
 import scms.domain.ReturnJson.ReturnJson;
 import scms.domain.ReturnJson.ReturnUserData;
 import scms.domain.GetJson.GetUserData;
 import scms.domain.ServerJson.NoticeData;
-import scms.domain.ServerJson.OnlineData;
 import scms.domain.ServerJson.UserFile;
 
 import java.io.*;
@@ -64,8 +61,13 @@ public class UserManager {
 
     //    注册服务 -- 注册创建一个文件,并且存储起来,后面也可以直接设置成登录
     public static ReturnUserData Register(GetUserData user){
-        if(OnlineManager.GetUserData(user.getUsername(),0L) == null){
+        if(UserRBTree.searchFile(user.getUsername()) == null){
             File file = UserRBTree.AddItem(user.getUsername()); //获得File文件,创建文件,写入文件树,写入UserFile数据
+            if (file == null) {//如果文件创建失败
+                ReturnUserData returnUserData = new ReturnUserData(user.getNetname(),user.getPersonalword(),"服务器数据出错,请稍后再试");
+                returnUserData.res = false;
+                return returnUserData;
+            }
             //拿到数据文件指针,然后放到文件里面去
             ReturnUserData returnUserData = SetUserData(file,user); //这里面负责创建data文件,写入到file文件里面去
             if(returnUserData.state == "注册成功"){
@@ -127,7 +129,7 @@ public class UserManager {
 //      添加本身这个组织
         fileData.owner = new ArrayList<>();
 //      构建组织文件
-        File dataFile = DatapageManager.AddData(user.getUsername() + "的个人空间");//获得一个指向组织的File文件;
+        File dataFile = DatabaseManager.AddItem(user.getUsername() + "的个人空间");
         fileData.owner.add(dataFile);
 //      新建数据文件中红黑树指向用户文件
         DataProcessor dataProcessor = new DataProcessor(user.getUsername(),user.getUsername() + "的个人空间",dataFile);

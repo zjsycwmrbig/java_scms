@@ -79,7 +79,7 @@ public  class FileManager {
                 return null;
             }
         }//创建一个文件夹
-        else return null;
+        else return null;//如果存在就返回null值
     }
 
 //  返回一个Data文件指针,修改Data文件

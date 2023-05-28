@@ -31,7 +31,7 @@ public class RBTree<T,U> implements Serializable {
         }else if (node.key instanceof Character){
             return ((Character)(node.key)).compareTo((Character) x.key);
         }else{
-            return 0;
+            return ((Integer)(node.key)).compareTo((Integer) x.key);
         }
     }
 //  面向外部的比较范式函数
@@ -43,7 +43,7 @@ public class RBTree<T,U> implements Serializable {
         }else if(x instanceof Character){
             return ((Character)(node.key)).compareTo((Character)x);
         }else {
-            return 0;
+            return ((Integer)(node.key)).compareTo((Integer) x);
         }
     }
 

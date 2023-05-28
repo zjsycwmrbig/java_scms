@@ -4,12 +4,9 @@ import scms.Dao.*;
 
 import scms.Interceptor.BridgeData;
 import scms.Interceptor.WriteLog;
-import scms.domain.GetJson.ClassData;
+import scms.domain.GetJson.GetEventData;
 
-import scms.domain.ReturnJson.ReturnAddJson;
-import scms.domain.ReturnJson.ReturnEventData;
-import scms.domain.ReturnJson.ReturnJson;
-import scms.domain.ReturnJson.ReturnQueryData;
+import scms.domain.ReturnJson.*;
 import scms.domain.ServerJson.*;
 
 import java.io.*;
@@ -23,268 +20,286 @@ import java.util.*;
  * @function 处理多个DataProcess
  */
 public class DataManager {
-
+//  数据
     public UserFile user;
-//    给出该用户需要的处理器集合
     public List<DataProcessor> owner;
     public List<DataProcessor> player;
-
+//    初始化
     public DataManager() {
-        //只有自己才能操作自己的Data
-        user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);
         //依次填充数据
+        user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),0L);
         owner = new ArrayList<>();
         if(user.owner!=null){
             for(int i = 0;i < user.owner.size();i++){
-                owner.add(OnlineManager.GetEventData(user.owner.get(i).getName(),0L));
+                owner.add(OnlineManager.GetEventData(user.owner.get(i),0L));
             }
         }
         player = new ArrayList<>();
         if(user.player!=null){
             for(int i = 0;i < user.player.size();i++){
-                player.add(OnlineManager.GetEventData(user.player.get(i).getName(),0L));
+                player.add(OnlineManager.GetEventData(user.player.get(i),0L));
             }
         }
         System.out.println("填充了" + owner.size() + "条owner数据");
+
         for(int i = 0;i < owner.size();i++){
+            System.out.println(owner.get(i).dataItem.name);
             System.out.println(owner.get(i).dataItem.users.toString());
         }
         System.out.println("填充了" + player.size() + "条player数据");
         for(int i = 0;i < player.size();i++){
+            System.out.println(player.get(i).dataItem.name);
             System.out.println(player.get(i).dataItem.users.toString());
         }
     }
-    //  得到weekIndex的方法,是查询的辅助方法
-    private int GetWeekIndex(long begin){
-        Calendar now = Calendar.getInstance();
-        now.setTime(new Date(begin));
-        return (now.get(Calendar.DAY_OF_WEEK)+5)%7;
-    }
 //    增
 //    添加一个数据,校验一个
-    public ReturnAddJson AddItem(ClassData item){
-        int index = item.type;//得到type,代表是那一份数据
+    public ReturnAddJson AddItem(GetEventData item){
+        // 得到indexID,代表是那一份数据
+        int index = item.indexID;
         DataProcessor data = owner.get(index);
-        item.group = data.dataItem.name;//给出组名，不在前端给
-        ReturnAddJson returnAddJson = ClashCheck(item);
-        if(returnAddJson.res){
-            data.AddItem(item);
+        // 给出组名，不在前端给
+        item.group = data.dataItem.name;
+        // 冲突返回结果
+        ReturnAddJson returnAddJson = null;
+        // 判断是否是临时事件
+        if(item.type == 2){
+            returnAddJson = InsertTempEvent(item);
+            System.out.println("采用临时事务插入方法");
+        }else{
+            returnAddJson = AddClashCheck(item,item.indexID);
+            // 添加数据
+            if(returnAddJson.res){
+                data.AddItem(item);
+            }
         }
+        // 得到组织信息,向所有人的日志中写入信息
         DataProcessor group = OnlineManager.GetEventData(item.group, 0L);
+
         if(group != null){
             List<Long> users = group.dataItem.users;
             UserFile userFile;
             for (Long aLong : users) {
                 userFile = OnlineManager.GetUserData(aLong, 0L);
-                //WriteLog.writeAddLog(userFile,returnAddJson.res,item.title,"AddItem");
                 WriteLog.writeLog(userFile,returnAddJson.res,"AddItem",item.title);
             }
         }
+
         return returnAddJson;
     }
 
-    public ReturnJson deleteItem(ClassData item){
-        ReturnJson returnJson = new ReturnJson(true,"");
-        int index = item.type;
-        DataProcessor data = owner.get(index);
-        boolean isOK = data.DeleteItem(item);
-        if(isOK){
-            returnJson.state = "删除成功";
-        }
-        else {
-            returnJson.res = false;
-            returnJson.state ="删除失败";
-        }
-        DataProcessor group = OnlineManager.GetEventData(data.dataItem.name, 0L);
-        if(group != null){
-            List<Long> users = group.dataItem.users;
-            UserFile userFile;
-            for (Long aLong : users) {
-                userFile = OnlineManager.GetUserData(aLong, 0L);
-                //WriteLog.writeDeleteLog(userFile,returnJson.res,"DeleteItem");
-                WriteLog.writeLog(userFile,returnJson.res,"DeleteItem",item.title);
+    //添加临时事件
+    private ReturnAddJson InsertTempEvent(GetEventData tempEvent){
+        // 这个事件左右最多存在的事件有下面几个来源
+        // 1. begin和end在这个事件之间的事件
+        // 2. begin左边存在end值大于begin的事件
+
+        // 获得冲突数据
+        ReturnAddJson tempClash = AddClashCheck(tempEvent, tempEvent.indexID);
+        DataProcessor data = owner.get(tempEvent.indexID);
+        if(tempClash.res){
+            // 不存在冲突
+            data.AddItem(tempEvent);
+        }else{
+            //存在一定的冲突
+            if(tempClash.clashList != null){
+                if(tempClash.clashList.size() == 1){//多页不可合并
+                    //冲突的是owner的数据,那么就是owner的数据有问题,有机会合并
+                    List<ClashItem> clashList = tempClash.clashList.get(0).list;
+                    //如果这些事件的类型都是临时事件,那么就可以合并,那么这里的
+                    // 找到事件的开始结束
+                    long startBegin = tempEvent.begin;
+                    long startEnd = tempEvent.end;
+                    for(ClashItem clashItem : clashList){
+                        if(clashItem.type != 2){
+                            //不是临时事件,那么就没法合并
+                            tempClash.state = "含有非临时事件,无法合并";
+                            return tempClash;
+                        }else{
+                            startBegin = Math.min(startBegin,clashItem.time);
+                            startEnd = Math.max(startEnd,clashItem.time);
+                        }
+                    }
+                    // 满足合并条件,进行合并准备,获取临时事件集合列表
+                    List<EventItem> temps = owner.get(0).QueryBetween(startBegin,startEnd);
+                    // 得到真正的临时事件
+                    GetEventData realTemp = tempEvent;
+                    // 添加信息
+                    for (EventItem temp : temps) {
+                        // 划分开
+                        realTemp.title = realTemp.title + "\n" + temp.title;//回车分割
+                        realTemp.location = realTemp.location + "|" + temp.location;//分割
+                        realTemp.locationData = realTemp.locationData + "|" + temp.locationData;
+                        // 获得开始结束
+                        realTemp.begin = Math.min(realTemp.begin,temp.begin);
+                        realTemp.end = Math.max(realTemp.end,temp.begin + temp.length);
+                    }
+                    // 删除原有的临时事件
+                    for (EventItem temp : temps) {
+                        data.DeleteItem(temp.begin);//理论上删除所有的临时事件了
+                    }
+                    // 添加新的临时事件
+                    data.AddItem(realTemp);
+                    tempClash.res = true;
+                    tempClash.state = "临时事件合并成功";
+                }else{
+                    //没法合并,自认倒霉
+                    tempClash.state = "临时事件无法合并";
+                    return tempClash;
+                }
             }
         }
-        return returnJson;
+        return tempClash;
     }
-
-//    增加一个dataProcessor
+    //    增加一个dataProcessor,也就是添加组织
     public ReturnAddJson AddOrg(DataProcessor data){
         ReturnAddJson returnAddJson = new ReturnAddJson(true,"");
-        returnAddJson.res =true;
-
         returnAddJson.clashList = new ArrayList<>();//新建一个
-        //获得name和list
-        List<DataRBTree> list = new ArrayList<>();
-        List<String> name = new ArrayList<>();
-
-        //拿到用户文件
         UserFile userFile = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);
-        //判重
-        File file = DatabaseRBTree.searchFile(data.dataItem.name);
-        if(userFile.owner.contains(file) || userFile.player!=null && userFile.player.contains(file)){
+//        //判重
+        File file = DatabaseManager.searchFile(data.dataItem.name);
+        if(userFile.owner.contains(file) || userFile.player != null && userFile.player.contains(file)) {
             returnAddJson.res = false;
             returnAddJson.state = "已加入该组织,请勿重复加入";
             return returnAddJson;
         }
-
-        //读取owner和player,给出数据数目
-        for(int i = 0;i < userFile.owner.size();i++){
-            list.add(OnlineManager.GetEventData(userFile.owner.get(i).getName(),0L).dataRBTree);//拿到owner中的所有数据
-            name.add(userFile.owner.get(i).getName());
-        }
-
-        if(userFile.player != null){
-            for(int i = 0;i < userFile.player.size();i++){
-                list.add(OnlineManager.GetEventData(userFile.player.get(i).getName(),0L).dataRBTree);//拿到owner中的所有数据 FileManager.NextFile(userFile.player.get(i),"DataRBTree")  GetDatarbtree()
-                name.add(userFile.owner.get(i).getName());
-            }
-        }
-
-        //依次获得每个数据的比对结果,二叉树中序遍历
-
-        List<ClassData> itemList = GetAll(data);
-        //依次比对每一条数据
+        List<GetEventData> itemList = GetAllDataItem(data);//把数据依次添加到list中
+//        //依次比对每一条数据
         for (int i = 0;i < itemList.size();i++){
-            ClashData temp = ClashCheck(itemList.get(i),name,list);
-            returnAddJson.clashList.add(temp);
-            if (temp.clashNum != 0) returnAddJson.res = false;
+            returnAddJson = AddClashCheck(itemList.get(i),0);//作为0页比较
+            if(!returnAddJson.res) break;
         }
-        //没有冲突,添加到用户上面
+//        //没有冲突,添加到用户上面
         if(returnAddJson.res){
             if(userFile.player == null) userFile.player = new ArrayList<>();
             userFile.player.add(file);//添加到用户上面
             data.dataItem.users.add(userFile.username);//添加到数据上面
         }
+
         return returnAddJson;
     }
 
-    //中序遍历所有数据,返回一个list
-    private List<ClassData> GetAll(DataProcessor data){
-        List<ClassData> list = new ArrayList<>();
-        Inorder(data.dataItem.itemRbtree.Root,list);
-        return list;
-    }
-    private void Inorder(RBTNode x,List<ClassData> list){
-        if(x == null) return;
-        Inorder(x.left,list);
-        list.add((ClassData) (x.vaule));
-        Inorder(x.right,list);
-    }
 
-//  按照owner中数据页的序号找到data的页面
-//  主要是添加到本地的数据
-    private ReturnAddJson ClashCheck(ClassData item){
-        int i = item.type;
-        // pre.先比较本人和这个时间的冲突
-
-        // 1.得到所有用户数据文件
+    //  添加时冲突检测,indexID是想要添加到哪一个数据页面
+    private ReturnAddJson AddClashCheck(GetEventData item,int indexID){
+        ReturnAddJson returnAddJson = new ReturnAddJson(true,"");
+        returnAddJson.clashList = new ArrayList<>();//新建一个冲突列表
+        // 添加到哪一个数据页
+        int i = indexID;
+        // 1.得到所有用户数据文件,包括自身和其他使用成员
 
         List<Long> users = owner.get(i).dataItem.users;
-        System.out.println(users.toString());
-        // 3.依次比对每个用户和数据,给出数据返回,包括是否比对成功,每个用户的情况
-        ReturnAddJson returnAddJson = new ReturnAddJson(true,"");
-        returnAddJson.res =true;
-        returnAddJson.clashList = new ArrayList<>();//新建一个
 
-        ClashData temp = ClashCheck(users.get(0),item,1); //比对本人这一页
+        // 2.依次比对每个用户和数据,给出数据返回,包括是否比对成功,每个用户的情况
 
-        returnAddJson.clashList.add(temp); //先查找本人的行程
+        ClashData ownerClashData = ClashCheckPerson(users.get(0),item,1); //比对本人这一页
 
-        if(temp.clashNum != 0) returnAddJson.res = false;
+        returnAddJson.clashList.add(ownerClashData); //先查找本人的行程
+
+        if(ownerClashData.clashNum != 0) returnAddJson.res = false;
+
+        // 其他用户对比
         for(int j = 1;j < users.size();j++){
-            temp = ClashCheck(users.get(j),item,0);
-            returnAddJson.clashList.add(temp);
-            if (temp.clashNum != 0) returnAddJson.res = false;
+            ownerClashData = ClashCheckPerson(users.get(j),item,0);
+            returnAddJson.clashList.add(ownerClashData);
+            if (ownerClashData.clashNum != 0) returnAddJson.res = false;
         }
         return returnAddJson;
     }
 
-    // 对一个用户的数据进行比对,返回ClashData
-    private ClashData ClashCheck(ClassData item,List<String> name,List<DataRBTree> list){
+    // 根据一个账号,得到这个账号的所有数据,比对所有的数据
+    private ClashData ClashCheckPerson(Long user, GetEventData item, int FillData){//用户名,待比对数据,是否补充详细信息
         ClashData clashData = new ClashData();
-        for (long end = item.begin + item.length;end  <= item.end ;end += item.circle * 86400000L){
-            // 依次比对每个时间节点,把begin这个数值放到二叉树中找,看看返回的neibor
-            for(int i = 0;i < list.size();i++){
-                // 对于其他用户直接查看有无冲突就好,复杂度是logn
-                    list.get(i).Between(end-item.length,end);//得到数据在stack里面
-                    List<ClashRBTNode> stack = list.get(i).stack;
-                    for(int j = 0;j < stack.size();j++){
-                        clashData.list.add(new ClashItem(name.get(i),(Long)stack.get(j).key,(Long)stack.get(j).vaule,Math.max(((Long)stack.get(j).key-end),((Long)stack.get(j).key-(Long)stack.get(j).end))));
-                    }
-                    clashData.clashNum += stack.size();
-                    // 组织名称
-            }
+        if(FillData == 1) clashData.list = new ArrayList<>();//补充详细信息
 
-            if(item.circle == 0) break; //单次跳出
-        }
-        return clashData;
-    }
-
-
-    private ClashData ClashCheck(Long user,ClassData item,int FillData){
-        ClashData clashData = new ClashData();
-        if(FillData == 1) clashData.list = new ArrayList<>();
-        clashData.type = FillData; //给出type
+        clashData.isOwner = FillData; //给出type
         // 1.获得user文件下的所有二叉树文件
         List<DataRBTree> list = new ArrayList<>();
         List<String> name = new ArrayList<>();
-        UserFile userFile = OnlineManager.GetUserData(user,0L);
 
-        // 读取userFile文件
+        UserFile userFile = OnlineManager.GetUserData(user,0L);
         if(userFile == null){
-            clashData.type = -1;//标记出错
+            clashData.isOwner = -114514;//标记出错
+            System.out.println("该用户不存在,比对时错误");
             return clashData;
         }
+        // 标记名称
         clashData.netName = userFile.netname;//给出名字
 
-        //读取owner和player,给出数据数目
+        //读取owner和player,给出数据数目,填充名字
         for(int i = 0;i < userFile.owner.size();i++){
-            list.add(OnlineManager.GetEventData(userFile.owner.get(i).getName(),0L).dataRBTree);//拿到owner中的所有数据
-            name.add(userFile.owner.get(i).getName());
+            DataProcessor data = OnlineManager.GetEventData(userFile.owner.get(i).getName(),0L);
+            list.add(data.dataRBTree);//拿到owner中的所有数据
+            name.add(data.dataItem.name);
         }
 
         if(userFile.player != null){
             for(int i = 0;i < userFile.player.size();i++){
-                list.add(OnlineManager.GetEventData(userFile.player.get(i).getName(),0L).dataRBTree);//拿到owner中的所有数据 FileManager.NextFile(userFile.player.get(i),"DataRBTree")  GetDatarbtree()
-                name.add(userFile.owner.get(i).getName());
+                DataProcessor data = OnlineManager.GetEventData(userFile.player.get(i).getName(),0L);
+                list.add(data.dataRBTree);
+                name.add(data.dataItem.name);
             }
         }
+
         // 2.根据文件一个一个比对ClassData
         for (long end = item.begin + item.length;end  <= item.end ;end += item.circle * 86400000L){
-            // 依次比对每个时间节点,把begin这个数值放到二叉树中找,看看返回的neibor
+            // 依次比对每个数据页,把begin这个数值放到二叉树中找,看邻居和范围
             for(int i = 0;i < list.size();i++){
-                // 对于其他用户直接查看有无冲突就好,复杂度是logn
-                if(FillData == 1){//主导用户
-                    list.get(i).Between(end-item.length,end);//得到数据在stack里面
-                    List<ClashRBTNode> stack = list.get(i).stack;
-                    for(int j = 0;j < stack.size();j++){
-                        clashData.list.add(new ClashItem(name.get(i),(Long)stack.get(j).key,(Long)stack.get(j).vaule,Math.max(((Long)stack.get(j).key-end),((Long)stack.get(j).key-(Long)stack.get(j).end))));
+                if(FillData == 1){//填充详细信息
+                    List<ClashRBTNode> stack;
+                    // 特判前面节点,指的是开始节点的前面
+                    list.get(i).searchNeibor(end - item.length);
+                    stack = list.get(i).stack;
+                    if(stack.get(0) != null){
+                        // 存在冲突数据
+                        if((Long)(stack.get(0).end) >= end - item.length){
+                            clashData.clashNum++;
+                            // 根据vaule值找到数据信息
+                            GetEventData data = GetDataProcessor(i).dataItem.SearchItem((Long)stack.get(0).vaule);
+                            if(data == null) System.out.println("data is null");
+                            else{
+                                // 填充信息
+                                clashData.list.add(new ClashItem(name.get(i),(Long)stack.get(0).key,data.type,Math.max(((Long)stack.get(0).key-end),((Long)stack.get(0).key-(Long)stack.get(0).end)),data.title));
+                            }
+                        }
                     }
-                    clashData.clashNum += stack.size();
-                    // 组织名称
-                }else{//不是主导用户直接记录一共有多少冲突就好
+                    // 排除掉冲突在内部的以及后面的可能
+                    list.get(i).Between(end-item.length,end);
+                    // 得到数据
+                    stack = list.get(i).stack;
+
+                    for(int j = 0;j < stack.size();j++){
+                        clashData.clashNum++;
+                        GetEventData data = GetDataProcessor(i).dataItem.SearchItem((Long)stack.get(j).vaule);
+                        if(data == null) System.out.println("data is null");
+                        else{
+                            clashData.list.add(new ClashItem(name.get(i),(Long)stack.get(j).key,data.type,Math.max(((Long)stack.get(j).key-end),((Long)stack.get(j).key-(Long)stack.get(j).end)),data.title));
+                        }
+                    }
+                }else{
+                    //不是增加数据的用户直接记录有冲突就好
+
+                    // 只在乎前面的节点会不会有冲突
                     list.get(i).searchNeibor(end);
                     ClashRBTNode form = list.get(i).stack.get(0);
                     if(form == null){
                         continue;//说明没有冲突
                     }else{
-                        // 出现冲突
+                        // 出现冲突,直接继续就好
                         if((Long)(form.end) >= end - item.length){
                             clashData.clashNum++;
+                            return clashData;
                         }
                     }
                 }
             }
-
-            if(item.circle == 0) break; //单次跳出
+            //单次跳出
+            if(item.circle == 0) break;
         }
         return clashData;
     }
 
-
 //    查
-    //查询当前一周的数据,并且按照规定好的数据格式返回
     public ReturnEventData QueryWeek(Date date){
         //获得user认证
         user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);
@@ -314,10 +329,10 @@ public class DataManager {
 
         if(owner != null){
             for(int i = 0;i < owner.size();i++){
+                System.out.println("查询" + owner.get(i).dataItem.name);
                 List<EventItem> list = owner.get(i).QueryBetween(monday,sunday);
                 for(int j = 0;j < list.size();j++){
                     EventItem item = list.get(j);
-                    item.type = i;//给出i
                     item.group = owner.get(i).dataItem.name;
                     eventDataByTimes.get(GetWeekIndex(list.get(j).begin)).list.add(item);
                 }
@@ -325,11 +340,11 @@ public class DataManager {
         }
 
         if(player != null){
-            for(int i = 1;i <= player.size();i++){
+            for(int i = 0;i < player.size();i++){
                 List<EventItem> list = player.get(i).QueryBetween(monday,sunday);
                 for(int j = 0;j < list.size();j++){
                     EventItem item = list.get(j);
-                    item.type = -i;//给出i
+                    item.indexID = -1;//标记为player
                     item.group = player.get(i).dataItem.name;
                     eventDataByTimes.get(GetWeekIndex(list.get(j).begin)).list.add(item);
                 }
@@ -337,8 +352,8 @@ public class DataManager {
         }
 //      排序对结果排序
         for(int i = 0;i < eventDataByTimes.size();i++){
-            SortFast.fun(eventDataByTimes.get(i).list,null); //这个比较器传null不知道行不行
-            //Collections.sort(eventDataByTimes.get(i).list);
+//            SortFast.fun(eventDataByTimes.get(i).list,null); //这个比较器传null不知道行不行
+            Collections.sort(eventDataByTimes.get(i).list);
         }
 
         returnEventData.routines = eventDataByTimes;
@@ -366,7 +381,7 @@ public class DataManager {
             for(int i = 0;i < owner.size();i++){
                 List<MapSortPair> list = owner.get(i).QueryMulti(key);
                 for(MapSortPair mapSortPair : list){
-                    ClassData data = owner.get(i).dataItem.SearchItem(mapSortPair.id);//获得数据
+                    GetEventData data = owner.get(i).dataItem.SearchItem(mapSortPair.id);//获得数据
                     returnQueryData.list.add(new QueryEventItem(data,mapSortPair.score));
                 }
 
@@ -377,7 +392,7 @@ public class DataManager {
             for(int i = 0;i < player.size();i++){
                 List<MapSortPair> list = owner.get(i).QueryMulti(key);
                 for(MapSortPair mapSortPair : list){
-                    ClassData data = player.get(i).dataItem.SearchItem(mapSortPair.id);//获得数据
+                    GetEventData data = player.get(i).dataItem.SearchItem(mapSortPair.id);//获得数据
                     returnQueryData.list.add(new QueryEventItem(data,mapSortPair.score));
                 }
             }
@@ -393,6 +408,124 @@ public class DataManager {
         //WriteLog.writeQueryLog(userFile,res,"QueryKey",key);
         WriteLog.writeLog(userFile,res,"QueryKey",key);
         return  returnQueryData;
+    }
+
+    public Return<ClashTime> QueryFreeTime(int indexID,long date,int length){
+        // 比对这个数据页
+        DataProcessor dataProcessor = owner.get(indexID);
+        List<Long> users = dataProcessor.dataItem.users; // 用户信息,第一个必定是本人
+        // 哈希表,标记某组织是否已经查询过了
+        HashMap<String, Boolean> vis = new HashMap<>();
+
+        ClashTime freeTime = QueryFreeTime(users.get(0),date,length,vis);
+
+        // 依次获得其他用户的空闲时间,实现交集处理
+        for(int i = 1;i < users.size();i++){
+            assert freeTime != null;
+            freeTime.interSet(QueryFreeTime(users.get(i),date,length,vis));
+        }
+        if (freeTime != null && freeTime.begins != null && freeTime.begins.size() != 0) return new Return<>(true,"",freeTime);
+        else return new Return<>(false,"没有空闲时间",null);
+    }
+    // 根据用户名称查找该用户在一定时间内的空闲时间
+    private ClashTime QueryFreeTime(long user, long date, int length, HashMap<String, Boolean> vis) {
+        // 初始化 区间是 date - date + length
+        // 仅仅适用作为时间查询
+        ClashTime freeTime = new ClashTime();
+        freeTime.normal();// 仅仅作为时间组织
+
+        List<DataProcessor> dataProcessors = null;
+        // 拿到用户数据
+        UserFile userFile = OnlineManager.GetUserData(user, 0L);
+        if(userFile == null) return null;
+
+        // 整合两者之间的数据
+        for (int i = 0;i < userFile.owner.size();i++) {
+            if(vis.containsKey(userFile.owner.get(i).getName())) continue; // 已经存在,处理过了
+            DataProcessor data;
+            if(user == BridgeData.getRequestInfo()){
+                data = owner.get(i);
+            }else{
+                data = OnlineManager.GetEventData(userFile.owner.get(i).getName(), 0L);
+            }
+            if(data == null) continue; // 组织不存在
+            freeTime.interSet(data.FindEasyTime(date, length));//使用交集操作,处理时间
+            vis.put(userFile.owner.get(i).getName(), true);// 标记
+        }
+
+        for (int i = 0;i < userFile.player.size();i++) {
+            if(vis.containsKey(userFile.player.get(i).getName())) continue; // 已经存在,处理过了
+            DataProcessor data;
+            if(user == BridgeData.getRequestInfo()){
+                data = player.get(i);
+            }else{
+                data = OnlineManager.GetEventData(userFile.player.get(i).getName(), 0L);
+            }
+            if(data == null) continue; // 组织不存在
+            freeTime.interSet(data.FindEasyTime(date, length));
+            vis.put(userFile.player.get(i).getName(), true);// 标记
+        }
+        return  freeTime;
+    }
+
+    // 删
+    public ReturnJson deleteItem(GetEventData item){
+        ReturnJson returnJson = new ReturnJson(true,"");
+        int index = item.indexID;
+        DataProcessor data = owner.get(index);
+        ReturnJson deleteRes = data.DeleteItem(item.begin);
+        if(deleteRes.res){
+            returnJson.state = "删除成功";
+        }
+        else {
+            returnJson.res = false;
+            returnJson.state ="删除失败";
+        }
+        DataProcessor group = OnlineManager.GetEventData(data.dataItem.name, 0L);
+        if(group != null){
+            List<Long> users = group.dataItem.users;
+            UserFile userFile;
+            for (Long aLong : users) {
+                userFile = OnlineManager.GetUserData(aLong, 0L);
+                //WriteLog.writeDeleteLog(userFile,returnJson.res,"DeleteItem");
+                WriteLog.writeLog(userFile,returnJson.res,"DeleteItem",item.title);
+            }
+        }
+        return returnJson;
+    }
+
+    public ReturnJson deleteItem(long begin,int indexID){
+        // 删除indexID对应的的节点数据
+        return owner.get(indexID).DeleteItem(begin);
+    }
+    //工具类
+
+    //星期序号获得
+    private int GetWeekIndex(long begin){
+        Calendar now = Calendar.getInstance();
+        now.setTime(new Date(begin));
+        return (now.get(Calendar.DAY_OF_WEEK)+5)%7;
+    }
+    // 插入临时事件需要特殊处理,因为临时事件是和其他的类型有所区别,可以存在兼并属性
+
+    //中序遍历所有数据,返回一个list,查询全部,方便看一个组织可不可以加入
+    private List<GetEventData> GetAllDataItem(DataProcessor data){
+        List<GetEventData> list = new ArrayList<>();
+        Inorder(data.dataItem.itemRbtree.Root,list);
+        return list;
+    }
+
+    private void Inorder(RBTNode x,List<GetEventData> list){
+        if(x == null) return;
+        Inorder(x.left,list);
+        list.add((GetEventData) (x.vaule));
+        Inorder(x.right,list);
+    }
+
+    // 工具类,根据i返回owner或者player
+    private DataProcessor GetDataProcessor(int i){
+        if(i < owner.size()) return owner.get(i);
+        else return player.get(i-owner.size());
     }
 
 }

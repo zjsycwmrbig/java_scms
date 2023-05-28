@@ -46,6 +46,7 @@ public class UserRBTree {
 //  添加学号为key的文件
     public static File AddItem(long key){
         File file = FileManager.AddUser(String.valueOf(key));
+        if (file == null) return null;
         rbTree.insert(new RBTNode(file,key,BLACK,null,null,null));
         return file;
     }

@@ -4,9 +4,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import scms.Service.AddService;
+import scms.Service.DataManager;
 import scms.domain.ReturnJson.ReturnAddJson;
-import scms.domain.GetJson.ClassData;
-import scms.domain.ReturnJson.ReturnJson;
+import scms.domain.GetJson.GetEventData;
 
 /***
  * @author Administrator
@@ -23,11 +23,12 @@ public class AddController {
 
 //增加课程数据,请求通过post/put传输一个对象
     @RequestMapping("/item")
-    public ReturnAddJson AddItem(@RequestBody ClassData item){
-        ReturnAddJson returnAddJson = addService.AddItem(item);
-        //本来应该在这里调用日志函数，但是DataManager中才对item的组织进行剖析，所以将调用放在了DataManager的AddItem中
-        return returnAddJson;//这里往哪里加入,看index
+    public ReturnAddJson AddItem(@RequestBody GetEventData item){
+        DataManager dataManager = new DataManager();
+        return dataManager.AddItem(item);
     }
+
+
 
 }
 

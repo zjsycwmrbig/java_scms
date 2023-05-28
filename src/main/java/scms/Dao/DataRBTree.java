@@ -3,6 +3,7 @@ package scms.Dao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import scms.domain.ServerJson.ClashRBTNode;
+import scms.domain.ServerJson.RBTNode;
 
 
 import java.io.*;
@@ -23,15 +24,20 @@ public class DataRBTree implements Serializable{
     public ArrayList<ClashRBTNode> stack; //暂存栈
 //    增
     public void AddItem(long id,long key,long end) {
+
         ClashRBTNode node=new ClashRBTNode(id,key,end,BLACK,null,null,null);
     // 如果新建结点失败，则返回。
         if (node != null) rbtree.insert(node);
     }
 
 //   删
-    public void remove(long begin) {
-        ClashRBTNode node;
-        if ((node = search(rbtree.Root,begin)) != null) rbtree.remove(node);// 直接删除这个节点
+    public long remove(long begin) {
+        long res = 0;
+        ClashRBTNode node = search(rbtree.Root,begin);
+        if (node == null) return 0;
+        res = (long) (node.vaule);
+        rbtree.remove(node);// 直接删除这个节点
+        return res;
     }
 //   查
 //    找到相邻节点
@@ -40,19 +46,33 @@ public class DataRBTree implements Serializable{
         stack.clear();
         stack.add(null);
         stack.add(null);
+        // 找到某个节点左边的节点,右边的节点,仅仅通过判断的时候暂存是不够的
+        // 可能会有两个节点不是父子关系可能,因此对于左侧和右侧的节点,需要特判
         searchNeibor(rbtree.Root,inNode);
+        if(stack.get(0) == null){
+            // 不存在左边界,说明这个节点是最小的节点,或者是一直向左找的,需要找到右节点的左侧最小值
+            if(stack.get(1) == null){
+                // 不存在右节点,说明这个树是空的
+                return;
+            }
+            ClashRBTNode node = stack.get(1).left;
+            while(node != null){
+                stack.set(0, node);
+                node = node.right;
+            }
+        }
     }
     //
     private void searchNeibor(ClashRBTNode x,long begin){
         if (x==null)
             return;
         int cmp = rbtree.Compare(x,begin);
-        if (cmp == 1){
+        if (cmp >= 0){
             // 向左找,赋值右侧节点,注意这个可能会有一样的节点
             stack.set(1, x);
             searchNeibor(x.left, begin);
         }
-        else if (cmp == -1){
+        else if (cmp < 0){
             stack.set(0, x);
             searchNeibor(x.right, begin);
         }
@@ -77,7 +97,11 @@ public class DataRBTree implements Serializable{
     public void Between(long start, long end) {
         // 自己找到合适的root节点 - 这里找到root在start和end之间的节点
         ClashRBTNode root = rbtree.Root;
-        if(root ==  null)return;//空就不找了
+        if(root ==  null) {
+            stack.clear(); // 暂存栈清零
+            return;
+        }
+        //空就不找了
         int cmpstart = rbtree.Compare(rbtree.Root,start);
         int cmpend = rbtree.Compare(rbtree.Root,end);
         while(cmpstart < -1 || cmpend > 1){
