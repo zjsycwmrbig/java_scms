@@ -3,8 +3,13 @@ package scms.Controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.actuate.endpoint.web.Link;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import scms.Demo1Application;
+import scms.Interceptor.BridgeData;
+import scms.Interceptor.WriteLog;
+import scms.Service.OnlineManager;
+import scms.domain.ServerJson.UserFile;
 
 import java.io.*;
 import java.util.LinkedList;
@@ -76,7 +81,33 @@ public class NavigationController {
             }
         }*///输出每条边，以对照是否反序列化正确，后续可以删掉。。。。。
     }
-    @RequestMapping("/oneTarget")
+
+    @RequestMapping("/Targets")
+    public String getPath(@RequestParam("numbers") String[] numbers){
+        String path;
+        int startnumber = Integer.parseInt(numbers[0]);
+        int length = numbers.length-1;
+        if(length == 2){
+            int endNumber = Integer.parseInt(numbers[1]);
+            path = getShortedPath(startnumber,endNumber,1);
+        }else{
+            int[] targetsNumbers = new int[length-1];
+            for (int i = 0; i < length-1; i++) {
+                targetsNumbers[i] = Integer.parseInt(numbers[i+1]);
+            }
+            path = getPathWithMoreTargetsUsingARA(startnumber,targetsNumbers);
+        }
+        return path; //如果返回String比较麻烦，就返回int[]
+        /*
+        String[] targetStrings = path.split("->");
+        int targetLength = targetStrings.length;
+        int[] targets = new int[targetLength];
+        for (int i = 0; i < targetLength; i++) {
+            targets[i] = Integer.parseInt(targetStrings[i]);
+        }
+         */
+    }
+
     public static String getShortedPath(int startNumber,int endNumber,int mode){
         //使用迪杰斯特拉算法得到最短路径
         //mode == 1 返回最短路径， mode == 2 时返回最短路径的长度
@@ -133,8 +164,11 @@ public class NavigationController {
         }
         Path = String.valueOf(startNumber) + "->" + Path;
         //System.out.println("起点到终点的最短路径长度为" + distanceToAll[endNumber]);
-        if(mode == 1)
+        if(mode == 1) {
+            UserFile userFile = OnlineManager.GetUserData(BridgeData.getRequestInfo(),0L);
+            WriteLog.writeLog(userFile,true,"Targets","单目标路径为："+Path);
             return Path;
+        }
         else{
             return String.valueOf(distanceToAll[endNumber]);
         }
@@ -370,7 +404,6 @@ public class NavigationController {
         }
     }
 */
-    @RequestMapping("/moreTargets")
     public static String getPathWithMoreTargetsUsingARA(int startNumber,int[] targetNumbers){
         String path = "";
         ARAVertex[] araVertices = new ARAVertex[targetNumbers.length +1]; //ARA算法使用的顶点也都是必经点
@@ -453,6 +486,8 @@ public class NavigationController {
         System.out.println("必经点的顺序（下标表示）"+bestPathString);
         System.out.println("必经点的顺序为" + path);
         String realPath = necessaryPathToRealPath(path);
+        UserFile userFile = OnlineManager.GetUserData(BridgeData.getRequestInfo(),0L);
+        WriteLog.writeLog(userFile,true,"Targets","多目标路径为："+realPath);
         return realPath;
     }
 
