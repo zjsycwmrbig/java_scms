@@ -63,14 +63,14 @@ public class WriteLog {
         logList.write(getTimeString(), userFile.username, operate+key+res);
         System.out.println("添加查询课程部分--"+operate+key+res+"--日志信息成功");
     }*/
-    public static void writeUserLog(UserFile userFile,boolean res,String methodName){
+    public static void writeUserLog(UserFile userFile,boolean res,String methodName,String content){
         //注册、登录失败说明用户有问题，就不需要记录在用户文件中了
         if(!res)
             return;
         File UserPath = userFile.file;
         String LogPath = UserPath.getAbsolutePath().concat("\\log.scms");
         LogList logList = new LogList(LogPath);
-        String operate = FunctionMatch.getFunctionString(methodName);
+        String operate = FunctionMatch.getFunctionString(methodName) + content;
         logList.write(getTimeString(), userFile.username,operate);
         System.out.println("添加登录部分--"+operate+"--日志信息成功");
     }

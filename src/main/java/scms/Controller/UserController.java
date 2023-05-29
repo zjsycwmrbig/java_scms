@@ -3,6 +3,7 @@ package scms.Controller;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -26,7 +27,7 @@ public class UserController {
     public ReturnUserData CheckLogin(@RequestBody GetUserData user, HttpServletRequest request) throws IOException {
         ReturnUserData returnUserData = UserManager.CheckLogin(user,request);
         UserFile userFile = OnlineManager.GetUserData(user.getUsername(),0L);
-        WriteLog.writeUserLog(userFile,returnUserData.res,"CheckLogin");
+        WriteLog.writeUserLog(userFile,returnUserData.res,"CheckLogin","");
         return returnUserData;
     }
 
@@ -36,7 +37,7 @@ public class UserController {
         ReturnUserData returnUserData = UserManager.Register(user);
         UserFile userFile = OnlineManager.GetUserData(user.getUsername(),0L);
         System.out.println(userFile.file);
-        WriteLog.writeUserLog(userFile,returnUserData.res,"CreatUser");
+        WriteLog.writeUserLog(userFile,returnUserData.res,"CreatUser","");
         return returnUserData;
     }
 //    登出请求
@@ -44,7 +45,7 @@ public class UserController {
     public ReturnJson LogOut(){
         UserFile userFile = OnlineManager.GetUserData(BridgeData.getRequestInfo(),0L);//要用Bridge获取一下用户，但是是GetUserData类吗
         ReturnJson returnJson = OnlineManager.RemoveOnline(BridgeData.getRequestInfo());
-        WriteLog.writeUserLog(userFile,returnJson.res,"LogOut");
+        WriteLog.writeUserLog(userFile,returnJson.res,"LogOut","");
         return returnJson;
     }
 
@@ -59,4 +60,21 @@ public class UserController {
         }
     }
 
+    @RequestMapping("/rename")
+    public ReturnJson rename(@RequestParam String name){
+        UserFile userFile = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);
+        userFile.netname = name;
+        ReturnJson returnJson = new ReturnJson(true,"更改成功");
+        WriteLog.writeUserLog(userFile,returnJson.res,"rename",name);
+        return returnJson;
+    }
+
+    @RequestMapping("/reword")
+    public ReturnJson changePersonalWord(@RequestParam String word){
+        UserFile userFile = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);
+        userFile.PersonalWord = word;
+        ReturnJson returnJson = new ReturnJson(true,"更改成功");
+        WriteLog.writeUserLog(userFile,returnJson.res,"changePersonalWord",word);
+        return returnJson;
+    }
 }
