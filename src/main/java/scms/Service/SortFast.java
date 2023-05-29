@@ -23,31 +23,60 @@ public class SortFast {
             return;
         }
         T key = list.get(lowPointer);
-        while(lowPointer < highPointer){
-            while(true) {
-                if(highPointer <= lowPointer)
-                    break;
-                if (c.compare(key, list.get(highPointer)) > 0) { //排序结果应该是从小到大，以结果为准
-                    list.set(lowPointer, list.get(highPointer));
-                    break;
-                } else {
-                    highPointer--;
+        if(c == null){
+            while (lowPointer < highPointer) {
+                while (true) {
+                    if (highPointer <= lowPointer)
+                        break;
+                    if( ((Comparable)key).compareTo(list.get(highPointer)) > 0 ){//EventItem实现了Comparable，不知道这样行不行？？？
+                        list.set(lowPointer, list.get(highPointer));
+                        break;
+                    }
+                    else {
+                        highPointer--;
+                    }
+                }
+                while (true) {
+                    if (highPointer <= lowPointer)
+                        break;
+                    if(((Comparable)list.get(lowPointer)).compareTo(key) > 0){
+                        list.set(highPointer, list.get(lowPointer));
+                        break;
+                    } else {
+                        lowPointer++;
+                    }
                 }
             }
-            while(true){
-                if(highPointer <= lowPointer)
-                    break;
-                if(c.compare(list.get(lowPointer),key) > 0){
-                    list.set(highPointer,list.get(lowPointer));
-                    break;
-                }
-                else{
-                    lowPointer++;
-                }
-            }
+            list.set(lowPointer, key);
+            SortFast.fun(list, c, low, lowPointer - 1);
+            SortFast.fun(list, c, lowPointer + 1, high);
         }
-        list.set(lowPointer,key);
-        SortFast.fun(list,c,low,lowPointer-1);
-        SortFast.fun(list,c,lowPointer+1,high);
+        else {
+            while (lowPointer < highPointer) {
+                while (true) {
+                    if (highPointer <= lowPointer)
+                        break;
+                    if (c.compare(key, list.get(highPointer)) > 0) { //排序结果应该是从小到大，以结果为准
+                        list.set(lowPointer, list.get(highPointer));
+                        break;
+                    } else {
+                        highPointer--;
+                    }
+                }
+                while (true) {
+                    if (highPointer <= lowPointer)
+                        break;
+                    if (c.compare(list.get(lowPointer), key) > 0) {
+                        list.set(highPointer, list.get(lowPointer));
+                        break;
+                    } else {
+                        lowPointer++;
+                    }
+                }
+            }
+            list.set(lowPointer, key);
+            SortFast.fun(list, c, low, lowPointer - 1);
+            SortFast.fun(list, c, lowPointer + 1, high);
+        }
     }
 }

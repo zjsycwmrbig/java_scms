@@ -353,8 +353,8 @@ public class DataManager {
         }
 //      排序对结果排序
         for(int i = 0;i < eventDataByTimes.size();i++){
-//            SortFast.fun(eventDataByTimes.get(i).list,null); //这个比较器传null不知道行不行
-            Collections.sort(eventDataByTimes.get(i).list);
+            SortFast.fun(eventDataByTimes.get(i).list,null); //这个比较器传null不知道行不行
+            //Collections.sort(eventDataByTimes.get(i).list);
         }
 
         returnEventData.routines = eventDataByTimes;
@@ -366,6 +366,20 @@ public class DataManager {
     public ReturnEventData QueryAll(){
         user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);
         ReturnEventData returnEventData = new ReturnEventData();
+        ArrayList<EventDataByType> arrayList = new ArrayList<>();
+        if(owner != null){
+            for(int i = 0;i < owner.size();i++){
+                //todo：写一个中序遍历冲突树，获取所有课程EventItem
+
+            }
+        }
+
+        if(player != null){
+            for(int i = 0;i < player.size();i++){
+                List<GetEventData> list = GetAllDataItem(owner.get(i)); //中序遍历
+
+            }
+        }
         //WriteLog.writeQueryLog(user, returnEventData.res,"QueryAll",null);
         WriteLog.writeLog(user, returnEventData.res,"QueryAll","");
         return returnEventData;
