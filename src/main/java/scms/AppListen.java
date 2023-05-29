@@ -17,9 +17,11 @@ public class AppListen implements DisposableBean{
     public void destroy() throws Exception {
         OnlineManager.Clear();//清除所有的在线缓存,保存到数据库
         System.out.println("缓存树数据保存");
-        UserRBTree.sava();
+        if(UserRBTree.empty()) System.out.println("用户树为空");
+        else UserRBTree.sava();
         System.out.println("用户树数据保存");
-        DatabaseManager.sava();
+        if(DatabaseManager.empty()) System.out.println("数据库树为空");
+        else DatabaseManager.sava();
         System.out.println("数据库树数据保存");
     }
 }

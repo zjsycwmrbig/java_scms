@@ -10,10 +10,11 @@ import java.util.List;
  * @function
  */
 public class ReturnUserData extends ReturnJson{
-    public ReturnUserData(String netname, String personalWord,String state) {
+    public ReturnUserData(String netname, String personalWord,String state,boolean hasImage) {
         super(true,state);
         this.netname = netname;
         this.PersonalWord = personalWord;
+        this.hasImage = hasImage;
     }
     public long username;
     public String netname;
@@ -25,5 +26,7 @@ public class ReturnUserData extends ReturnJson{
     public List<NoticeData> tips;
 
     public List<List<Long>> dataUser;
+
+    public boolean hasImage;
 
 }

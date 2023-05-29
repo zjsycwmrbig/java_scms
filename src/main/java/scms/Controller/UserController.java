@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import org.springframework.web.multipart.MultipartFile;
 import scms.Interceptor.BridgeData;
-import scms.Interceptor.WriteLog;
+import scms.Dao.WriteLog;
 import scms.Service.OnlineManager;
 import scms.Service.UserManager;
 import scms.domain.GetJson.GetUserData;

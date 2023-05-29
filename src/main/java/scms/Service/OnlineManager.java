@@ -1,7 +1,7 @@
 package scms.Service;
 
 import scms.Dao.*;
-import scms.Interceptor.FileManager;
+import scms.Dao.FileManager;
 import scms.domain.ReturnJson.ReturnJson;
 import scms.domain.ServerJson.OnlineData;
 import scms.domain.ServerJson.RBTNode;
@@ -88,7 +88,8 @@ public class OnlineManager {
         if (x==null) return null;
         int cmp;
         if(key instanceof Long) cmp = ((Long)(key)).compareTo((Long) x.key);
-        else cmp = ((String)(key)).compareTo((String) x.key);
+        else if(key instanceof String) cmp = ((String)(key)).compareTo((String) x.key);
+        else return null;
 
         if(cmp != 0){
             if(IsDeadNode(x)){

@@ -34,7 +34,7 @@ public class UserManager {
     }
     //    登录服务 -- 比对用户名和密码,成功返回用户数据
     public static ReturnUserData CheckLogin(GetUserData user, HttpServletRequest request){
-        ReturnUserData returnUserData = new ReturnUserData("","",""); //初始化内容
+        ReturnUserData returnUserData = new ReturnUserData("","","",false); //初始化内容
 
         UserFile userFile = OnlineManager.GetUserData(user.getUsername(),0L); //得到用户数据
         if(userFile == null) {
@@ -47,7 +47,8 @@ public class UserManager {
         if(returnUserData.state == "登录成功"){
             //添加数据
             OnlineManager.AddOnlineUser(userFile,1L);
-
+            // 头像信息
+            returnUserData.hasImage = userFile.hasImage;
             returnUserData.dataUser = OnlineManager.AddOnlineDataList(userFile);//填入数据list,返回数据用户组
             // 颁发签证
             HttpSession session = request.getSession();
@@ -64,7 +65,7 @@ public class UserManager {
         if(UserRBTree.searchFile(user.getUsername()) == null){
             File file = UserRBTree.AddItem(user.getUsername()); //获得File文件,创建文件,写入文件树,写入UserFile数据
             if (file == null) {//如果文件创建失败
-                ReturnUserData returnUserData = new ReturnUserData(user.getNetname(),user.getPersonalword(),"服务器数据出错,请稍后再试");
+                ReturnUserData returnUserData = new ReturnUserData(user.getNetname(),user.getPersonalword(),"服务器数据出错,请稍后再试",false);
                 returnUserData.res = false;
                 return returnUserData;
             }
@@ -78,7 +79,7 @@ public class UserManager {
             return returnUserData;
         }else{
             //用户已经存在
-            ReturnUserData returnUserData = new ReturnUserData(user.getNetname(),user.getPersonalword(),"用户已存在");
+            ReturnUserData returnUserData = new ReturnUserData(user.getNetname(),user.getPersonalword(),"用户已存在",false);
             returnUserData.res = false;
             return returnUserData;
         }
@@ -87,7 +88,7 @@ public class UserManager {
     //    找到文件中的内容返回
     private static ReturnUserData GetUserData(UserFile userFile,String password){
         // 序列化 - 转换结构
-        ReturnUserData res = new ReturnUserData("游客","","");
+        ReturnUserData res = new ReturnUserData("游客","","",false);
         if(userFile == null) {
             res.state = "服务器数据出错,请稍后再试";
         } //序列化失败返回null
@@ -121,11 +122,13 @@ public class UserManager {
 
     //    写入初始文件,包括网名,组织名称,返回returnUserData
     private static ReturnUserData SetUserData(File file,GetUserData user){
-        ReturnUserData returnUserData = new ReturnUserData(user.getNetname(),user.getPersonalword(),"注册成功");
+        ReturnUserData returnUserData = new ReturnUserData(user.getNetname(),user.getPersonalword(),"注册成功",false);
         //把user数据放到userFile中
         UserFile fileData = new UserFile(user.getUsername(),user.getNetname(),user.getPassword(),user.getPersonalword());
 //      添加用户数据文件指向
         fileData.file = file;
+
+        fileData.hasImage = false;
 //      添加本身这个组织
         fileData.owner = new ArrayList<>();
 //      构建组织文件

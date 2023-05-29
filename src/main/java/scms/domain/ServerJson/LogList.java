@@ -1,5 +1,7 @@
-package scms.Interceptor;
+package scms.domain.ServerJson;
 
+
+import scms.domain.ServerJson.Log;
 
 import java.io.*;
 import java.util.ArrayList;

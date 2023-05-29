@@ -1,6 +1,5 @@
 package scms.Dao;
 
-import scms.Interceptor.FileManager;
 import scms.domain.ServerJson.RBTNode;
 
 import java.io.*;
@@ -15,7 +14,12 @@ public class UserRBTree {
     //先前创建好的
     static File userRbtreeData = new File("D:\\SCMSFILE\\UserData.scms");
     static RBTree<File,Long> rbTree; //红黑树
-
+    public static boolean empty(){
+        if(rbTree.Root == null)
+            return true;
+        else
+            return false;
+    }
     public static boolean Init(){
         try {
             ObjectInputStream ois = new ObjectInputStream(new FileInputStream(userRbtreeData));

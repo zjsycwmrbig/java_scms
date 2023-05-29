@@ -1,4 +1,4 @@
-package scms.Interceptor;
+package scms.Dao;
 
 /**
  * @author seaside

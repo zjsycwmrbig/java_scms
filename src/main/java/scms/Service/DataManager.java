@@ -3,7 +3,7 @@ package scms.Service;
 import scms.Dao.*;
 
 import scms.Interceptor.BridgeData;
-import scms.Interceptor.WriteLog;
+import scms.Dao.WriteLog;
 import scms.domain.GetJson.GetEventData;
 
 import scms.domain.ReturnJson.*;
@@ -127,12 +127,13 @@ public class DataManager {
                     // 添加信息
                     for (EventItem temp : temps) {
                         // 划分开
-                        realTemp.title = realTemp.title + "\n" + temp.title;//回车分割
+                        realTemp.title = realTemp.title + " | " + temp.title;//回车分割
                         realTemp.location = realTemp.location + "|" + temp.location;//分割
                         realTemp.locationData = realTemp.locationData + "|" + temp.locationData;
                         // 获得开始结束
                         realTemp.begin = Math.min(realTemp.begin,temp.begin);
                         realTemp.end = Math.max(realTemp.end,temp.begin + temp.length);
+                        realTemp.length = realTemp.end - realTemp.begin;
                     }
                     // 删除原有的临时事件
                     for (EventItem temp : temps) {

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import scms.Dao.DataProcessor;
 import scms.Dao.DatabaseManager;
 import scms.Interceptor.BridgeData;
-import scms.Interceptor.WriteLog;
+import scms.Dao.WriteLog;
 import scms.Service.DataManager;
 import scms.Service.OnlineManager;
 import scms.Service.UserManager;

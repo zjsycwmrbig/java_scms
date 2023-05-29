@@ -1,18 +1,18 @@
 package scms.Controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.boot.actuate.endpoint.web.Link;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import scms.Demo1Application;
 import scms.Interceptor.BridgeData;
-import scms.Interceptor.WriteLog;
+import scms.Dao.WriteLog;
 import scms.Service.OnlineManager;
+import scms.domain.ReturnJson.Return;
 import scms.domain.ServerJson.UserFile;
 
 import java.io.*;
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * @author seaside
@@ -22,6 +22,8 @@ import java.util.LinkedList;
 @RequestMapping("/navigate")
 public class NavigationController {
     static Vertex[] vertexes = null; //共有126个顶点，但第一个顶点在json文件中编号为1，所以数组0号不用
+
+    static HashMap<String,Integer> locationMap = new HashMap<>(); //存储地点和编号的映射
     public static void readMap() throws IOException {
         /*之前进行序列化的代码，只需使用一次
         //从边的json中读取
@@ -60,7 +62,7 @@ public class NavigationController {
 
         //注意反序列化之前Vertex类和Node类都必须已经加载
         try {
-            //FileInputStream fileInputStream = new FileInputStream("C:\\Users\\wwhb\\Desktop\\edges.ser"); //文件位置可能需要更改
+
             FileInputStream fileInputStream = new FileInputStream("D:\\SCMSFILE\\MapData.scms");
             ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
             vertexes = (Vertex[]) objectInputStream.readObject();
@@ -70,6 +72,17 @@ public class NavigationController {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        // 读取地点和编号的映射
+        try {
+            FileInputStream fileInputStream = new FileInputStream("D:\\SCMSFILE\\locationMap.scms");
+            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+            locationMap = (HashMap<String, Integer>) objectInputStream.readObject();
+            objectInputStream.close();
+            fileInputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         /*for (int i = 1; i <vertexes.length ; i++) {
             if(vertexes[i].front != null){
                 tempNode = vertexes[i].front;
@@ -82,31 +95,47 @@ public class NavigationController {
         }*///输出每条边，以对照是否反序列化正确，后续可以删掉。。。。。
     }
 
+
     @RequestMapping("/Targets")
-    public String getPath(@RequestParam("numbers") String[] numbers){
+    public Return<List<Integer>> getPath(@RequestBody HashMap<String,Object> navigationData) {
+
         String path;
-        int startnumber = Integer.parseInt(numbers[0]);
-        int length = numbers.length-1;
-        if(length == 2){
-            int endNumber = Integer.parseInt(numbers[1]);
-            path = getShortedPath(startnumber,endNumber,1);
-        }else{
-            int[] targetsNumbers = new int[length-1];
-            for (int i = 0; i < length-1; i++) {
-                targetsNumbers[i] = Integer.parseInt(numbers[i+1]);
+        List<Integer> pathList = new ArrayList<>();
+        if(navigationData.get("start") == null){
+            return new Return<>(false,"起点或终点为空",null);
+        }
+        // 起点
+        int start = (Integer) navigationData.get("start");
+        // 终点
+
+        // 途径点
+        List<String> locations = null;
+        if (navigationData.get("end") != null) {
+            locations = (List<String>) navigationData.get("locations");
+        }
+
+        if(locations == null || locations.size() == 0){
+            if (navigationData.get("end") == null) return new Return<>(false,"终点为空",null);
+            int end = (Integer) navigationData.get("end");
+            path = getShortedPath(start,end,1);
+        } else {
+            int [] locationsID = new int[locations.size()];
+            for (int i = 0; i < locations.size(); i++) {
+                if (locationMap.containsKey(locations.get(i))) locationsID[i] = locationMap.get(locations.get(i));
+                else return new Return<>(false,"地点不存在",null);
             }
-            path = getPathWithMoreTargetsUsingARA(startnumber,targetsNumbers);
+            path = getPathWithMoreTargetsUsingARA(start,locationsID);
         }
-        return path; //如果返回String比较麻烦，就返回int[]
-        /*
-        String[] targetStrings = path.split("->");
-        int targetLength = targetStrings.length;
-        int[] targets = new int[targetLength];
-        for (int i = 0; i < targetLength; i++) {
-            targets[i] = Integer.parseInt(targetStrings[i]);
+
+        String[] pathArray = path.split("->");
+        for (int i = 0; i < pathArray.length; i++) {
+            pathList.add(Integer.parseInt(pathArray[i]));
         }
-         */
+        //如果返回String比较麻烦，就返回int[]
+        return new Return<>(true,"查找成功",pathList);
     }
+    // 工具类
+
 
     public static String getShortedPath(int startNumber,int endNumber,int mode){
         //使用迪杰斯特拉算法得到最短路径
@@ -404,7 +433,7 @@ public class NavigationController {
         }
     }
 */
-    public static String getPathWithMoreTargetsUsingARA(int startNumber,int[] targetNumbers){
+    public static String getPathWithMoreTargetsUsingARA(int startNumber, int[] targetNumbers){
         String path = "";
         ARAVertex[] araVertices = new ARAVertex[targetNumbers.length +1]; //ARA算法使用的顶点也都是必经点
         araVertices[0] = new ARAVertex(startNumber);

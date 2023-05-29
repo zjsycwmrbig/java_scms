@@ -174,6 +174,7 @@ public class DataProcessor implements Serializable {
     // 查找某个组织,某个时间点的空余时间
     public ClashTime FindEasyTime (long begin,int length) {
         ClashTime time = new ClashTime();
+        time.normal();// 仅仅作为初始化使用
         // 建立日历,找到当天时间
         Date date = new Date(begin);
         Calendar calendar = Calendar.getInstance();
@@ -182,12 +183,25 @@ public class DataProcessor implements Serializable {
         calendar.set(Calendar.HOUR_OF_DAY, 0);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND,0);
+
         // 找到当天或者当周的时间
         long start = calendar.getTimeInMillis();
         calendar.add(Calendar.DAY_OF_MONTH, length);
         long end = calendar.getTimeInMillis();
 
-        // 使用between找到对应的事件 - 情况一
+        // 判断该点前面有没有事件
+        dataRBTree.searchNeibor(start);
+        if(dataRBTree.stack != null && dataRBTree.stack.size() > 0 && dataRBTree.stack.get(0) != null){
+            // 存在前边的冲突事件
+            if((Long)dataRBTree.stack.get(0).end > start){
+                // 存在冲突
+                time.begins.add((Long) dataRBTree.stack.get(0).key);
+                time.ends.add((Long) dataRBTree.stack.get(0).end);
+            }
+        }
+
+        // 使用between找到对应的事件
         dataRBTree.Between(start, end);
         for(int i = 0; i < dataRBTree.stack.size(); i++){
             ClashRBTNode item = dataRBTree.stack.get(i);
@@ -196,46 +210,45 @@ public class DataProcessor implements Serializable {
             time.begins.add((Long) item.key);
             time.ends.add((Long) item.end);
         }
-        // 判断该点前面有没有事件 - 情况二
-        dataRBTree.searchNeibor(start);
-        if(dataRBTree.stack != null && dataRBTree.stack.size() > 0 && dataRBTree.stack.get(0) != null){
-            // 存在前边的冲突事件
-            if((Long)dataRBTree.stack.get(0).end > start){
-                // 存在冲突
-                time.begins.set(0, (Long) dataRBTree.stack.get(0).key);
-                time.ends.set(0, (Long) dataRBTree.stack.get(0).end);
-            }
-        }
-        // 打印存在的冲突时间
-        System.out.println("begins");
-        System.out.println(time.begins.toString());
-        System.out.println("ends");
-        System.out.println(time.ends.toString());
         // 一段一段切分
+        int split_index = 0;
 
-        int start_index = 0;
-        int end_index = 0;
-        // 确定开始index
-        if(time.begins.get(0) != -1L){
-            start_index = 1;
-            end_index = 1;
-        }
         // 获得时间段
         ClashTime easyTime = new ClashTime();
-        easyTime.begins.clear();
-        easyTime.ends.clear();
-        // 理论上 S E 互调
-        if(time.begins.get(start_index) < start){
-            // 这个时间段无效,需要从start开始添加一个
-            start_index++;//开始序列增加
+        // 清除无效时间段
+        easyTime.normal();
+        if(time.begins == null || time.begins.size() == 0){
+            // 没有冲突
+            easyTime.begins.add(start);
+            easyTime.ends.add(end);
+            return easyTime;
         }
-        while(start_index < time.begins.size()){//start_index >= end_index
-            easyTime.begins.add(time.ends.get(end_index++));
-            easyTime.ends.add(time.begins.get(start_index++));
+        // 存在可以划分的东西
+
+        // 这个时间在start之前 , 第一个begin要从start开始
+        // --------         --------
+        //    |                   |
+        // begin从ends的第一个开始,最后到end或者begins的最后一个结束
+
+        // 判断开始的位置 , 特判开始的空闲段
+        if(time.begins.get(0) > start){
+            // 需要添加一个空闲时间段
+            easyTime.begins.add(start);
+            easyTime.ends.add(time.begins.get(0));
         }
-        System.out.println("easyTime");
-        System.out.println(easyTime.begins.toString());
-        System.out.println(easyTime.ends.toString());
+
+        // 理论上 S E 互调 , 从ends的第一个开始,从begins的第二个开始,当begin结束的时候
+        while(split_index < time.ends.size() && time.ends.get(split_index) < end){
+            // 当且仅当end 在范围内才构建 判断一下
+            easyTime.begins.add(time.ends.get(split_index++));
+
+            if(split_index < time.begins.size()){
+                // 还有下一个
+                easyTime.ends.add(time.begins.get(split_index));
+            }else{
+                easyTime.ends.add(end);
+            }
+        }
         return easyTime;
     }
 }

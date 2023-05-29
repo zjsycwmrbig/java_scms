@@ -1,38 +1,69 @@
 package scms;
 
+import ch.qos.logback.core.sift.AppenderFactoryUsingSiftModel;
+import com.fasterxml.jackson.core.exc.StreamReadException;
+import com.fasterxml.jackson.databind.DatabindException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
 import scms.Dao.DataProcessor;
 import scms.Dao.DataRBTree;
 import scms.Dao.DatabaseManager;
+import scms.Dao.UserRBTree;
 import scms.Service.OnlineManager;
 import scms.domain.ServerJson.ClashTime;
 
+import java.io.*;
+import java.lang.reflect.Type;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 
 @SpringBootTest
 class Demo1ApplicationTests {
-
+    static class Location {
+        public Integer pid;
+        public String name;
+        public Double x;
+        public Double y;
+        public boolean type;
+    }
 
     // 测试冲突时间二叉树查询算法
     @Test
     void FindEasyTime(){
 
         DatabaseManager.Init();
-        DataProcessor data = OnlineManager.GetEventData("测试组织保存",0L);
-        System.out.println(data.dataItem.name);
-        System.out.println(data.dataItem.filePath.getAbsoluteFile());
-        data.print();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        DataProcessor data = OnlineManager.GetEventData("1班",0L);
+
+        // 将时分秒,毫秒域清零
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
 
         System.out.println("测试冲突组织在一天之后的所有空闲时间");
-        ClashTime clash = data.FindEasyTime(new Date().getTime(),1);
-        System.out.println(clash.begins.toString());
-        System.out.println(clash.ends.toString());
+        ClashTime clash = data.FindEasyTime(calendar.getTimeInMillis(),1);
+        // 打印结果
+        for(int i = 0;i < clash.begins.size();i++){
+            System.out.printf("%s %s\n",new Date(clash.begins.get(i)).toString(),new Date(clash.ends.get(i)).toString());
+        }
 
         System.out.println("测试冲突组织在一周之后的所有空闲时间");
-        ClashTime clash2 = data.FindEasyTime(new Date().getTime(),7);
-        System.out.println(clash2.begins.toString());
-        System.out.println(clash2.ends.toString());
+        // 更新出开始时间
+
+        int dayOfWeek = (calendar.get(Calendar.DAY_OF_WEEK) + 5)%7;
+        // 计算本周的周一和周末的日期
+        calendar.add(Calendar.DATE, -dayOfWeek); // 本周的周一
+        ClashTime clash2 = data.FindEasyTime(calendar.getTimeInMillis(),7);
+        // 打印结果
+        for(int i = 0;i < clash2.begins.size();i++){
+            System.out.printf("%s %s\n",new Date(clash2.begins.get(i)).toString(),new Date(clash2.ends.get(i)).toString());
+        }
+        DatabaseManager.sava();
     }
     // 测试通过
     @Test
@@ -61,9 +92,56 @@ class Demo1ApplicationTests {
         }
     }
 
-    // 测试冲突事件合并算法
+    // 构建locationMap
+    @Test
+    void CreateLocateMap() {
+        // 读取文件,转换成locationMap
+
+        // 使用JsonSon读取文件中的对象
+        HashMap<String, Integer> locationMap = new HashMap<>();
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            Location[] locations = objectMapper.readValue(new File("D://Points.json"), Location[].class);
+            for (Location location : locations) {
+                if (!location.type){
+                    locationMap.put(location.name, location.pid);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // 将locationMap序列化
+        try {
+            FileOutputStream fileOutputStream = new FileOutputStream("D://locationMap.scms");
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+            objectOutputStream.writeObject(locationMap);
+            objectOutputStream.close();
+            fileOutputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            FileInputStream fileInputStream = new FileInputStream("D://locationMap.scms");
+            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+            HashMap<String, Integer> locationMap1 = (HashMap<String, Integer>) objectInputStream.readObject();
+            objectInputStream.close();
+            fileInputStream.close();
+            System.out.println("反序列化结果");
+            for(String key : locationMap1.keySet()){
+                System.out.printf("%s %d\n",key,locationMap1.get(key));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+        // 测试冲突事件合并算法
     @Test
     void InterTime() {
+
         ClashTime time = new ClashTime();
         time.begins.clear();
         time.ends.clear();
@@ -73,7 +151,6 @@ class Demo1ApplicationTests {
             time.begins.add(begin);
             begin = begin + (long) (Math.random() * 1000);
             time.ends.add(begin);
-
         }
         ClashTime interTime = new ClashTime();
         System.out.println("合并前 时间A");
@@ -97,6 +174,7 @@ class Demo1ApplicationTests {
         System.out.println("合并后的时间");
         System.out.println(time.begins.toString());
         System.out.println(time.ends.toString());
+
     }
 
 }
