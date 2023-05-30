@@ -42,10 +42,15 @@ public class QueryController {
 
     @RequestMapping("/search")
     public ReturnQueryData QueryKey(@RequestParam("key") String key,@RequestParam("searchmode") int searchmode){
-        System.out.println(searchmode);
         DataManager dataManager = new DataManager();
-        //日志记录放在了QueryMulti中
-        return dataManager.QueryMulti(key);
+        ReturnQueryData returnQueryData;
+        if(searchmode == 1){
+            returnQueryData = dataManager.QueryMulti(key);//日志记录放在了QueryMulti中
+        }
+        else {
+            returnQueryData = dataManager.QueryExact(key);//日志记录放在了QueryMulti中
+        }
+        return returnQueryData;
     }
 
     // 查询某个课程,或者某个用户的空闲时间

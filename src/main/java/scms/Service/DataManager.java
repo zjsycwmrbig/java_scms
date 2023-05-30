@@ -393,8 +393,6 @@ public class DataManager {
         //多文件查询
         ReturnQueryData returnQueryData = new ReturnQueryData();
         returnQueryData.list = new ArrayList<>();
-
-
         //查询owner文件
         if(owner != null){
             for(int i = 0;i < owner.size();i++){
@@ -403,7 +401,6 @@ public class DataManager {
                     GetEventData data = owner.get(i).dataItem.SearchItem(mapSortPair.id);//获得数据
                     returnQueryData.list.add(new QueryEventItem(data,mapSortPair.score));
                 }
-
             }
         }
         //查询player文件
@@ -429,6 +426,21 @@ public class DataManager {
         return  returnQueryData;
     }
 
+    public ReturnQueryData QueryExact(String key){
+        ReturnQueryData returnQueryData;
+        returnQueryData = QueryMulti(key); //先采用普通搜索得到大致匹配的list
+        QueryEventItem temp;
+        for (int i = 0; i < returnQueryData.list.size();) {
+            temp = returnQueryData.list.get(i);
+            int index = KMP.getKMPIndex(temp.item.title,key);
+            if(index < 0) {
+                returnQueryData.list.remove(i);
+                continue;//i不能变，否则会漏掉一些对象
+            }
+            i++;
+        }
+        return returnQueryData;
+    }
 
     // 查询某一个组织在date的时候的空闲时间
     public Return<ClashTime> QueryFreeTime(String org,long date,int length){

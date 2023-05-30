@@ -7,7 +7,6 @@ import java.util.List;
  * 2023-04-28 16:13
  */
 public class KMP {
-    //根据字符串创建next[]数组
     public static int getKMPIndex(String main,String son){
         int index = -1;
         char[] mainChars = main.toCharArray();
