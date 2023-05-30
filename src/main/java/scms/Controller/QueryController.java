@@ -1,6 +1,7 @@
 package scms.Controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import scms.Dao.WriteLog;
 import scms.Interceptor.BridgeData;
 import scms.Service.DataManager;
 import scms.Service.OnlineManager;
@@ -52,13 +53,22 @@ public class QueryController {
     public Return<ClashTime> QueryFreeTime(@RequestParam("key") long user,@RequestParam("date") long date,@RequestParam("length") int length){
         // 用户空闲时间
         DataManager dataManager = new DataManager();
-        return new Return<>(true,"",dataManager.QueryFreeTime(user,date,length));
+        Return<ClashTime> clashTimeReturn = new Return<>(true,"",dataManager.QueryFreeTime(user,date,length));
+        UserFile userFile = OnlineManager.GetUserData(BridgeData.getRequestInfo(),0L);
+        UserFile userQuery = OnlineManager.GetUserData(user,0L);
+        if(userQuery == null) {
+            clashTimeReturn.res = false;
+            clashTimeReturn.state = "查询用户不存在";
+        }
+        WriteLog.writeLog(userFile,clashTimeReturn.res,"QueryFreeTime",String.valueOf(user));
+        return clashTimeReturn;
     }
 
     @RequestMapping("/org_free_time")
     public Return<ClashTime> QueryFreeTime(@RequestParam("key") String org,@RequestParam("date") long date,@RequestParam("length") int length){
         // 组织空闲时间
         DataManager dataManager = new DataManager();
+        //日志记录放在了QueryFreeTime中
         return dataManager.QueryFreeTime(org,date,length);
     }
 }

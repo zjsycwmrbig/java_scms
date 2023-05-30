@@ -26,6 +26,7 @@ public class FunctionMatch {
             case "QueryNow": return "查询当前课表";
             case "QueryAll":return "查询所有课表";
             case "QueryKey":return "查询单节课";
+            case "QueryFreeTime":return "查询空闲时间";
         }//返回的值对应接口
         return name; //找不到就原样返回，如没有调用接口的需要记录的方法
     }
