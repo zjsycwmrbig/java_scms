@@ -47,9 +47,18 @@ public class QueryController {
         return dataManager.QueryMulti(key);
     }
 
-    @RequestMapping("/freetime")
-    public Return<ClashTime> QueryFreeTime(@RequestParam("indexID") int indexID,@RequestParam("date") long date,@RequestParam("length") int length){
-        // 查询本人indexID 对应的数据页在现有的用户数据下,在date后length天内,存在的空闲时间
-        return new DataManager().QueryFreeTime(indexID,date,length);
+    // 查询某个课程,或者某个用户的空闲时间
+    @RequestMapping("/user_free_time")
+    public Return<ClashTime> QueryFreeTime(@RequestParam("key") long user,@RequestParam("date") long date,@RequestParam("length") int length){
+        // 用户空闲时间
+        DataManager dataManager = new DataManager();
+        return new Return<>(true,"",dataManager.QueryFreeTime(user,date,length));
+    }
+
+    @RequestMapping("/org_free_time")
+    public Return<ClashTime> QueryFreeTime(@RequestParam("key") String org,@RequestParam("date") long date,@RequestParam("length") int length){
+        // 组织空闲时间
+        DataManager dataManager = new DataManager();
+        return dataManager.QueryFreeTime(org,date,length);
     }
 }

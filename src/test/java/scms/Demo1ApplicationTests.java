@@ -37,7 +37,7 @@ class Demo1ApplicationTests {
         DatabaseManager.Init();
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
-        DataProcessor data = OnlineManager.GetEventData("1班",0L);
+        DataProcessor data = OnlineManager.GetEventData("测试完全空闲时间",0L);
 
         // 将时分秒,毫秒域清零
         calendar.set(Calendar.HOUR_OF_DAY, 0);

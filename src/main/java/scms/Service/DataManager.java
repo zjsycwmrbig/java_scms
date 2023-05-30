@@ -28,6 +28,10 @@ public class DataManager {
     public DataManager() {
         //依次填充数据
         user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),0L);
+        if (user == null) {
+            System.out.println("出错!");
+            return;
+        }
         owner = new ArrayList<>();
         if(user.owner!=null){
             for(int i = 0;i < user.owner.size();i++){
@@ -425,15 +429,17 @@ public class DataManager {
         return  returnQueryData;
     }
 
-    public Return<ClashTime> QueryFreeTime(int indexID,long date,int length){
+
+    // 查询某一个组织在date的时候的空闲时间
+    public Return<ClashTime> QueryFreeTime(String org,long date,int length){
         // 比对这个数据页
-        DataProcessor dataProcessor = owner.get(indexID);
+        DataProcessor dataProcessor = OnlineManager.GetEventData(org,0L);
+        if (dataProcessor == null) return new Return<>(false,"没有这个组织",null);
         List<Long> users = dataProcessor.dataItem.users; // 用户信息,第一个必定是本人
         // 哈希表,标记某组织是否已经查询过了
         HashMap<String, Boolean> vis = new HashMap<>();
-
+        // 先获得组织拥有者的空闲时间
         ClashTime freeTime = QueryFreeTime(users.get(0),date,length,vis);
-
         // 依次获得其他用户的空闲时间,实现交集处理
         for(int i = 1;i < users.size();i++){
             assert freeTime != null;
@@ -442,8 +448,13 @@ public class DataManager {
         if (freeTime != null && freeTime.begins != null && freeTime.begins.size() != 0) return new Return<>(true,"",freeTime);
         else return new Return<>(false,"没有空闲时间",null);
     }
-    // 根据用户名称查找该用户在一定时间内的空闲时间
-    private ClashTime QueryFreeTime(long user, long date, int length, HashMap<String, Boolean> vis) {
+
+    // 根据用户名称查找某用户在一定时间内的空闲时间
+    public ClashTime QueryFreeTime(long user,long date,int length){
+        return QueryFreeTime(user,date,length,new HashMap<>());
+    }
+
+    private static ClashTime QueryFreeTime(long user, long date, int length, HashMap<String, Boolean> vis) {
         // 初始化 区间是 date - date + length
         // 仅仅适用作为时间查询
         ClashTime freeTime = new ClashTime();
@@ -457,25 +468,15 @@ public class DataManager {
         // 整合两者之间的数据
         for (int i = 0;i < userFile.owner.size();i++) {
             if(vis.containsKey(userFile.owner.get(i).getName())) continue; // 已经存在,处理过了
-            DataProcessor data;
-            if(user == BridgeData.getRequestInfo()){
-                data = owner.get(i);
-            }else{
-                data = OnlineManager.GetEventData(userFile.owner.get(i).getName(), 0L);
-            }
+            DataProcessor data = OnlineManager.GetEventData(userFile.owner.get(i).getName(), 0L);
             if(data == null) continue; // 组织不存在
             freeTime.interSet(data.FindEasyTime(date, length));//使用交集操作,处理时间
             vis.put(userFile.owner.get(i).getName(), true);// 标记
         }
-
+        if(userFile.player == null) return freeTime;
         for (int i = 0;i < userFile.player.size();i++) {
             if(vis.containsKey(userFile.player.get(i).getName())) continue; // 已经存在,处理过了
-            DataProcessor data;
-            if(user == BridgeData.getRequestInfo()){
-                data = player.get(i);
-            }else{
-                data = OnlineManager.GetEventData(userFile.player.get(i).getName(), 0L);
-            }
+            DataProcessor data = OnlineManager.GetEventData(userFile.player.get(i).getName(), 0L);
             if(data == null) continue; // 组织不存在
             freeTime.interSet(data.FindEasyTime(date, length));
             vis.put(userFile.player.get(i).getName(), true);// 标记
@@ -508,7 +509,7 @@ public class DataManager {
         }
         return returnJson;
     }
-
+    // 删除某个组织的某个事件,必须有权限
     public ReturnJson deleteItem(long begin,int indexID){
         // 删除indexID对应的的节点数据
         return owner.get(indexID).DeleteItem(begin);

@@ -59,18 +59,18 @@ public class UserController {
             return "Error uploading file.";
         }
     }
-
-    @RequestMapping("/rename")
-    public ReturnJson rename(@RequestParam String name){
+    // 重命名,更改name条目
+    @RequestMapping("/change_name")
+    public ReturnJson rename(@RequestParam("itemname") String name){
         UserFile userFile = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);
         userFile.netname = name;
         ReturnJson returnJson = new ReturnJson(true,"更改成功");
         WriteLog.writeUserLog(userFile,returnJson.res,"rename",name);
         return returnJson;
     }
-
-    @RequestMapping("/reword")
-    public ReturnJson changePersonalWord(@RequestParam String word){
+    // 更改个性签名
+    @RequestMapping("/change_word")
+    public ReturnJson changePersonalWord(@RequestParam("itemname") String word){
         UserFile userFile = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);
         userFile.PersonalWord = word;
         ReturnJson returnJson = new ReturnJson(true,"更改成功");
