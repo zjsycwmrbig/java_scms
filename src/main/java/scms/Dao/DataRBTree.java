@@ -132,8 +132,8 @@ public class DataRBTree implements Serializable{
         Between(node.left, start, end);
         int cmpstart = rbtree.Compare(node,start);
         int cmpend  = rbtree.Compare(node,end);
-        // 该节点满足条件
-        if (cmpstart>=0 && cmpend<=0) {
+        // 该节点满足条件,针对是否应该把最后的一个加入
+        if (cmpstart>=0 && cmpend < 0 ) {
             stack.add(node);
         }
         Between(node.right, start, end);

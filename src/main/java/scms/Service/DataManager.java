@@ -256,7 +256,7 @@ public class DataManager {
                     stack = list.get(i).stack;
                     if(stack.get(0) != null){
                         // 存在冲突数据
-                        if((Long)(stack.get(0).end) >= end - item.length){
+                        if((Long)(stack.get(0).end) > end - item.length){
                             clashData.clashNum++;
                             // 根据vaule值找到数据信息
                             GetEventData data = GetDataProcessor(i).dataItem.SearchItem((Long)stack.get(0).vaule);
