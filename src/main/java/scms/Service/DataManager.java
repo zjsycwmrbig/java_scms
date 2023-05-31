@@ -416,8 +416,6 @@ public class DataManager {
         //多文件查询
         ReturnQueryData returnQueryData = new ReturnQueryData();
         returnQueryData.list = new ArrayList<>();
-
-
         //查询owner文件
         if(owner != null){
             for(int i = 0;i < owner.size();i++){
@@ -426,7 +424,6 @@ public class DataManager {
                     GetEventData data = owner.get(i).dataItem.SearchItem(mapSortPair.id);//获得数据
                     returnQueryData.list.add(new QueryEventItem(data,mapSortPair.score));
                 }
-
             }
         }
         //查询player文件
@@ -454,12 +451,33 @@ public class DataManager {
         return  returnQueryData;
     }
 
+    public ReturnQueryData QueryExact(String key){
+        ReturnQueryData returnQueryData;
+        returnQueryData = QueryMulti(key); //先采用普通搜索得到大致匹配的list
+        QueryEventItem temp;
+        for (int i = 0; i < returnQueryData.list.size();) {
+            temp = returnQueryData.list.get(i);
+            int index = KMP.getKMPIndex(temp.item.title,key);
+            if(index < 0) {
+                returnQueryData.list.remove(i);
+                continue;//i不能变，否则会漏掉一些对象
+            }
+            i++;
+        }
+        return returnQueryData;
+    }
 
     // 查询某一个组织在date的时候的空闲时间,也就是查找一个组织的所有人的空闲时间的交集
     public Return<ClashTime> QueryFreeTime(String org,long date,int length){
         // 比对这个数据页
+        Return<ClashTime> clashTimeReturn;
         DataProcessor dataProcessor = OnlineManager.GetEventData(org,0L);
-        if (dataProcessor == null) return new Return<>(false,"没有这个组织",null);
+        UserFile userFile = OnlineManager.GetUserData(BridgeData.getRequestInfo(),0L);
+        if (dataProcessor == null) {
+            clashTimeReturn = new Return<>(false,"没有这个组织",null);
+            WriteLog.writeLog(userFile,clashTimeReturn.res,"QueryFreeTime",org+"("+ clashTimeReturn.state +")");
+            return clashTimeReturn;
+        }
         List<Long> users = dataProcessor.dataItem.users; // 用户信息,第一个必定是本人
         // 哈希表,标记某组织是否已经查询过了
         HashMap<String, Boolean> vis = new HashMap<>();
@@ -479,8 +497,16 @@ public class DataManager {
             if (res.data == null) return new Return<>(true,"无空闲时间",null);
             freeTime.interSet(res.data);
         }
-        if (freeTime != null && freeTime.begins != null && freeTime.begins.size() != 0) return new Return<>(true,"",freeTime);
-        else return new Return<>(false,"没有空闲时间",null);
+        if (freeTime != null && freeTime.begins != null && freeTime.begins.size() != 0){
+            clashTimeReturn = new Return<>(true,"",freeTime);
+            WriteLog.writeLog(userFile, clashTimeReturn.res, "QueryFreeTime",org);
+            return clashTimeReturn;
+        }
+        else{
+            clashTimeReturn = new Return<>(false,"没有空闲时间",null);
+            WriteLog.writeLog(userFile,clashTimeReturn.res,"QueryFreeTime",org+"("+ clashTimeReturn.state +")");
+            return clashTimeReturn;
+        }
     }
 
     // 根据用户名称查找某用户在一定时间内的空闲时间,返回的是一个时间段的列表
@@ -548,7 +574,20 @@ public class DataManager {
     // 删除某个组织的某个事件,必须有权限
     public ReturnJson deleteItem(long begin,int indexID){
         // 删除indexID对应的的节点数据
-        return owner.get(indexID).DeleteItem(begin);
+        DataProcessor data =  owner.get(indexID);
+        ReturnJson returnJson = data.DeleteItem(begin);
+        DataProcessor group = OnlineManager.GetEventData(data.dataItem.name,0L);
+        //该组织中每个人都要记录日志
+        if(group!=null){
+            List<Long> users = group.dataItem.users;
+            UserFile userFile;
+            for (Long aLong : users) {
+                userFile = OnlineManager.GetUserData(aLong, 0L);
+                if(userFile != null)
+                    WriteLog.writeLog(userFile, returnJson.res,"DeleteItem","");
+            }
+        }
+        return returnJson;
     }
     //工具类
 
