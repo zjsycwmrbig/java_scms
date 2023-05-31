@@ -2,6 +2,8 @@ package scms.Dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import scms.Interceptor.BridgeData;
+import scms.Service.OnlineManager;
 import scms.domain.GetJson.GetEventData;
 import scms.domain.ReturnJson.ReturnJson;
 import scms.domain.ServerJson.*;
@@ -50,6 +52,7 @@ public class DataProcessor implements Serializable {
         //添加冲突树
         long id = item.begin;
         int times = 0;
+
         for (long end = item.begin + item.length;end  <= item.end;end += item.circle * 86400000L){
             dataRBTree.AddItem(id,end - item.length ,end);
             times++;

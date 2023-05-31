@@ -32,4 +32,6 @@ public class GetEventData implements Serializable {
     public int type;
 //    课程的周期
     public int circle;
+    // 记录闹钟,也可以看做事项的重要性
+    public boolean alarmFlag;
 }

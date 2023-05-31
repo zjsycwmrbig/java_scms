@@ -114,7 +114,6 @@ public class UserManager {
                         res.player.add(userFile.player.get(i).getName());//把名字传过去
                     }
                 }
-                res.tips = userFile.notice;
             }
         }
         return res;
@@ -175,7 +174,7 @@ public class UserManager {
                     returnJson.state = "用户不存在";
                     break;
                 }
-                userFile.notice.add(notice);
+
             }
         }catch (Exception e) {
             returnJson.res = false;
@@ -185,28 +184,28 @@ public class UserManager {
     }
 
     //通知信息删除
-    static public ReturnJson RemoveNotice(NoticeData notice){
-        ReturnJson res = new ReturnJson(true,"");
-        UserFile user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);
-        res.res = user.notice.remove(notice);
-        return res;
-    }
+//    static public ReturnJson RemoveNotice(NoticeData notice){
+//        ReturnJson res = new ReturnJson(true,"");
+//        UserFile user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);
+//        res.res = user.notice.remove(notice);
+//        return res;
+//    }
 
     //通知信息忽略
-    static public ReturnJson IgnoreNotice(NoticeData notice){
-        ReturnJson res = new ReturnJson(true,"");
-        UserFile user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);
-        boolean flag = false;
-        for(NoticeData i: user.notice){
-            if(i == notice && !i.isIgnore){
-                i.isIgnore = true;
-                flag = true;
-                break;
-            }
-        }
-        if (!flag) res.res = false;
-        return res;
-    }
+//    static public ReturnJson IgnoreNotice(NoticeData notice){
+//        ReturnJson res = new ReturnJson(true,"");
+//        UserFile user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);
+//        boolean flag = false;
+//        for(NoticeData i: user.notice){
+//            if(i == notice && !i.isIgnore){
+//                i.isIgnore = true;
+//                flag = true;
+//                break;
+//            }
+//        }
+//        if (!flag) res.res = false;
+//        return res;
+//    }
     //修改用户文件,添加组织,接收一个Get,修改文件,给出文件,修改后面看看是不是要放到后面
 
     //添加组织删除组织

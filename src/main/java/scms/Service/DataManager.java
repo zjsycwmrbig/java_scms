@@ -352,38 +352,65 @@ public class DataManager {
                 List<EventItem> list = player.get(i).QueryBetween(monday,sunday);
                 for(int j = 0;j < list.size();j++){
                     EventItem item = list.get(j);
-                    item.indexID = -1;//标记为player
+                    item.indexID = -i - 1;//标记为player
                     item.group = player.get(i).dataItem.name;
                     eventDataByTimes.get(GetWeekIndex(list.get(j).begin)).list.add(item);
                 }
             }
         }
-//      排序对结果排序
+        //排序对结果排序
         for(int i = 0;i < eventDataByTimes.size();i++){
             SortFast.fun(eventDataByTimes.get(i).list,null); //这个比较器传null不知道行不行
-            //Collections.sort(eventDataByTimes.get(i).list);
+
+        }
+
+        // 装填是否含有闹钟
+        for(int i = 0;i < eventDataByTimes.size();i++){
+            for(int j = 0;j < eventDataByTimes.get(i).list.size();j++){
+                assert user != null;
+                if (user.Exist(eventDataByTimes.get(i).list.get(j).begin)){
+                    eventDataByTimes.get(i).list.get(j).alarmFlag = true;
+                }else{
+                    eventDataByTimes.get(i).list.get(j).alarmFlag = false;
+                }
+            }
         }
 
         returnEventData.routines = eventDataByTimes;
-        //WriteLog.writeQueryLog(user,returnEventData.res,"QueryNow",null);
         WriteLog.writeLog(user,returnEventData.res,"QueryNow","");
         return returnEventData;
     }
-
+    // 查询从事件到到哪
     public Return<List<EventItem>> QueryBetween(long begin,long end){
         List<EventItem> res = new ArrayList<>();
         // 一个一个的找到
-        t(begin, end, res, owner);
-        t(begin, end, res, player);
+        t(begin, end, res, owner,0);
+        t(begin, end, res, player,1);
         // 排序 对结果排序
         SortFast.fun(res,null);
+
+        // 装填是否含有闹钟
+        for(int i = 0;i < res.size();i++){
+            assert user != null;
+            if (user.Exist(res.get(i).begin)){
+                res.get(i).alarmFlag = true;
+            }else{
+                res.get(i).alarmFlag = false;
+            }
+        }
         return new Return(true,"查询完毕",res);
     }
     // 提取的函数
-    private void t(long begin, long end, List<EventItem> res, List<DataProcessor> player) {
+    private void t(long begin, long end, List<EventItem> res, List<DataProcessor> player,int type) {
         for(int i = 0; i < player.size(); i++){
             List<EventItem> list = player.get(i).QueryBetween(begin,end);
             for(int j = 0;j < list.size();j++){
+                // 区分是player还是owner
+                if(type == 0){
+                    list.get(j).indexID = i;
+                }else{
+                    list.get(j).indexID = -i - 1;
+                }
                 res.add(list.get(j));
             }
         }
@@ -442,12 +469,21 @@ public class DataManager {
         SortFast.fun(returnQueryData.list,new compareQuery());
         //Collections.sort(returnQueryData.list,new compareQuery());
         //填充
-        UserFile userFile = OnlineManager.GetUserData(BridgeData.getRequestInfo(),0L);
-        boolean res =true;
+        // 装填是否含有闹钟
+        for(int i = 0;i < returnQueryData.list.size();i++){
+            assert user != null;
+            if (user.Exist(returnQueryData.list.get(i).item.begin)){
+                returnQueryData.list.get(i).item.alarmFlag = true;
+            }else{
+                returnQueryData.list.get(i).item.alarmFlag = false;
+            }
+        }
+
+        boolean res = true;
         if(returnQueryData.list.isEmpty())
             res = false;
         //WriteLog.writeQueryLog(userFile,res,"QueryKey",key);
-        WriteLog.writeLog(userFile,res,"QueryKey",key);
+        WriteLog.writeLog(user,res,"QueryKey",key);
         return  returnQueryData;
     }
 

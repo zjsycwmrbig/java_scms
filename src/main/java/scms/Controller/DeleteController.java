@@ -1,12 +1,15 @@
 package scms.Controller;
 
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import scms.Interceptor.BridgeData;
 import scms.Service.DataManager;
-import scms.domain.GetJson.GetEventData;
+import scms.Service.OnlineManager;
+
+import scms.domain.ReturnJson.Return;
 import scms.domain.ReturnJson.ReturnJson;
+import scms.domain.ServerJson.UserFile;
 
 /**
  * @author seaside
@@ -32,5 +35,18 @@ public class DeleteController {
         DataManager dataManager = new DataManager();
 
         return dataManager.deleteItem(begin,indexID);
+    }
+
+    // 删除闹钟
+    @RequestMapping("/alarm")
+    public Return DeleteAlarm(@RequestParam("key")long key){
+        UserFile user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),0L);
+
+        if(user.DeleteAlarm(key)) {
+            return new Return(true, "删除成功",null);
+        }else{
+            return new Return(false,"删除失败",null);
+        }
+
     }
 }

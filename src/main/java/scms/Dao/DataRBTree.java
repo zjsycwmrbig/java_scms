@@ -24,7 +24,7 @@ public class DataRBTree implements Serializable{
     public ArrayList<ClashRBTNode> stack; //暂存栈
 //    增
     public void AddItem(long id,long key,long end) {
-
+        // 5/31 增加重要性标志,可以指定某个数据的重要性
         ClashRBTNode node=new ClashRBTNode(id,key,end,BLACK,null,null,null);
     // 如果新建结点失败，则返回。
         if (node != null) rbtree.insert(node);

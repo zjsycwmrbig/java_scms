@@ -1,5 +1,8 @@
 package scms.domain.ServerJson;
 
+import scms.Dao.RBTree;
+import scms.domain.GetJson.GetEventData;
+
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -17,7 +20,6 @@ public class UserFile implements Serializable {
         this.netname = netname;
         this.password = password;
         this.PersonalWord = personalWord;
-        this.notice = new ArrayList<>();//创建对象
         this.hasImage = false;
     }
 
@@ -32,9 +34,59 @@ public class UserFile implements Serializable {
 
     public List<File> player;//使用者,只读权限
 
-    public List<NoticeData> notice; //通知
-
     public File file;//文件位置
 
+    private RBTree<AlarmMap,Long> alarmTree = new RBTree<>();
+
     public boolean hasImage;//是否有头像
+
+    // 仅仅标记某个节点是有闹钟的,这里默认返回的是按照indexID正负
+    public boolean AddAlarm(long key,int indexID){
+        RBTNode<AlarmMap,Long> node = alarmTree.searchNode(alarmTree.Root,key);
+        if(node != null){
+            // 已经存在
+            return false;
+        }else{
+            alarmTree.insert(new AlarmMap(indexID >=0 ? 0 : 1,indexID >= 0 ? indexID : -indexID - 1),key);
+            return true;
+        }
+    }
+
+    public boolean DeleteAlarm(long key){
+        RBTNode<AlarmMap,Long> node = alarmTree.searchNode(alarmTree.Root,key);
+        if(node == null){
+            // 已经存在
+            return false;
+        }else{
+            alarmTree.remove(node);
+            return true;
+        }
+    }
+
+    public AlarmMap SearchAlarm(long key){
+        RBTNode<AlarmMap,Long> node = alarmTree.searchNode(alarmTree.Root,key);
+        if(node == null){
+            // 没有这个节点 , 就返回null
+            return null;
+        }else{
+            // 存在这个节点
+            return node.vaule;
+        }
+    }
+    public boolean Exist(long key){
+        if(alarmTree.searchNode(alarmTree.Root,key) == null) {
+            return false;
+        }else{
+            return true;
+        }
+    }
+
+    public void AddAlarm(GetEventData item){
+        // 依次加入到闹钟里面去
+        for(long begin = item.begin;begin + item.length <= item.end;begin += item.circle * 24 * 60 *60 * 1000L){
+            AddAlarm(begin,item.indexID);
+            if(item.circle == 0) break;
+        }
+    }
+
 }

@@ -15,6 +15,7 @@ public class ClashRBTNode<T,U> implements Serializable{
 
     public U key;   //开始
     public U end;   //结束
+
     public ClashRBTNode left;    // 左孩子
     public ClashRBTNode right;    // 右孩子
     public ClashRBTNode parent;    // 父结点

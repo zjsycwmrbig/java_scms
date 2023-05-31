@@ -12,7 +12,9 @@ import scms.Dao.DataRBTree;
 import scms.Dao.DatabaseManager;
 import scms.Dao.UserRBTree;
 import scms.Service.OnlineManager;
+import scms.Service.UserManager;
 import scms.domain.ServerJson.ClashTime;
+import scms.domain.ServerJson.UserFile;
 
 import java.io.*;
 import java.lang.reflect.Type;
@@ -29,6 +31,21 @@ class Demo1ApplicationTests {
         public Double y;
         public boolean type;
     }
+
+
+    @Test
+    void AlarmExist() {
+        UserRBTree.Init();
+        DatabaseManager.Init();
+        UserFile user = OnlineManager.GetUserData(2021211202L,0L);
+        System.out.println("用户名");
+        System.out.println(user.username);
+        System.out.println(user.Exist(1685289600000L));
+
+    }
+
+
+
 
     // 测试冲突时间二叉树查询算法
     @Test
@@ -75,7 +92,7 @@ class Demo1ApplicationTests {
             // i i+1 i+2
             Long random = (long)(Math.random() * 10) % 3; // 获得随机数
             for(int j = 0;j < 3;j++) {
-                dataRBTree.AddItem(i + j, (long)(i + (j + random) % 3), i + j);
+//                dataRBTree.AddItem(i + j, (long)(i + (j + random) % 3), i + j);
             }
         }
 

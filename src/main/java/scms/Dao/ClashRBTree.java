@@ -54,9 +54,9 @@ public class ClashRBTree<T,U> implements Serializable {
         else
             return x;
     }
-    public void insert(T vaule,U key,U end){
-        insert(new ClashRBTNode(vaule,key,end,BLACK,null,null,null));//插入
-    }
+//    public void insert(T vaule,U key,U end){
+//        insert(new ClashRBTNode(vaule,key,end,BLACK,null,null,null));//插入
+//    }
     //  内部使用的insert
     public void insert(ClashRBTNode node) {
         int cmp;

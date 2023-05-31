@@ -26,6 +26,8 @@ public class EventItem implements Comparable<EventItem>{
     public long length;
     public String locationData;//补充的地点信息，线上信息
     public int indexID;// 数据页码,同时也是事件的owner和player标记
+
+    public boolean alarmFlag; // 闹钟标记
     @Override
     public int compareTo(EventItem o) {
         if(this.begin < o.begin){
