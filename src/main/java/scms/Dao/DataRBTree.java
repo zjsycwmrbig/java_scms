@@ -78,6 +78,11 @@ public class DataRBTree implements Serializable{
         }
     }
 
+    public boolean search(long begin){
+        ClashRBTNode node = search(rbtree.Root,begin);
+        if (node == null) return false;
+        return true;
+    }
     // 普通查找
     private ClashRBTNode search(ClashRBTNode x,Long begin) {
 //      返回最后的上级

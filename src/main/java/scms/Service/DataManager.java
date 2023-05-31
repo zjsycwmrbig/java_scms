@@ -13,18 +13,17 @@ import java.io.*;
 
 import java.util.*;
 
-
 /***
  * @author Administrator
  * @date 2023/3/31 23:36
  * @function 处理多个DataProcess
  */
 public class DataManager {
-//  数据
+    //  数据
     public UserFile user;
     public List<DataProcessor> owner;
     public List<DataProcessor> player;
-//    初始化
+    //    初始化
     public DataManager() {
         //依次填充数据
         user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),0L);
@@ -56,7 +55,7 @@ public class DataManager {
             System.out.println(player.get(i).dataItem.users.toString());
         }
     }
-//    增
+    //    增
 //    添加一个数据,校验一个
     public ReturnAddJson AddItem(GetEventData item){
         // 得到indexID,代表是那一份数据
@@ -304,7 +303,7 @@ public class DataManager {
         return clashData;
     }
 
-//    查
+    //    查
     public ReturnEventData QueryWeek(Date date){
         //获得user认证
         user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);
@@ -325,8 +324,12 @@ public class DataManager {
 
         now.add(Calendar.DATE, 7); // 下周的周一
         long sunday = now.getTime().getTime() -1 ;
+
         ReturnEventData returnEventData = new ReturnEventData();
-//        新建一套体系
+
+
+
+        //新建一套星期体系
         ArrayList<EventDataByTime> eventDataByTimes = new ArrayList<>();
         for(int i = 0;i < 7;i++){
             eventDataByTimes.add(new EventDataByTime(i));
@@ -366,6 +369,26 @@ public class DataManager {
         WriteLog.writeLog(user,returnEventData.res,"QueryNow","");
         return returnEventData;
     }
+
+    public Return<List<EventItem>> QueryBetween(long begin,long end){
+        List<EventItem> res = new ArrayList<>();
+        // 一个一个的找到
+        t(begin, end, res, owner);
+        t(begin, end, res, player);
+        // 排序 对结果排序
+        SortFast.fun(res,null);
+        return new Return(true,"查询完毕",res);
+    }
+    // 提取的函数
+    private void t(long begin, long end, List<EventItem> res, List<DataProcessor> player) {
+        for(int i = 0; i < player.size(); i++){
+            List<EventItem> list = player.get(i).QueryBetween(begin,end);
+            for(int j = 0;j < list.size();j++){
+                res.add(list.get(j));
+            }
+        }
+    }
+
     //待实现
     public ReturnEventData QueryAll(){
         user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);
@@ -412,6 +435,8 @@ public class DataManager {
                 List<MapSortPair> list = owner.get(i).QueryMulti(key);
                 for(MapSortPair mapSortPair : list){
                     GetEventData data = player.get(i).dataItem.SearchItem(mapSortPair.id);//获得数据
+                    // 标记为player
+                    data.indexID = -i - 1;
                     returnQueryData.list.add(new QueryEventItem(data,mapSortPair.score));
                 }
             }
@@ -430,7 +455,7 @@ public class DataManager {
     }
 
 
-    // 查询某一个组织在date的时候的空闲时间
+    // 查询某一个组织在date的时候的空闲时间,也就是查找一个组织的所有人的空闲时间的交集
     public Return<ClashTime> QueryFreeTime(String org,long date,int length){
         // 比对这个数据页
         DataProcessor dataProcessor = OnlineManager.GetEventData(org,0L);
@@ -439,31 +464,42 @@ public class DataManager {
         // 哈希表,标记某组织是否已经查询过了
         HashMap<String, Boolean> vis = new HashMap<>();
         // 先获得组织拥有者的空闲时间
-        ClashTime freeTime = QueryFreeTime(users.get(0),date,length,vis);
+        Return<ClashTime> res = QueryFreeTime(users.get(0),date,length,vis);
+        if (!res.res){
+            return new Return<>(false,"用户不存在",null);
+        }
+        ClashTime freeTime = res.data;
+        if(freeTime == null) return new Return<>(true,"无空闲时间",null);
         // 依次获得其他用户的空闲时间,实现交集处理
         for(int i = 1;i < users.size();i++){
-            assert freeTime != null;
-            freeTime.interSet(QueryFreeTime(users.get(i),date,length,vis));
+            res =  QueryFreeTime(users.get(i),date,length,vis);
+            if (!res.res){
+                return new Return<>(false,"用户不存在",null);
+            }
+            if (res.data == null) return new Return<>(true,"无空闲时间",null);
+            freeTime.interSet(res.data);
         }
         if (freeTime != null && freeTime.begins != null && freeTime.begins.size() != 0) return new Return<>(true,"",freeTime);
         else return new Return<>(false,"没有空闲时间",null);
     }
 
-    // 根据用户名称查找某用户在一定时间内的空闲时间
-    public ClashTime QueryFreeTime(long user,long date,int length){
+    // 根据用户名称查找某用户在一定时间内的空闲时间,返回的是一个时间段的列表
+    public Return<ClashTime> QueryFreeTime(long user,long date,int length) {
         return QueryFreeTime(user,date,length,new HashMap<>());
     }
 
-    private static ClashTime QueryFreeTime(long user, long date, int length, HashMap<String, Boolean> vis) {
+    private static Return<ClashTime> QueryFreeTime(long user, long date, int length, HashMap<String, Boolean> vis) {
         // 初始化 区间是 date - date + length
+
         // 仅仅适用作为时间查询
         ClashTime freeTime = new ClashTime();
         freeTime.normal();// 仅仅作为时间组织
-
+        freeTime.begins.add(date);
+        freeTime.ends.add(date + length*24*60*60*1000L);
         List<DataProcessor> dataProcessors = null;
         // 拿到用户数据
         UserFile userFile = OnlineManager.GetUserData(user, 0L);
-        if(userFile == null) return null;
+        if(userFile == null) return new Return<>(false,"没有这个用户",null);
 
         // 整合两者之间的数据
         for (int i = 0;i < userFile.owner.size();i++) {
@@ -473,7 +509,7 @@ public class DataManager {
             freeTime.interSet(data.FindEasyTime(date, length));//使用交集操作,处理时间
             vis.put(userFile.owner.get(i).getName(), true);// 标记
         }
-        if(userFile.player == null) return freeTime;
+        if(userFile.player == null) return new Return<>(true,"",freeTime);
         for (int i = 0;i < userFile.player.size();i++) {
             if(vis.containsKey(userFile.player.get(i).getName())) continue; // 已经存在,处理过了
             DataProcessor data = OnlineManager.GetEventData(userFile.player.get(i).getName(), 0L);
@@ -481,7 +517,7 @@ public class DataManager {
             freeTime.interSet(data.FindEasyTime(date, length));
             vis.put(userFile.player.get(i).getName(), true);// 标记
         }
-        return  freeTime;
+        return  new Return<>(true,"",freeTime);
     }
 
     // 删
@@ -545,3 +581,4 @@ public class DataManager {
     }
 
 }
+

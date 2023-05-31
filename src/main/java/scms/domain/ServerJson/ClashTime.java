@@ -30,13 +30,15 @@ public class ClashTime {
 
     // 对begin截取end , 对end截取begin
     public boolean interSet(ClashTime other){
-        if(other == null) return false;//为空
+        if(other == null) return false; //为空
+
         if(other.begins.size() == 0 || this.begins.size() == 0){
             // 无法合并
             begins.clear();
             ends.clear();
             return true;
         }//为空
+
         List<Long> newBegin = new ArrayList<>();
         List<Long> newEnd = new ArrayList<>();
 

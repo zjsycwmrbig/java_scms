@@ -55,8 +55,8 @@ public class DataProcessor implements Serializable {
             times++;
             if(item.circle == 0) break; //单次跳出
         }
-        //添加数据原本树,更改circle的意义
-        item.circle = times;
+
+        item.size = times;
         if(!dataItem.AddItem(item)){return false;}//key值是开始时间
         //添加字符树
         dataMap.AddMap(item.title,item.begin);
@@ -93,7 +93,7 @@ public class DataProcessor implements Serializable {
             if(data == null){
                 System.out.println("数据错误!!!");
             }else{
-                list.add(new EventItem(data.type,data.title,data.location,(Long) item.key,data.length, data.locationData,data.indexID)); //type这里不知道
+                list.add(new EventItem(data.type,data.title,data.location,(Long) item.key,data.length, data.locationData,data.indexID, data.group)); //type这里不知道
             }
         }
         return list;
@@ -110,6 +110,12 @@ public class DataProcessor implements Serializable {
 
         return list;
     }
+    // 判断某个时间事件是否存在
+    public boolean IsExist(long begin){
+        return dataRBTree.search(begin);
+    }
+
+
 //    打印数据结构 - debug用
     public void print(){
         System.out.println("这页数据的用户组有:");

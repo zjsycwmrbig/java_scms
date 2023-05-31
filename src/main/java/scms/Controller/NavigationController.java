@@ -23,7 +23,7 @@ import java.util.List;
 public class NavigationController {
     static Vertex[] vertexes = null; //共有126个顶点，但第一个顶点在json文件中编号为1，所以数组0号不用
 
-    static HashMap<String,Integer> locationMap = new HashMap<>(); //存储地点和编号的映射
+    public static HashMap<String,Integer> locationMap = new HashMap<>(); //存储地点和编号的映射
     public static void readMap() throws IOException {
         /*之前进行序列化的代码，只需使用一次
         //从边的json中读取
@@ -108,7 +108,7 @@ public class NavigationController {
         int start = (Integer) navigationData.get("start");
         // 终点
 
-        // 途径点
+        // 途径点 需要映射
         List<String> locations = null;
         if (navigationData.get("end") != null) {
             locations = (List<String>) navigationData.get("locations");

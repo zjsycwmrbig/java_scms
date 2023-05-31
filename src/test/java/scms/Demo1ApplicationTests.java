@@ -137,8 +137,7 @@ class Demo1ApplicationTests {
         }
     }
 
-
-        // 测试冲突事件合并算法
+    // 测试冲突事件合并算法
     @Test
     void InterTime() {
 

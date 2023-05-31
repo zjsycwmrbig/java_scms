@@ -2,7 +2,6 @@ package scms.Dao;
 
 import org.springframework.stereotype.Component;
 import scms.domain.GetJson.GetEventData;
-import scms.domain.ReturnJson.ReturnJson;
 import scms.domain.ServerJson.RBTNode;
 
 import java.io.*;
@@ -46,8 +45,8 @@ public class DataItem implements Serializable {
             RBTNode node = itemRbtree.searchNode(itemRbtree.Root,begin);
             if(node == null) return null;
             GetEventData data = (GetEventData) node.vaule;
-            data.circle--;
-            if(data.circle == 0) {
+            data.size--;
+            if(data.size == 0) {
                 res = ((GetEventData) (node.vaule)).title;
                 itemRbtree.remove(node);
             }

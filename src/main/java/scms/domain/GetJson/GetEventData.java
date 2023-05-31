@@ -21,7 +21,7 @@ public class GetEventData implements Serializable {
 //    地点id 用空格隔开,可以有多个地点
     public String location;
 //  0代表单次结束,1代表一天为周期,之后的数字代表这个事件的次数
-    public int circle;
+    public int size;
 //    开始时间的int表示,存储的数据是当下的年份
     public long begin;
     public String locationData;//补充的地点信息，线上信息
@@ -30,4 +30,6 @@ public class GetEventData implements Serializable {
     public long length;
 //    课程、活动、临时 0 1 2
     public int type;
+//    课程的周期
+    public int circle;
 }
