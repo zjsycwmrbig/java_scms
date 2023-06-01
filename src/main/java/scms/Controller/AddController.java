@@ -32,9 +32,7 @@ public class AddController {
             // 可以添加闹钟
             System.out.println("添加闹钟");
             UserFile user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),0L);
-
             user.AddAlarm(item);
-
         }
         return returnJson;
     }

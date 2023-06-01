@@ -102,6 +102,7 @@ public class DataManager {
         DataProcessor data = owner.get(tempEvent.indexID);
         if(tempClash.res){
             // 不存在冲突
+            System.out.println("不存在冲突=======");
             data.AddItem(tempEvent);
         }else{
             //存在一定的冲突
@@ -130,7 +131,7 @@ public class DataManager {
                     // 添加信息
                     for (EventItem temp : temps) {
                         // 划分开
-                        realTemp.title = realTemp.title + " | " + temp.title;//回车分割
+                        realTemp.title = realTemp.title + "|" + temp.title;//回车分割
                         realTemp.location = realTemp.location + "|" + temp.location;//分割
                         realTemp.locationData = realTemp.locationData + "|" + temp.locationData;
                         // 获得开始结束
@@ -613,6 +614,10 @@ public class DataManager {
         DataProcessor data =  owner.get(indexID);
         ReturnJson returnJson = data.DeleteItem(begin);
         DataProcessor group = OnlineManager.GetEventData(data.dataItem.name,0L);
+        // 检查该节点是不是重要时刻,如果是,则删除
+        if(user.Exist(begin)){
+            user.DeleteAlarm(begin);
+        }
         //该组织中每个人都要记录日志
         if(group!=null){
             List<Long> users = group.dataItem.users;
