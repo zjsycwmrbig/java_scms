@@ -16,5 +16,6 @@ public class ClashData {
     public String netName;//和谁有冲突
     public int clashNum; //冲突数量
 
+    public  long username;//冲突的用户名
     public List<ClashItem> list;//冲突事件列表,这里后面应该还会有排序之类的
 }

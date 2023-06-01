@@ -229,8 +229,9 @@ public class DataManager {
             return clashData;
         }
         // 标记名称
-        clashData.netName = userFile.netname;//给出名字
 
+        clashData.netName = userFile.netname;//给出名字
+        clashData.username = userFile.username;//给出用户名
         //读取owner和player,给出数据数目,填充名字
         for(int i = 0;i < userFile.owner.size();i++){
             DataProcessor data = OnlineManager.GetEventData(userFile.owner.get(i).getName(),0L);

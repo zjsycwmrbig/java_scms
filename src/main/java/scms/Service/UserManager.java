@@ -136,7 +136,8 @@ public class UserManager {
 //      新建数据文件中红黑树指向用户文件
         DataProcessor dataProcessor = new DataProcessor(user.getUsername(),user.getUsername() + "的个人空间",dataFile);
         dataProcessor.dataItem.type = 0;//更新type的值
-
+//      默认网名
+        fileData.netname = RandomNetname();
         OnlineManager.AddOnlineUser(fileData,0L);//添加缓存
         OnlineManager.AddOnlineData(dataProcessor,0L);//添加数据
 
@@ -183,6 +184,15 @@ public class UserManager {
         return returnJson;
     }
 
+
+
+    // 工具类
+    // 随机生成网名和个性签名
+
+    private static String RandomNetname(){
+        String[] names = {"令狐冲","林平之","曲洋","任盈盈","向问天","任我行","冲虚","方正","岳不群","宁中则","林平之","岳灵珊","宇智波斑","漩涡鸣人","何同学","元始天尊","镇元大仙","太上老君","通天教主","玉鼎真人","九天玄女","南极仙翁","北极仙翁","西王母","东王公","南王子","北王子","太白金星","太上老君","玉鼎真人","九天玄女","南极仙翁","北极仙翁","西王母","东王公","南王子","北王子","太白金星","太上老君","玉鼎真人","九天玄女","南极仙翁","北极仙翁","西王母","东王公","南王子","北王子","太白金星","太上老君","玉鼎真人","九天玄女","南极仙翁","北极仙翁","西王母","东王公","南王子","北王子","太白金星","太上老君","玉鼎真人","九天玄女","南极仙翁","北极仙翁","西王母","东王公","南王子","北王子","太白金星","太上老君","玉鼎真人","九天玄女","南极仙翁","北极仙翁","西王母","东王公","南王子","北王子","太白金星"};
+        return names[(int)(Math.random()*names.length)];
+    }
     //通知信息删除
 //    static public ReturnJson RemoveNotice(NoticeData notice){
 //        ReturnJson res = new ReturnJson(true,"");
