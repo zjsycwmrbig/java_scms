@@ -14,6 +14,7 @@ public class FunctionMatch {
             case "changePersonalWord":return "更改个性签名";
             case "AddItem": return "添加数据信息";
             case "AddAlarm": return "添加闹钟";
+            case "DeleteAlarm" : return "删除闹钟";
             case "DeleteItem":return "删除数据信息";
             case "NoticeProcessor": return "同意通知";
             case "NoticeRemover":return "拒绝通知";

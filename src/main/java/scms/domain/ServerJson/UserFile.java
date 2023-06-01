@@ -1,6 +1,7 @@
 package scms.domain.ServerJson;
 
 import scms.Dao.RBTree;
+import scms.Dao.WriteLog;
 import scms.domain.GetJson.GetEventData;
 
 import java.io.File;
@@ -43,24 +44,30 @@ public class UserFile implements Serializable {
     // 仅仅标记某个节点是有闹钟的,这里默认返回的是按照indexID正负
     public boolean AddAlarm(long key,int indexID){
         RBTNode<AlarmMap,Long> node = alarmTree.searchNode(alarmTree.Root,key);
+        boolean isOk;
         if(node != null){
             // 已经存在
-            return false;
+            isOk = false;
         }else{
             alarmTree.insert(new AlarmMap(indexID >=0 ? 0 : 1,indexID >= 0 ? indexID : -indexID - 1),key);
-            return true;
+            isOk = true;
         }
+        WriteLog.writeLog(this,isOk,"AddAlarm","");
+        return isOk;
     }
 
     public boolean DeleteAlarm(long key){
         RBTNode<AlarmMap,Long> node = alarmTree.searchNode(alarmTree.Root,key);
+        boolean isOK;
         if(node == null){
             // 已经存在
-            return false;
+            isOK = false;
         }else{
             alarmTree.remove(node);
-            return true;
+            isOK = true;
         }
+        WriteLog.writeLog(this,isOK,"DeleteAlarm","");
+        return isOK;
     }
 
     public AlarmMap SearchAlarm(long key){

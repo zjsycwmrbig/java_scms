@@ -34,8 +34,7 @@ public class AddController {
             // 可以添加闹钟
             System.out.println("添加闹钟");
             UserFile user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),0L);
-
-            WriteLog.writeLog(user, returnJson.res,"添加闹钟","");
+            //日志文件放在UserFile中
             user.AddAlarm(item);
         }
         return returnJson;
@@ -46,13 +45,9 @@ public class AddController {
     public  Return<Object> AddAlarm(@RequestParam("key")long key,@RequestParam("indexID") int indexID){
         UserFile user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),0L);
         if(user.AddAlarm(key,indexID)){
-            Return<Object> objectReturn = new Return<>(true,"添加成功",null);
-            WriteLog.writeLog(user, objectReturn.res, "AddAlarm","");
-            return objectReturn;
+            return new Return<>(true,"添加成功",null);
         }else{
-            Return<Object> objectReturn = new Return<>(false,"闹钟已经存在",null);
-            WriteLog.writeLog(user, objectReturn.res, "AddAlarm","");
-            return objectReturn;
+            return new Return<>(false,"闹钟已经存在",null);
         }
     }
 }
