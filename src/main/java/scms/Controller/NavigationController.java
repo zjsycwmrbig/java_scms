@@ -1,5 +1,6 @@
 package scms.Controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -467,14 +468,16 @@ public class NavigationController {
         } //初始化每条路径的信息素浓度概率，值为 该路径长度 / 所属顶点全部路径长度和 。 这个初始化可能需要改进？？？？
 
 
+        int examTimesTotal = 5; //实验次数
+        int iterateTimes = 300; //迭代次数
         double min = Double.MAX_VALUE;
         double min2Sum = 0;
         int antNumbers = 50;
         int[][] allPath = new int[antNumbers][araVertices.length];
         int[] bestPath = new int[araVertices.length];
-        for (int examTimes = 0; examTimes < 30; examTimes++) {
+        for (int examTimes = 0; examTimes < examTimesTotal; examTimes++) {
             double min2 = Double.MAX_VALUE;
-            for (int i = 0; i < 400; i++) {
+            for (int i = 0; i < iterateTimes; i++) {
                 double[] pathLength = new double[antNumbers]; //每只蚂蚁走的路径的总长
                 for (int j = 0; j < antNumbers; j++) {
                     allPath[j] = antFindPath(araVertices, pathLength, j);
@@ -497,9 +500,9 @@ public class NavigationController {
                     }
                 } //释放并挥发信息素，路径中每条边得到的信息素就是 100/路径总长 ， 分子为100是因为路径总长太长了，分子不大点的话信息素浓度太小不知道会不会有影响？？？？？
                 //用邻接表的话，释放信息素的时候需要套三层循环，效率不够的话用矩阵会不会快点？？？？？？
-            }//迭代400次找寻路径
+            }//迭代iterateTimes次找寻路径
             min2Sum = min2Sum + min2;
-        }//实验30次并根据30*400次找寻路径的结果输出最短路径
+        }//实验examTimesTotal次并根据examTimesTotal*iterateTimes次找寻路径的结果输出最短路径
 
         String bestPathString = "0->";
         path = araVertices[0].id + "->";
@@ -510,8 +513,8 @@ public class NavigationController {
         bestPathString = bestPathString.concat(String.valueOf(bestPath[bestPath.length-1]) );
 
         path = path.concat(String.valueOf(araVertices[bestPath[bestPath.length-1]].id) );
-        System.out.println("30次实验下最短路径长度为"+ min);
-        System.out.println("最短路径平均值"+ min2Sum / 30);
+        System.out.println(examTimesTotal+"*"+iterateTimes+"次实验下最短路径长度为"+ min);
+        System.out.println("最短路径平均值"+ min2Sum / examTimesTotal);
         System.out.println("必经点的顺序（下标表示）"+bestPathString);
         System.out.println("必经点的顺序为" + path);
         String realPath = necessaryPathToRealPath(path);
@@ -717,7 +720,7 @@ class ARALinkedListNode{
     }
 }
 
-/*用于序列化，只需使用一次
+//用于序列化，只需使用一次
 class Road implements Serializable {
     private int Eid;
     private int From;
@@ -755,4 +758,4 @@ class Road implements Serializable {
     public void setType(int type) {
         Type = type;
     }
-}*/
+}
