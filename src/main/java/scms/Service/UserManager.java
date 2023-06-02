@@ -47,6 +47,10 @@ public class UserManager {
         if(returnUserData.state == "登录成功"){
             //添加数据
             OnlineManager.AddOnlineUser(userFile,1L);
+            // 添加组织口令信息
+            for(int i = 0;i < userFile.owner.size();i++){
+                returnUserData.passwords.add(OnlineManager.GetEventData(userFile.owner.get(i).getName(),0L).dataItem.password);
+            }
             // 头像信息
             returnUserData.hasImage = userFile.hasImage;
             returnUserData.dataUser = OnlineManager.AddOnlineDataList(userFile);//填入数据list,返回数据用户组
@@ -102,6 +106,7 @@ public class UserManager {
                 res.netname = userFile.netname;
                 res.PersonalWord = userFile.PersonalWord;
                 res.owner = new ArrayList<>();
+                res.passwords = new ArrayList<>();
                 //根据登录的信息添加一些前端需要的数据
                 if(userFile.owner != null){
                     for(int i = 0;i < userFile.owner.size();i++){

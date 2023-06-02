@@ -1,15 +1,13 @@
 package scms.Controller;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import scms.Dao.DataProcessor;
 import scms.Dao.DatabaseManager;
 import scms.Interceptor.BridgeData;
 import scms.Dao.WriteLog;
 import scms.Service.DataManager;
+import scms.Service.FuncManager;
 import scms.Service.OnlineManager;
 import scms.Service.UserManager;
 import scms.domain.GetJson.GetOrgInviteData;
@@ -22,6 +20,7 @@ import scms.domain.ServerJson.UserFile;
 
 import java.io.File;
 import java.util.List;
+import java.util.Objects;
 
 /***
  * @author Administrator
@@ -53,50 +52,37 @@ public class OrgController {
         }//被邀请的人也要在日志中记录
         return returnJson;
     }
-    //接收org名称
+    //接收org名称,默认生成一个口令
     // -1.org已经存在
     // -2.捕获异常
     @RequestMapping("create")
-    public ReturnJson OrgCreate(@RequestParam String org){
-        ReturnJson returnJson = new ReturnJson(true,"组织创建成功");
+    public Return<String> OrgCreate(@RequestParam("org") String org, @RequestParam("password") boolean password){
         File file = DatabaseManager.AddItem(org); //新建一个组织文件
         if (file == null){
-            returnJson.res = false;
-            returnJson.state = "组织已存在";
-            return returnJson;
+            return new Return<>(false,"组织已存在","");
         }
 
-        System.out.println("在创建组织中,首先创建文件" + file.getAbsolutePath() + " " + file.getName());
-        System.out.println("---");
-        if(file == null){
-            returnJson.res = false;
-            returnJson.state = "组织已存在";
+        UserFile user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),0L);//用户添加组织信息
+        user.owner.add(file); //添加组织信息
+        DataProcessor dataProcessor = new DataProcessor(BridgeData.getRequestInfo(),org,file);
+
+        dataProcessor.dataItem.type = user.owner.size()-1;
+        // password
+        if(password){
+            dataProcessor.dataItem.password = FuncManager.GenerateOrgPassword();
         }else{
-            UserFile user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),0L);//用户添加组织信息
-            user.owner.add(file); //添加组织信息
-            DataProcessor dataProcessor = new DataProcessor(BridgeData.getRequestInfo(),org,file);
-            System.out.println("创建一个dataProcessor");
-            dataProcessor.print();
-            // indexID
-            dataProcessor.dataItem.type = user.owner.size()-1;
-            // 更新一个type
-            System.out.println("添加组织信息");
-            OnlineManager.NewOnlineData(dataProcessor,1L);//直接新建一个
-
-            System.out.println();
-            //WriteLog.writeOrgLog(user,returnJson.res,org,"OrgCreate"); //添加日志
-            WriteLog.writeLog(user,returnJson.res,"OrgCreate",org);
-
+            dataProcessor.dataItem.password = "";
         }
-
-        return  returnJson;
+        OnlineManager.NewOnlineData(dataProcessor,1L);//直接新建一个
+        WriteLog.writeLog(user,true,"OrgCreate",org);
+        return  new Return<>(true,"组织创建成功!"+(password?"口令为"+dataProcessor.dataItem.password:""),dataProcessor.dataItem.password);
     }
 
     //接收org名称
     // -1. 组织不存在
     // -2. 组织中存在冲突
     @RequestMapping("/join")
-    public ReturnJson OrgJoin(@RequestParam String org){
+    public ReturnJson OrgJoin(@RequestParam("org") String org, @RequestParam("password") String password){
         //加入某个组织,默认已经通过拦截
         ReturnJson res =  new ReturnAddJson(true,"加入成功");
         DataManager dataManager = new DataManager();
@@ -106,9 +92,22 @@ public class OrgController {
         }else{
             //判断该组织是否为私人组织
             if(Org.dataItem.type == 0){
-                res.res = false;
-                res.state = "组织为私人组织,不可加入";
+                return new ReturnJson(false,"该组织为私人组织");
             }else{
+                // 判断是否已经加入
+                if(Org.dataItem.users.contains(BridgeData.getRequestInfo())){
+                    return new ReturnJson(false,"已经加入该组织");
+                }
+                //判断口令是否正确
+                System.out.println("=============================");
+                System.out.println("判断口令是否正确");
+                System.out.println("口令为:"+Org.dataItem.password);
+                System.out.println("输入口令为:"+password);
+                if(!Objects.equals(Org.dataItem.password, password) && !Org.dataItem.password.equals("")){
+                    return new ReturnJson(false,"口令错误");
+                }
+                System.out.println("=============================");
+                System.out.println("口令正确");
                 res = dataManager.AddOrg(Org); //先获得组织冲突文件,如果成功在这里就添加到用户和组织信息里面做双向连接
             }
             if(res.res){
@@ -116,7 +115,6 @@ public class OrgController {
             }
         }
         UserFile userFile = OnlineManager.GetUserData(BridgeData.getRequestInfo(),0L);
-        //WriteLog.writeOrgLog(userFile,res.res,org,"OrgJoin");
         WriteLog.writeLog(userFile, res.res, "OrgJoin",org);
         return res;
     }
@@ -171,4 +169,12 @@ public class OrgController {
         DataManager dataManager = new DataManager();
         return dataManager.removeOrgMember(org,member);
     }
+
+    @RequestMapping("/changePassword")
+    public Return<Object> changePassword(@RequestParam("org") String org,@RequestParam("password") String password){
+        DataManager dataManager = new DataManager();
+        return dataManager.changeOrgPassword(org,password);
+    }
+
+
 }

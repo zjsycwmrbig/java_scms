@@ -24,6 +24,7 @@ public class DataItem implements Serializable {
 
     public int type;//组织类型
     public File filePath;//数据路径
+    public String password;//口令
     public RBTree<GetEventData,Long> itemRbtree; //用classdata当做vaule,Long值当做key,Long直接记录Begin就好
 //  增删改查
 

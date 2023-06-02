@@ -16,6 +16,7 @@ import scms.domain.ReturnJson.ReturnJson;
 import scms.domain.ReturnJson.ReturnUserData;
 import scms.domain.ServerJson.UserFile;
 
+import java.io.File;
 import java.io.IOException;
 
 @RestController
@@ -77,4 +78,21 @@ public class UserController {
         WriteLog.writeUserLog(userFile,returnJson.res,"changePersonalWord",word);
         return returnJson;
     }
+    // 拿到最新的用户信息,专指更新组织的情况
+//    @RequestMapping("/fetch")
+//    public ReturnUserData fetch(){
+//        UserFile userFile = OnlineManager.GetUserData(BridgeData.getRequestInfo(),1L);
+//        ReturnUserData returnUserData = new ReturnUserData(userFile.netname,userFile.PersonalWord,"",userFile.hasImage);
+//        // owner
+//        for (File owner:userFile.owner){
+//            returnUserData.owner.add(owner.getName());
+//        }
+//        for(File player:userFile.player){
+//            returnUserData.player.add(player.getName());
+//        }
+//        for(File owmer:userFile.owner){
+//            returnUserData.passwords.add(password.getName());
+//        }
+//        return returnUserData;
+//    }
 }

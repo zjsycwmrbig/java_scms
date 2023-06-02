@@ -673,6 +673,21 @@ public class DataManager {
 
         return new Return<>(true,"",null);
     }
+    // 更改组织口令
+    public Return<Object> changeOrgPassword(String org,String password){
+        // 1. 权限验证
+        DataProcessor dataProcessor = OnlineManager.GetEventData(org,0L);
+        if (dataProcessor == null) return new Return<>(false,"没有这个组织",null);
+        if(user.owner.indexOf(dataProcessor.dataItem.filePath) == -1){
+            return new Return<>(false,"没有权限",null);
+        }
+        // 2. 修改口令
+        dataProcessor.dataItem.password = password;
+        // 3. 添加日志
+        WriteLog.writeLog(user,true,"changeOrgPassword",org);
+        return new Return<>(true,"",null);
+    }
+
 
     // 移除某个组织,不删除源文件
     public Return<Object> removeOrg(long user,String org){
