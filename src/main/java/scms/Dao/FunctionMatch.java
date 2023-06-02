@@ -29,6 +29,9 @@ public class FunctionMatch {
             case "QueryAll":return "查询所有课表";
             case "QueryKey":return "查询单节课";
             case "QueryFreeTime":return "查询空闲时间";
+            case "deleteOrg":return "删除组织";
+            case "removeOrg":return "退出组织";
+            case "removeOrgMember":return "移除组织成员";
         }//返回的值对应接口
         return name; //找不到就原样返回，如没有调用接口的需要记录的方法
     }

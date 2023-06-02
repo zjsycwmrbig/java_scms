@@ -19,14 +19,6 @@ import scms.domain.ServerJson.UserFile;
 @RequestMapping("/delete")
 public class DeleteController {
 
-//    @RequestMapping("/item")
-//    public ReturnJson DeleteItem(@RequestBody GetEventData item){
-//        DataManager dataManager = new DataManager();
-//        ReturnJson returnJson = dataManager.deleteItem(item);
-//        //本来应该在这里调用日志函数，但是DataManager中才对item的组织进行剖析，所以将调用放在了DataManager的DeleteItem中
-//        return returnJson;
-//    }
-
     // 删除条目
     @RequestMapping("/item")
     public ReturnJson DeleteItem(@RequestParam("indexID") int indexID,@RequestParam("begin") long begin){
@@ -49,4 +41,5 @@ public class DeleteController {
         }
 
     }
+
 }

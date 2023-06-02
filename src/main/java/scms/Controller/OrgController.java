@@ -14,6 +14,7 @@ import scms.Service.OnlineManager;
 import scms.Service.UserManager;
 import scms.domain.GetJson.GetOrgInviteData;
 import scms.domain.GetMapJson.NoticeMaker;
+import scms.domain.ReturnJson.Return;
 import scms.domain.ReturnJson.ReturnAddJson;
 import scms.domain.ReturnJson.ReturnJson;
 import scms.domain.ServerJson.NoticeData;
@@ -67,7 +68,6 @@ public class OrgController {
 
         System.out.println("在创建组织中,首先创建文件" + file.getAbsolutePath() + " " + file.getName());
         System.out.println("---");
-        System.out.println(DatabaseManager.searchFile(org).getAbsolutePath());
         if(file == null){
             returnJson.res = false;
             returnJson.state = "组织已存在";
@@ -86,7 +86,9 @@ public class OrgController {
             System.out.println();
             //WriteLog.writeOrgLog(user,returnJson.res,org,"OrgCreate"); //添加日志
             WriteLog.writeLog(user,returnJson.res,"OrgCreate",org);
+
         }
+
         return  returnJson;
     }
 
@@ -119,35 +121,54 @@ public class OrgController {
         return res;
     }
 
+//    @RequestMapping("/delete")
+//    public ReturnJson OrgDelete(@RequestParam String org){
+//        //删除某个组织
+//        ReturnJson res = new ReturnJson(true,"组织删除成功");
+//        DataProcessor Org = OnlineManager.GetEventData(org,0L);
+//        List<Long> userAll = null;
+//        if(Org == null) {
+//            res.res = false;
+//            res.state = "组织不存在";
+//        }
+//        else {
+//            userAll = Org.dataItem.users; //得到组织中所有用户的信息
+//            for (int i = 0; i < userAll.size(); i++) {
+//                UserFile tempUserFile = OnlineManager.GetUserData(userAll.get(i), 0L);
+//                if (tempUserFile != null) {
+//                    for (int j = 0; j < tempUserFile.player.size(); j++) {
+//                        File temp = tempUserFile.player.get(j);
+//                        if (temp.getName().equals(org)) {
+//                            temp.delete();
+//                        }
+//                    }
+//                    //WriteLog.writeOrgLog(tempUserFile,res.res,org,"OrgDelete"); //每个组织内的用户都需要记录日志
+//                    WriteLog.writeLog(tempUserFile, res.res,"OrgDelete",org);
+//                }
+//            } //删除组织中每个用户的组织文件
+//            OnlineManager.RemoveOrg(org);//从在线树中删除组织
+//            DatabaseManager.Remove(org); //删除组织文件
+//        }
+//        return res;
+//    }
+    // 删除组织
     @RequestMapping("/delete")
-    public ReturnJson OrgDelete(@RequestParam String org){
-        //删除某个组织
-        ReturnJson res = new ReturnJson(true,"组织删除成功");
-        DataProcessor Org = OnlineManager.GetEventData(org,0L);
-        List<Long> userAll = null;
-        if(Org == null) {
-            res.res = false;
-            res.state = "组织不存在";
-        }
-        else {
-            userAll = Org.dataItem.users; //得到组织中所有用户的信息
-            for (int i = 0; i < userAll.size(); i++) {
-                UserFile tempUserFile = OnlineManager.GetUserData(userAll.get(i), 0L);
-                if (tempUserFile != null) {
-                    for (int j = 0; j < tempUserFile.player.size(); j++) {
-                        File temp = tempUserFile.player.get(j);
-                        if (temp.getName().equals(org)) {
-                            temp.delete();
-                        }
-                    }
-                    //WriteLog.writeOrgLog(tempUserFile,res.res,org,"OrgDelete"); //每个组织内的用户都需要记录日志
-                    WriteLog.writeLog(tempUserFile, res.res,"OrgDelete",org);
-                }
-            } //删除组织中每个用户的组织文件
-            OnlineManager.RemoveOrg(org);//从在线树中删除组织
-            DatabaseManager.Remove(org); //删除组织文件
-        }
-        return res;
+    public Return<Object> DeleteOrg(@RequestParam("org") String org){
+        DataManager dataManager = new DataManager();
+        return dataManager.deleteOrg(org);
     }
 
+    // 退出组织
+    @RequestMapping("/quit")
+    public Return<Object> OrgQuit(@RequestParam String org){
+        //退出某个组织,需要处理userFile,dataProcessor,闹钟信息,如果是组织创建者,则需要删除组织,如果是组织成员,则需要删除组织中的用户信息
+        DataManager dataManager = new DataManager();
+        return dataManager.removeOrg(BridgeData.getRequestInfo(),org);
+    }
+    // 删除组织成员
+    @RequestMapping("/removeMember")
+    public Return<Object> removeMember(@RequestParam("org") String org,@RequestParam("member") long member){
+        DataManager dataManager = new DataManager();
+        return dataManager.removeOrgMember(org,member);
+    }
 }

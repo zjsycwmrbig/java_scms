@@ -32,7 +32,16 @@ class Demo1ApplicationTests {
         public boolean type;
     }
 
+    @Test
+    void OrgCreate(){
+        DatabaseManager.Init();
+        UserRBTree.Init();
 
+        System.out.println(DatabaseManager.searchFile("2班").getAbsolutePath());
+        DataProcessor dataProcessor = OnlineManager.GetEventData("2班",0L);
+        System.out.println(dataProcessor.dataItem.filePath.getAbsolutePath());
+
+    }
     @Test
     void AlarmExist() {
         UserRBTree.Init();

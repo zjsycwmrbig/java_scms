@@ -9,6 +9,7 @@ import scms.domain.GetJson.GetEventData;
 import scms.domain.ReturnJson.*;
 import scms.domain.ServerJson.*;
 
+import javax.naming.spi.ObjectFactory;
 import java.io.*;
 
 import java.util.*;
@@ -631,6 +632,65 @@ public class DataManager {
         }
         return returnJson;
     }
+    // 删除某个组织
+    public Return<Object> deleteOrg(String org){
+        // 删除某个组织
+        // 1. 权限验证
+        DataProcessor dataProcessor = OnlineManager.GetEventData(org,0L);
+        if(dataProcessor == null) return new Return<>(false,"没有这个组织",null);
+
+        if(!user.owner.remove(dataProcessor.dataItem.filePath)){
+            return new Return<>(false,"没有权限",null);
+        };
+        // 2. 删除组织,用户删除组织,依次把组织中的所有用户删除
+        for(int i = 1;i < dataProcessor.dataItem.users.size();i++){
+            removeOrg(dataProcessor.dataItem.users.get(i),org);
+        }
+        // 3. 删除组织
+        DeleteDir(dataProcessor.dataItem.filePath);
+        // 4. 删除组织树中的数据
+        DatabaseManager.Remove(org);
+        // 5. 删除缓存中的数据
+        OnlineManager.RemoveOrg(org);
+        WriteLog.writeLog(user,true,"deleteOrg",org);
+        return new Return<>(true,"",null);
+    }
+    // 移除组织成员
+    public Return<Object> removeOrgMember(String org,long member){
+        // 1. 权限验证
+        DataProcessor dataProcessor = OnlineManager.GetEventData(org,0L);
+        if (dataProcessor == null) return new Return<>(false,"没有这个组织",null);
+        if(user.owner.indexOf(dataProcessor.dataItem.filePath) == -1){
+            return new Return<>(false,"没有权限",null);
+        }
+        if(dataProcessor.dataItem.users.get(0) == member){
+            return new Return<>(false,"不能移除组织创建者",null);
+        }
+        // 2. 删除组织中的成员
+        removeOrg(member,org);
+        // 3. 添加日志
+        WriteLog.writeLog(user,true,"removeOrgMember",org);
+
+        return new Return<>(true,"",null);
+    }
+
+    // 移除某个组织,不删除源文件
+    public Return<Object> removeOrg(long user,String org){
+        // 删除indexID对应的数据
+        DataProcessor data = OnlineManager.GetEventData(org,0L);
+        // 组织删除个人
+        data.dataItem.users.remove(user);
+        // 个人删除组织
+        UserFile userFile = OnlineManager.GetUserData(user,0L);
+        if(userFile == null) return new Return<>(false,"没有这个用户",null);
+        // 删除组织
+        if(!userFile.owner.remove(data.dataItem.filePath)){
+            userFile.player.remove(data.dataItem.filePath);
+        };
+        // 帮助这个用户删除闹钟? 没必要,因为闹钟是从事件找闹钟
+        WriteLog.writeLog(userFile,true,"removeOrg",org);
+        return new Return<>(true,"",null);
+    }
     //工具类
 
     //星期序号获得
@@ -660,6 +720,15 @@ public class DataManager {
         if(i < owner.size()) return owner.get(i);
         else return player.get(i-owner.size());
     }
-
+    // 删除目录
+    private void DeleteDir(File file){
+        if(file.isDirectory()){
+            File[] files = file.listFiles();
+            for (File file1 : files) {
+                DeleteDir(file1);
+            }
+        }
+        file.delete();
+    }
 }
 
