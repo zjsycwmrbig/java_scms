@@ -50,8 +50,15 @@ public class QueryController {
     public Return<List<EventItem>> QueryKey(@RequestParam("key") String key,@RequestParam("searchmode") int searchmode){
         System.out.println(searchmode);
         DataManager dataManager = new DataManager();
-        // 日志记录放在了QueryMulti中
-        ReturnQueryData res = dataManager.QueryMulti(key);
+        ReturnQueryData res;
+        if(searchmode == 1){
+            // 日志记录放在了QueryMulti中
+             res = dataManager.QueryMulti(key);
+        }
+        else {
+            res = dataManager.QueryExact(key);
+        }
+
         // 返回的成为了一个EventItem列表,和query统一标准
         return new Return<>(true,"",toEventList(res,dataManager));
     }
