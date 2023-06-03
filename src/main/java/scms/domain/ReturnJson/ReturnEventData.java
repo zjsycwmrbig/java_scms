@@ -15,7 +15,7 @@ public class ReturnEventData extends ReturnJson{
         super(true,"");
         this.events = new ArrayList<>();this.routines = new ArrayList<>();
     }
-
+    public int total;
     //    返回事件数据
     public ArrayList<EventDataByType> events;//数据列表,按照页面分配,这个的意义
 

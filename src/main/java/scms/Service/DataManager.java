@@ -330,7 +330,7 @@ public class DataManager {
 
         ReturnEventData returnEventData = new ReturnEventData();
 
-
+        int total = 0;
 
         //新建一套星期体系
         ArrayList<EventDataByTime> eventDataByTimes = new ArrayList<>();
@@ -346,6 +346,7 @@ public class DataManager {
                     EventItem item = list.get(j);
                     item.group = owner.get(i).dataItem.name;
                     eventDataByTimes.get(GetWeekIndex(list.get(j).begin)).list.add(item);
+                    total++;
                 }
             }
         }
@@ -358,6 +359,7 @@ public class DataManager {
                     item.indexID = -i - 1;//标记为player
                     item.group = player.get(i).dataItem.name;
                     eventDataByTimes.get(GetWeekIndex(list.get(j).begin)).list.add(item);
+                    total++;
                 }
             }
         }
@@ -380,6 +382,7 @@ public class DataManager {
         }
 
         returnEventData.routines = eventDataByTimes;
+        returnEventData.total = total;
         WriteLog.writeLog(user,returnEventData.res,"QueryNow","");
         return returnEventData;
     }
@@ -527,6 +530,7 @@ public class DataManager {
         }
         ClashTime freeTime = res.data;
         if(freeTime == null) return new Return<>(true,"无空闲时间",null);
+
         // 依次获得其他用户的空闲时间,实现交集处理
         for(int i = 1;i < users.size();i++){
             res =  QueryFreeTime(users.get(i),date,length,vis);
@@ -534,6 +538,10 @@ public class DataManager {
                 return new Return<>(false,"用户不存在",null);
             }
             if (res.data == null) return new Return<>(true,"无空闲时间",null);
+//            if(res.data.begins.get(0) == date && res.data.ends.get(0) == date + length * 24 * 60 * 60 *1000L){
+//                // 完全时间
+//                continue;
+//            }
             freeTime.interSet(res.data);
         }
         if (freeTime != null && freeTime.begins != null && freeTime.begins.size() != 0){
@@ -578,9 +586,7 @@ public class DataManager {
 
             if(res.begins.get(0) == date && res.ends.get(0)==date + length*24*60*60*1000L)continue;
             freeTime.interSet(res);//使用交集操作,处理时间
-            System.out.println("=====================================");
-            System.out.println("freeTime = " + freeTime.begins.toString());
-            System.out.println("freeTime = " + freeTime.ends.toString());
+
             vis.put(userFile.owner.get(i).getName(), true);// 标记
         }
         if(userFile.player == null) return new Return<>(true,"",freeTime);

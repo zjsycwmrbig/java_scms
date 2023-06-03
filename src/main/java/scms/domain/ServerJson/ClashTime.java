@@ -33,35 +33,64 @@ public class ClashTime {
         if(other == null) return false; //为空
 
         if(other.begins.size() == 0 || this.begins.size() == 0){
-            // 无法合并
+            // 无法合并,值是空
             begins.clear();
             ends.clear();
             return true;
         }//为空
 
+        List<Long> tempBegin = this.begins;
+        List<Long> tempEnd = this.ends;
+
         List<Long> newBegin = new ArrayList<>();
         List<Long> newEnd = new ArrayList<>();
 
-        // 开始序号
-        int index = 0;
-        // index是第一个大于other.begin的end序号
-        // 合并开始
         for(int i = 0;i < other.begins.size();i++){
-            // 依次找下去
-            while(index < this.begins.size() && other.begins.get(i) >= this.ends.get(index)){
-                // 序号自增
-                index++;
-            }
-            // 如果index超出了范围,说明other的begin都比this的begin大,直接退出
-            if(index >= this.begins.size()) {
-                // 合并结束
-                break;
-            }
+//            newBegin.clear();
+//            newEnd.clear();
+            for(int j = 0;j <  tempBegin.size();j++){
+                if(tempBegin.get(j) >= other.ends.get(i) || tempEnd.get(j) <= other.begins.get(i)){
+                    // 没有交集
+                    continue;
+                }
+                // 有交集
 
-            // 更新index指向的begin和end,当不满足条件的时候,index++
-            newBegin.add(Math.max(this.begins.get(index),other.begins.get(i)));
-            newEnd.add(Math.min(this.ends.get(index),other.ends.get(i)));
+                newBegin.add(Math.max(tempBegin.get(j),other.begins.get(i)));
+                newEnd.add(Math.min(tempEnd.get(j),other.ends.get(i)));
+
+            }
+//            tempBegin = newBegin;
+//            tempEnd = newEnd;
         }
+
+        // 开始序号
+//        int index = 0;
+//        // index是第一个大于other.begin的end序号
+//        // 合并开始
+//        for(int i = 0;i < other.begins.size();i++){
+//            // 依次找下去
+//            while(index < this.begins.size() && other.begins.get(i) >= this.ends.get(index)){
+//                // 序号自增
+//                index++;
+//            }
+//            // 如果index超出了范围,说明other的begin都比this的begin大,直接退出
+//            if(index >= this.begins.size()) {
+//                // 合并结束
+//                break;
+//            }
+//
+//            if(other.ends.get(i) <= this.begins.get(index)){
+//                // 没有交集
+//                continue;
+//            }
+//
+//
+//            // 更新index指向的begin和end,当不满足条件的时候,index++
+//            newBegin.add(Math.max(this.begins.get(index),other.begins.get(i)));
+//            newEnd.add(Math.min(this.ends.get(index),other.ends.get(i)));
+//        }
+
+
         // 合并结束
         this.begins = (ArrayList<Long>) newBegin;
         this.ends = (ArrayList<Long>) newEnd;

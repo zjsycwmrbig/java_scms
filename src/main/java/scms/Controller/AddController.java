@@ -3,7 +3,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import scms.Dao.WriteLog;
 import scms.Interceptor.BridgeData;
 import scms.Service.DataManager;
 import scms.Service.OnlineManager;
@@ -30,6 +29,11 @@ public class AddController {
         DataManager dataManager = new DataManager();
         //日志记录放在了dataManager.AddItem中，因为其对item进行了解析
         ReturnAddJson returnJson = dataManager.AddItem(item);
+        if(item.type == 2){
+            if(item.circle != 0){
+                return new ReturnAddJson(false,"临时事务不能是周期");
+            }
+        }
         if (returnJson.res && item.alarmFlag){
             // 可以添加闹钟
             System.out.println("添加闹钟");

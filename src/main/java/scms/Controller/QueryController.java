@@ -58,6 +58,7 @@ public class QueryController {
         else {
             res = dataManager.QueryExact(key);
         }
+        // 添加闹钟信息
 
         // 返回的成为了一个EventItem列表,和query统一标准
         return new Return<>(true,"",toEventList(res,dataManager));
@@ -65,6 +66,7 @@ public class QueryController {
     // 工具类
     public List<EventItem> toEventList(ReturnQueryData data,DataManager dataManager){
         List<EventItem> list = new ArrayList<>();
+        UserFile user = OnlineManager.GetUserData(BridgeData.getRequestInfo(),0L);
         for (int i = 0; i < data.list.size(); i++) {
             // 获得item
             GetEventData item = data.list.get(i).item;
@@ -83,6 +85,7 @@ public class QueryController {
                     // 存在
                     j++;
                     EventItem eventItem = new EventItem(item.type, item.title, item.location, begin, item.length, item.locationData, item.indexID,item.group);
+                    eventItem.alarmFlag = user.Exist(eventItem.begin);
                     list.add(eventItem);
                 }
             }
