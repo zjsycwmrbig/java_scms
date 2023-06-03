@@ -184,20 +184,10 @@ public class DataProcessor implements Serializable {
     public ClashTime FindEasyTime (long begin,int length) {
         ClashTime time = new ClashTime();
         time.normal();// 仅仅作为初始化使用
-        // 建立日历,找到当天时间
-        Date date = new Date(begin);
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        // 设定起始时间,时分秒
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND,0);
 
         // 找到当天或者当周的时间
-        long start = calendar.getTimeInMillis();
-        calendar.add(Calendar.DAY_OF_MONTH, length);
-        long end = calendar.getTimeInMillis();
+        long start = begin;
+        long end = begin + length*24*60*60*1000L;
 
         // 判断该点前面有没有事件
         dataRBTree.searchNeibor(start);

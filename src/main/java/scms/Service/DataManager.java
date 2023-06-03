@@ -559,8 +559,11 @@ public class DataManager {
         // 仅仅适用作为时间查询
         ClashTime freeTime = new ClashTime();
         freeTime.normal();// 仅仅作为时间组织
+        System.out.println("date = " + new Date(date) + " length = " + length);
         freeTime.begins.add(date);
         freeTime.ends.add(date + length*24*60*60*1000L);
+        System.out.println("freeTime = " + freeTime.begins.toString());
+
         List<DataProcessor> dataProcessors = null;
         // 拿到用户数据
         UserFile userFile = OnlineManager.GetUserData(user, 0L);
@@ -571,7 +574,13 @@ public class DataManager {
             if(vis.containsKey(userFile.owner.get(i).getName())) continue; // 已经存在,处理过了
             DataProcessor data = OnlineManager.GetEventData(userFile.owner.get(i).getName(), 0L);
             if(data == null) continue; // 组织不存在
-            freeTime.interSet(data.FindEasyTime(date, length));//使用交集操作,处理时间
+            ClashTime res = data.FindEasyTime(date, length);
+
+            if(res.begins.get(0) == date && res.ends.get(0)==date + length*24*60*60*1000L)continue;
+            freeTime.interSet(res);//使用交集操作,处理时间
+            System.out.println("=====================================");
+            System.out.println("freeTime = " + freeTime.begins.toString());
+            System.out.println("freeTime = " + freeTime.ends.toString());
             vis.put(userFile.owner.get(i).getName(), true);// 标记
         }
         if(userFile.player == null) return new Return<>(true,"",freeTime);
@@ -579,7 +588,9 @@ public class DataManager {
             if(vis.containsKey(userFile.player.get(i).getName())) continue; // 已经存在,处理过了
             DataProcessor data = OnlineManager.GetEventData(userFile.player.get(i).getName(), 0L);
             if(data == null) continue; // 组织不存在
-            freeTime.interSet(data.FindEasyTime(date, length));
+            ClashTime res = data.FindEasyTime(date, length);
+            if(res.begins.get(0) == date && res.ends.get(0)==date + length*24*60*60*1000L)continue;
+            freeTime.interSet(res);
             vis.put(userFile.player.get(i).getName(), true);// 标记
         }
         return  new Return<>(true,"",freeTime);
